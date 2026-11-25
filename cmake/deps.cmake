@@ -1,9 +1,8 @@
 # The third-party libraries unitron uses (zlib and libpng), declared with `FetchContent`.
-# The approach, versions and hashes are taken from another toolchain (https://github.com/gbdev/another toolchain,
-# cmake/deps.cmake): pinned release tarballs, static builds, no tests or tools.
+# Pinned release tarballs (version and SHA256), static builds, no tests or tools.
 # https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html#downloading-and-building-from-source-with-fetchcontent
 #
-# Unlike another toolchain, the pinned sources are always built by default (OVERRIDE_FIND_PACKAGE also makes
+# The pinned sources are always built by default (OVERRIDE_FIND_PACKAGE also makes
 # libpng's own find_package(ZLIB) use them), so the binary does not depend on shared libz/libpng.
 # Configure with -DUNITRON_SYSTEM_DEPS=ON to use installed copies when found (FIND_PACKAGE_ARGS).
 option(UNITRON_SYSTEM_DEPS "Use installed zlib and libpng when found instead of building them" OFF)

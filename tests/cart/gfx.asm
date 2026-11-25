@@ -20,7 +20,7 @@ $include "ngpc_hw.inc"
 f_code	section	code
 ; VideoInit: the window, the palettes and the tiles
 VideoInit:
-	; the window covers the whole 160x152 screen (SysPro l.290; K2GETechRef 4-5)
+	; the window covers the whole 160x152 screen (SysPro, STEPS AFTER DEBUGER STSARTUP; K2GETechRef §4-5)
 	ldb	(WBA_H),0
 	ldb	(WBA_V),0
 	ldb	(WSI_H),160

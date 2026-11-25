@@ -1,6 +1,6 @@
 # Build unitron and run its tests on Linux, macOS and Windows (MSVC and MinGW).
-# Modeled on another toolchain's .github/workflows/testing.yml (same FetchContent zlib/libpng deps).
-# The rom test needs the the reference ROM ROM, which is not in the repo, so it skips itself here.
+# Every test runs from files in the repo (our own test cartridge included); the optional tests
+# that check commercial ROMs by hash skip themselves when no ROM is given.
 name: CI
 on:
   - push

@@ -4,10 +4,11 @@
 // hwnames reads the file, not the copy embedded in the binary, and checks:
 //   - every record has its fields; KIND is io, sysram, vector, k2ge or mem; sizes and bit numbers fit;
 //   - names are unique (registers and bits together), addresses are unique and sorted;
-//   - every entry cites its source in the table's form: "IO900H.H l.N" for io entries,
-//     "SNK DOC PLACE[; [DOC] PLACE]..." for the rest (DOC one of SNK's documents, PLACE l.N
-//     and/or a section mark, bits may add "(diagram ...)");
-//   - the naming rule (D5): uppercase letters, digits and _; io, sysram and k2ge names are the
+//   - every entry cites its source in the table's form: "IO900H.H l.N" for io entries (a line of
+//     docs/toshiba/IO900H.H), "SNK DOC PLACE[; [DOC] PLACE]..." for the rest: DOC one of SNK's
+//     documents, PLACE ", SECTION" (a heading of docs/snk/DOC/DOC.md) or " §X-Y" (a numbered
+//     section of it); bits may add " (diagram)" or " (diagram text)"; never a line number;
+//   - the naming rule (docs/hardware-names.md): uppercase letters, digits and _; io, sysram and k2ge names are the
 //     official spelling normalized ("." -> "_"), a k2ge register named from a multi-word SNK name
 //     has its words joined with a leading digit word moved to the end ("2D Status" -> STATUS_2D);
 //     vectors are VEC_*; a bit is SNK's own name, or REGISTER_ + its official name (or the
@@ -59,33 +60,67 @@ std::string from_words(const std::string& official) {
 
 const std::set<std::string> SNK_DOCS = {"SysPro", "SysWork", "SysLib", "K2GEres", "K2GETechRef", "K2GEpal"};
 
-// a citation part's place: "l.N", "§X-Y", "§X-Y l.N", with an optional "(diagram ...)" for bits
-bool good_place(const std::string& s, bool bit) {
-    static const std::regex place(R"((§[0-9]+(-[0-9]+)*( l\.[0-9]+)?|l\.[0-9]+))");
-    static const std::regex diagram(R"( \(diagram( l\.[0-9]+| text)?\))");
-    std::smatch m;
-    if (!std::regex_search(s, m, place) || m.position(0) != 0) return false;
-    std::string rest = s.substr(size_t(m.length(0)));
-    if (rest.empty()) return true;
-    return bit && std::regex_match(rest, diagram);
+// a heading line's text without its markdown: "#### *4-1***.****MEMORY LAYOUT**" -> "4-1.MEMORY LAYOUT"
+std::string heading_text(std::string h) {
+    static const std::regex marks(R"(^#+\s*|<sup>.*?</sup>|[*\\])"), ws(R"(\s+)");
+    h = std::regex_replace(h, marks, "");
+    return strip(std::regex_replace(h, ws, " "));
 }
 
-bool good_snk_cite(const std::string& cite, bool bit) {
-    if (!starts_with(cite, "SNK ")) return false;
-    auto parts = split_on(cite.substr(4), "; ");
-    for (size_t i = 0; i < parts.size(); i++) {
-        std::string p = parts[i];
-        auto sp = p.find(' ');
-        std::string first = p.substr(0, sp);
-        if (SNK_DOCS.count(first)) {
-            if (sp == std::string::npos) return false;
-            p = p.substr(sp + 1);
-        } else if (i == 0) {
-            return false;   // the first part names its document
-        }
-        if (!good_place(p, bit)) return false;
+// The section headings of SNK's documents (docs/snk/DOC/DOC.md, the copies in the repository).
+struct SnkDocs {
+    std::string dir;
+    std::map<std::string, std::set<std::string>> heads;
+    const std::set<std::string>& of(const std::string& doc) {
+        auto it = heads.find(doc);
+        if (it != heads.end()) return it->second;
+        std::set<std::string>& h = heads[doc];
+        Bytes raw;
+        if (read_bytes_opt(dir + "/" + doc + "/" + doc + ".md", raw))
+            for (auto& l : split_on(std::string(raw.begin(), raw.end()), "\n"))
+                if (!l.empty() && l[0] == '#') h.insert(heading_text(strip(l)));
+        return h;
     }
-    return true;
+};
+
+// A citation part's place in document DOC: ", SECTION" (a heading of the document, as it is
+// written there without its markup) or " §X-Y" (a heading that starts "X-Y."); a part without a
+// document is "§X-Y" in the document before it. Bits may end in " (diagram)" or " (diagram text)".
+// A line number is not a place: the copies' line numbers are not SNK's.
+std::string snk_cite_problem(SnkDocs& docs, const std::string& cite, bool bit) {
+    static const std::regex line_no(R"(\bl\.[0-9])"), sec_no(R"(§([0-9]+(-[0-9]+)*))");
+    if (std::regex_search(cite, line_no)) return "cites a line number; cite the document's section";
+    if (!starts_with(cite, "SNK ")) return "does not start with 'SNK '";
+    std::string body = cite.substr(4);
+    if (bit)
+        for (std::string tail : {" (diagram)", " (diagram text)"})
+            if (body.size() > tail.size() && body.compare(body.size() - tail.size(), tail.size(), tail) == 0) {
+                body.resize(body.size() - tail.size());
+                break;
+            }
+    std::string doc;
+    for (auto& part : split_on(body, "; ")) {
+        std::string place = part;
+        size_t sp = part.find_first_of(" ,");
+        if (sp != std::string::npos && SNK_DOCS.count(part.substr(0, sp))) {
+            doc = part.substr(0, sp);
+            place = part.substr(sp);
+            if (starts_with(place, ", ")) {
+                if (!docs.of(doc).count(place.substr(2))) return "'" + place.substr(2) + "' is not a heading of " + doc;
+                continue;
+            }
+            if (!starts_with(place, " ")) return "'" + part + "' has no place";
+            place = place.substr(1);
+        } else if (doc.empty()) {
+            return "the first part names one of SNK's documents";
+        }
+        std::smatch m;
+        if (!std::regex_match(place, m, sec_no)) return "'" + place + "' is not ', SECTION' or '§X-Y'";
+        bool found = false;
+        for (auto& h : docs.of(doc)) found |= starts_with(h, m[1].str() + ".");
+        if (!found) return doc + " has no section " + m[1].str();
+    }
+    return "";
 }
 
 }  // namespace
@@ -97,6 +132,7 @@ int test_hwnames(const std::string& data_dir) {
     auto fail = [&](int line, const std::string& m) { bad.push_back("hwnames.tsv:" + dec(line) + ": " + m); };
     static const std::regex name_re("[A-Z][A-Z0-9_]*");
     static const std::regex io_cite(R"(IO900H\.H l\.[0-9]+)");
+    SnkDocs snk{data_dir + "/../docs/snk", {}};
     const std::set<std::string> kinds = {"io", "sysram", "vector", "k2ge", "mem"};
     struct Reg {
         int64_t size;
@@ -146,8 +182,9 @@ int test_hwnames(const std::string& data_dir) {
             if (kind == "io") {
                 if (!std::regex_match(cite, io_cite)) fail(line, name + ": citation '" + cite + "' is not 'IO900H.H l.N'");
                 if (addr >= 0x80 || (size != 1 && size != 2)) fail(line, name + ": an io register is 1 or 2 bytes below 0x80");
-            } else if (!good_snk_cite(cite, false)) {
-                fail(line, name + ": citation '" + cite + "' is not 'SNK DOC PLACE[; [DOC] PLACE]'");
+            } else {
+                std::string why = snk_cite_problem(snk, cite, false);
+                if (!why.empty()) fail(line, name + ": citation '" + cite + "': " + why);
             }
             if (kind == "io" || kind == "sysram" || (kind == "k2ge" && official.find(' ') == std::string::npos)) {
                 if (name != normalize(official)) fail(line, name + ": the official '" + official + "' normalizes to " + normalize(official));
@@ -158,7 +195,7 @@ int test_hwnames(const std::string& data_dir) {
                 if (!starts_with(name, "VEC_")) fail(line, name + ": a vector's name starts with VEC_");
                 if (size != 4) fail(line, name + ": a vector is 4 bytes, not " + f[3]);
                 if (addr < 0x6FB8 || addr > 0x6FFC || addr % 4) fail(line, name + ": not a vector slot (4-aligned, 0x6FB8..0x6FFC)");
-                if (addr == 0x6FEC) fail(line, name + ": 0x6FEC is reserved (SNK SysPro l.226)");
+                if (addr == 0x6FEC) fail(line, name + ": 0x6FEC is reserved (SNK SysPro, SYSTEM INFORMATION)");
             }
         } else if (f[0] == "bit") {
             n_bits++;
@@ -167,7 +204,8 @@ int test_hwnames(const std::string& data_dir) {
                 continue;
             }
             check_name(line, f[2]);
-            if (!good_snk_cite(f[4], true)) fail(line, f[2] + ": citation '" + f[4] + "' is not 'SNK DOC PLACE[; [DOC] PLACE] [(diagram ...)]'");
+            std::string why = snk_cite_problem(snk, f[4], true);
+            if (!why.empty()) fail(line, f[2] + ": citation '" + f[4] + "': " + why);
             if (strip(f[5]).empty()) fail(line, f[2] + ": no official spelling");
             bits.push_back({line, py_int0(f[1]), py_int0(f[3]), f[2], f[5]});
         } else {

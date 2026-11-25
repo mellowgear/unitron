@@ -100,7 +100,7 @@ Model build(const Bytes& img, const DisOptions& opt) {
     for (int64_t t : targets)
         if (in(t)) label_at(owner[size_t(t)] >= 0 ? owner[size_t(t)] : t);
     // The end of the image and the few bytes after it: the drivers keep their data right after the
-    // code and hard-code those addresses (Z80_PLAN.md 4.3). Written as END_LABEL+k, they follow the
+    // code and hard-code those addresses. Written as END_LABEL+k, they follow the
     // code when it grows or shrinks. A jump or call there stays a number.
     bool end_used = false;
     auto end_ref = [&](int64_t a) -> std::string {

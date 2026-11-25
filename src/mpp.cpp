@@ -572,7 +572,7 @@ struct Pre {
                 size_t j = i + 1;
                 while (j < n && idc(line[j])) j++;
                 if (j < n && line[j] == '.' && j + 1 < n && id0(line[j + 1])) {
-                    // `Routine.loop` is one asm900 identifier (STATIC 3.4); tumpp names have no '.',
+                    // `Routine.loop` is one asm900 identifier (asm900's lexer); tumpp names have no '.',
                     // so a dotted name is never a #define name and is copied whole.
                     while (j < n && (idc(line[j]) || line[j] == '.')) j++;
                     out += line.substr(i, j - i);

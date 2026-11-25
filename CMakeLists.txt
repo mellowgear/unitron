@@ -7,7 +7,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-## Dependencies: zlib and libpng, fetched and built statically (the way another toolchain does it).
+## Dependencies: zlib and libpng, fetched and built statically
 
 include(FetchContent)
 include(cmake/deps.cmake)
@@ -81,7 +81,7 @@ if(BUILD_TESTING)
   add_test(NAME z80shift COMMAND unitron_tests z80shift .)
   add_test(NAME cart COMMAND unitron_tests cart ${V}/cart $<TARGET_FILE:unitron>)
   # the per-feature CLI cases, one ctest test per folder (tests/README.md)
-  foreach(F asm mpp link lcf dis gfx text bin2db z80 cli)
+  foreach(F asm mpp link lcf dis gfx text bin2db z80 toshiba cli)
     if(IS_DIRECTORY ${V}/${F})
       add_test(NAME cases-${F} COMMAND unitron_tests cases ${V} $<TARGET_FILE:unitron> ${F})
     endif()

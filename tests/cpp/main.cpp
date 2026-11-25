@@ -1,12 +1,12 @@
 // unitron C++ tests against the vectors frozen from the Python reference (tools/freeze_vectors.py, removed; in git history).
 //   unitron_tests opspace VECTOR_DIR
 //   unitron_tests lines VECTOR_DIR
-//   unitron_tests rom VECTOR_DIR UNITRON_EXE      (needs $UNITRON_ROM or ../roms/rom1/rom1.ngp)
+//   unitron_tests rom VECTOR_DIR UNITRON_EXE      (needs $UNITRON_ROM)
 //   unitron_tests hwinc DATA_DIR
 //   unitron_tests hwnames DATA_DIR                (data/hwnames.tsv is well formed)
 //   unitron_tests datasheet TABLE_DIR             (tests/datasheet/: encodings from the CPU documents)
 //   unitron_tests z80opspace VECTOR_DIR
-//   unitron_tests z80rom VECTOR_DIR UNITRON_EXE   (the reference ROM and/or the second ROM; skipped when absent)
+//   unitron_tests z80rom VECTOR_DIR UNITRON_EXE   ($UNITRON_ROM and/or $UNITRON_ROM2; skipped when absent)
 //   unitron_tests z80shift
 //   unitron_tests cart CART_DIR UNITRON_EXE      (the test cartridge, tests/cart/; needs no ROM)
 //   unitron_tests cases TESTS_DIR UNITRON_EXE FOLDER[/NAME]...   (tests/asm/, tests/link/, ...; tests/README.md)

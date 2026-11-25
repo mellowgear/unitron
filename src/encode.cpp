@@ -124,7 +124,7 @@ struct E {
             throw EncodeError("value " + dec(r.first) + " out of range " + dec(lo) + ".." + dec(hi));
         return r;
     }
-    // with no sized register and no suffix the size is byte (STATIC 3.3)
+    // with no sized register and no suffix the size is byte (as in asm900, read statically)
     int size(int opsize, std::initializer_list<int> allowed, int def = 1) const {
         int s = sfx;
         if (opsize && s && s != opsize)
@@ -394,7 +394,7 @@ Bytes encode(const std::string& m, int sfx, const std::vector<Operand>& ops_in, 
             int64_t v = vw.first;
             int w = vw.second;
             bool short3 = 0 <= v && v <= 7 && w <= 3;
-            // byte: LD r,#3 only when written n:3, or for a non-standard register (the reference ROM: 82/82 `ld RW3,n`)
+            // byte: LD r,#3 only when written n:3, or for a non-standard register (the reference ROM: every `ld RW3,n`)
             if (short3 && (s > 1 || w || a.reg.shrt < 0)) return cat(reg_prefix(a.reg), {0xA8 | int(v)});
             if (a.reg.shrt >= 0) return cat(Bytes{uint8_t((s == 1 ? 0x20 : s == 2 ? 0x30 : 0x40) | a.reg.shrt)}, le(v, s));
             return cat(cat(reg_prefix(a.reg), {0x03}), le(v, s));

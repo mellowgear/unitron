@@ -1,11 +1,11 @@
 ; sound.asm: unitron's test cartridge, module sound (the main CPU's side of the Z80 program).
 ; See main.asm for the build and sound.z80 for the Z80 side. sound.inc and sound.db are written by
 ; `unitron z80 asm sound.z80 --equ sound.inc --db sound.db`: the Z80 labels at their main-CPU
-; address (0x7000 + n; SNK SysLib l.39), and the Z80 image as db lines.
+; address (0x7000 + n; SNK SysLib, LINK COMMAND FILE), and the Z80 image as db lines.
 ;
 ; The Z80 interface addresses 0xB8 (stop/start), 0xBA (NMI) and 0xBC (command byte) are in no
 ; SNK document (docs/hardware-names.md, "Not named"). This is the sequence the NGPC sound drivers
-; we have use (docs/Z80_PLAN.md 1.3), so they stay numbers.
+; we have use, so they stay numbers.
 $maximum
 	module	sound
 $include "ngpc_hw.inc"

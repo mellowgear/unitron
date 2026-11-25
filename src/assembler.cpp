@@ -1,4 +1,5 @@
 #include "assembler.hpp"
+#include "rom.hpp"
 
 #include <algorithm>
 #include <set>
@@ -1170,6 +1171,9 @@ Image build_image(const std::vector<Chunk>& chunks, const int64_t* origin, const
             any = true;
         }
         if (!any) im.origin = 0;
+        // a program in the cartridge's first ROM chip: the image is the cartridge, from 0x200000
+        // (SNK SysPro, main CPU memory map), whatever the lowest byte written is
+        if (any && CART_BASE <= im.origin && im.origin < CART_BASE + 0x200000) im.origin = CART_BASE;
     }
     if (size) {
         im.size = *size;

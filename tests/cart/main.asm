@@ -25,18 +25,19 @@ $include "ngpc_hw.inc"
 	extern	large	FxNone,FxFlash,FxScroll
 
 ; ---------------------------------------------------------------- cartridge header
-; SNK SysPro l.172-186 (software cassette recognition header, 0x200000-0x20003F)
+; The software cassette recognition header, 0x200000-0x20003F (SNK SysPro, SOFTWARE CASSETTE
+; RECOGNITION HEADER INFORMATION FORMAT)
 f_head	section	romdata abs=0x200000
-	db	" LICENSED BY SNK CORPORATION"	; recognition code, third-party use (l.186): 28 bytes
-	dl	Start				; startup address, little endian (l.179)
-	dw	0x0000				; cassette ID, BCD; 0 = provisional development ID (l.186)
-	db	0x00				; ID sub-code (version) (l.181)
-	db	0x10				; compatible system: color (l.182)
-	db	"UNITRON CART"			; title, 12 ASCII bytes (l.183)
-	dfb	16,0				; reserved, write 0 (l.184)
+	db	" LICENSED BY SNK CORPORATION"	; recognition code, third-party use: 28 bytes
+	dl	Start				; startup address, little endian
+	dw	0x0000				; cassette ID, BCD; 0 = provisional development ID
+	db	0x00				; ID sub-code (version)
+	db	0x10				; compatible system: color
+	db	"UNITRON CART"			; title, 12 ASCII bytes
+	dfb	16,0				; reserved, write 0
 
 ; ---------------------------------------------------------------- RAM
-; The user work RAM is 0x4000-0x6BFF (SysPro l.194). f_vars is a medium section (16-bit
+; The user work RAM is 0x4000-0x6BFF (SysPro, WORK RAM AREA). f_vars is a medium section (16-bit
 ; addresses); f_buf is large (the default), so its addresses are written with 24 bits even
 ; though they are below 0x10000: `unitron dis` has to write them back as (0x....:24).
 f_vars	section	data medium
@@ -54,22 +55,22 @@ f_buf	section	data
 Shadow:		dsw	32	; a copy of one row of the scroll plane
 
 ; ---------------------------------------------------------------- start-up
-; SysPro l.292: the program starts with interrupts disabled; set the vectors (0x6FB8-), then
+; SysPro, STEPS AFTER DEBUGER STSARTUP: the program starts with interrupts disabled; set the vectors (0x6FB8-), then
 ; enable them with EI 0.
 f_code	section	code
 Start:
 	ld	XSP,STACK_TOP
 	watchdog
 	cal	ClearRam
-	; XWA of register banks 0-2 starts at zero; bank 3 is the system's (SysPro l.304)
+	; XWA of register banks 0-2 starts at zero; bank 3 is the system's (SysPro, REGISTER USE RESTRICTIONS)
 	ld	XWA,0
 	ld	XWA0,XWA
 	ld	XWA1,XWA
 	ld	XWA2,XWA
 	ld	XHL,VBlank
-	ld	(VEC_VBLANK),XHL	; SysPro l.218; the trace follows this install
+	ld	(VEC_VBLANK),XHL	; SysPro, SYSTEM INFORMATION; the trace follows this install
 	ld	XWA,Swi3
-	ld	(VEC_SWI3),XWA		; SysPro l.213
+	ld	(VEC_SWI3),XWA		; SysPro, SYSTEM INFORMATION
 	ei	0
 	cal	SoundInit		; another module: cal becomes call (24-bit)
 	cal	VideoInit
@@ -167,7 +168,7 @@ StatePause.done:
 	ldb	(State),3		; a full score ends the game
 
 StateOver:
-	; keep the score in register bank 2 while the text is drawn (SysPro l.304: bank 3 is the
+	; keep the score in register bank 2 while the text is drawn (SysPro, REGISTER USE RESTRICTIONS: bank 3 is the
 	; system's), then put it back
 	ld	WA,(Score)
 	ld	RWA2,WA
@@ -184,7 +185,7 @@ StateOver:
 ; ---------------------------------------------------------------- helpers
 ; ReadKeys: Keys = the joypad, Pressed = the keys that were up last frame and are down now
 ReadKeys:
-	ld	A,(SYS_LEVER)		; SysPro l.200
+	ld	A,(SYS_LEVER)		; SysPro, SYSTEM INFORMATION
 	ld	B,(Keys)
 	ld	(Keys),A
 	cpl	B
@@ -222,7 +223,7 @@ ClearRam.words:
 	ret
 
 ; ---------------------------------------------------------------- interrupts
-; VBlank (SysPro l.218): count frames. incf switches to the next register bank, so the main
+; VBlank (SysPro, SYSTEM INFORMATION): count frames. incf switches to the next register bank, so the main
 ; loop's registers stay as they were and need no push/pop; decf switches back.
 VBlank:
 	incf
@@ -234,7 +235,7 @@ VBlank:
 	decf
 	reti
 
-; Swi3 (SysPro l.213): a debugging aid, swi 3 from anywhere saves XWA, and the system bank's
+; Swi3 (SysPro, SYSTEM INFORMATION): a debugging aid, swi 3 from anywhere saves XWA, and the system bank's
 ; XWA3, which it only reads
 Swi3:
 	ld	(Saved),XWA

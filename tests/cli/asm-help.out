@@ -10,7 +10,7 @@ options:
   -o, --output OUTPUT
   -I, --include INCLUDE
   -D, --define DEFINE
-  --origin ORIGIN	image start address (default: lowest code/romdata byte)
+  --origin ORIGIN	image start address (default: 0x200000 for a program in the cartridge ROM, else the lowest code/romdata byte)
   --size SIZE	image size (default: up to the highest byte)
   --fill FILL	byte for gaps (default 0xFF)
   --place SECTION=ADDR

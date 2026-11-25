@@ -1,9 +1,11 @@
 # Link command files (.lcf)
 
-unitron can read a subset of the link command file language of Toshiba's linker `tulink`.
-You can use it to place relocatable sections, instead of `--place NAME=ADDR` or the automatic
-first fit. Section numbers below ("TR 8.3.4") refer to chapter 8 of the TLCS-900 Assembler
-Reference (`docs/third_party/tr.txt`). The code is in `src/lcf.hpp` and `src/lcf.cpp`.
+This file covers the subset of the link command file language of Toshiba's linker `tulink` that
+`unitron asm --lcf FILE` reads, and the rules unitron uses where the manual is silent. A link
+command file places relocatable sections, instead of `--place NAME=ADDR` or the automatic first
+fit. Section numbers ("TR 8.3.4") are those of chapter 8 of Toshiba's *TLCS-900 Assembler
+Reference* (tde122-01_96). The code is in `src/lcf.hpp` and `src/lcf.cpp`; `tests/cart/cart.lcf`
+is a complete, commented example.
 
 ## Example
 

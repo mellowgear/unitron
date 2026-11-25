@@ -1,5 +1,6 @@
-// The optional ROM tests: the reference ROM and Toshiba's samples by hash (rom), and the Z80 sound drivers
-// of two commercial ROMs by hash (z80rom). Both skip what is absent.
+// The optional ROM tests: a reference commercial ROM by hash (rom), and the Z80 sound drivers of two
+// commercial ROMs by hash (z80rom). Both skip what is absent. (Toshiba's sample programs are the
+// case tests/toshiba/samples.)
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -14,14 +15,12 @@
 using namespace unitron;
 namespace fs = std::filesystem;
 
-// Optional: needs the the reference ROM ROM ($UNITRON_ROM, else ../roms/rom1/rom1.ngp next to the
-// repo) and/or Toshiba's samples. Compares sha256 of every output with tests/vectors/rom_hashes.txt.
+// Optional: needs the reference ROM ($UNITRON_ROM; the ROM whose sha256 is in rom_hashes.txt).
+// Compares sha256 of every output with tests/vectors/rom_hashes.txt.
 int test_rom(const std::string& vdir, const std::string& exe0) {
     std::string exe = fs::absolute(fs::u8path(exe0)).u8string();
-    fs::path repo = fs::weakly_canonical(fs::absolute(fs::u8path(vdir))).parent_path().parent_path();
     const char* env = std::getenv("UNITRON_ROM");
-    fs::path rom = env ? fs::u8path(env) : repo.parent_path() / "roms/rom1/rom1.ngp";
-    fs::path samples = repo.parent_path() / "ngpc-project-template/ngpcbins/T900/SAMPLE/ASM900";
+    fs::path rom = env ? fs::u8path(env) : fs::path();
     Bytes ht = read_bytes(vdir + "/rom_hashes.txt");
     std::map<std::string, std::string> want;
     for (auto& line : split_on(std::string(ht.begin(), ht.end()), "\n")) {
@@ -65,33 +64,6 @@ int test_rom(const std::string& vdir, const std::string& exe0) {
     } else {
         std::cout << "rom: no ROM (set UNITRON_ROM); skipped\n";
     }
-    if (fs::is_regular_file(samples / "SAMPLE1.ASM")) {
-        for (auto f : {"SAMPLE1.ASM", "SAMPLE2.ASM"}) fs::copy_file(samples / f, d / f, fs::copy_options::overwrite_existing);
-        Run r = run_in(d, exe,
-                       {"asm", "SAMPLE1.ASM", "SAMPLE2.ASM", "-o", "s.bin", "--origin", "0x8000", "--size", "0x500", "--place", "MAIN=0x8100",
-                        "--place", "TIME30=0x8200", "--place", "subrout=0x8300", "--place", "ROM_DAT=0x8400", "--sym", "s.sym"},
-                       scratch);
-        check("samples", "exit " + dec(r.code) + " stdout " + sha256_hex(r.out) + " stderr " + sha256_hex(r.err));
-        for (auto f : {"s.bin", "s.sym"}) {
-            Bytes b;
-            read_bytes_opt((d / f).u8string(), b);
-            check(std::string("file ") + f, sha256_hex(b));
-        }
-        for (auto f : {"SAMPLE1.ASM", "SAMPLE2.ASM"}) {
-            // rom_hashes.txt has one "check FILE exit N stderr SHA" line per sample
-            Run c = run_in(d, exe, {"asm", f, "--no-link"}, scratch);
-            std::string got = "check " + std::string(f) + " exit " + dec(c.code) + " stderr " + sha256_hex(c.err);
-            bool found = false;
-            for (auto& line : split_on(std::string(ht.begin(), ht.end()), "\n")) found |= line == got;
-            if (!found) {
-                std::cerr << got << ": not in rom_hashes.txt\n";
-                bad++;
-            }
-            done++;
-        }
-    } else {
-        std::cout << "samples: Toshiba samples not present; skipped\n";
-    }
     fs::remove_all(d);
     fs::remove_all(scratch);
     std::cout << "rom: " << done << " checks, " << bad << " differ\n";
@@ -104,7 +76,7 @@ std::string z80_shift_check(const Bytes& img, const std::string& name, const std
 // tests/vectors/z80_rom_hashes.txt). Each driver is cut out of its ROM (offset and length in that
 // file), checked by sha256, then `z80 dis` (listing), `z80 dis -o` and `z80 roundtrip` run on it and
 // every output is compared by sha256, and the z80shift check (tests/cpp/z80.cpp) runs on it. A ROM that is absent is skipped. The ROMs are found at
-// $UNITRON_ROM / $UNITRON_ROM2, else ../roms/ next to the repo.
+// $UNITRON_ROM / $UNITRON_ROM2.
 int test_z80rom(const std::string& vdir, const std::string& exe0, bool write) {
     std::string exe = fs::absolute(fs::u8path(exe0)).u8string();
     fs::path repo = fs::weakly_canonical(fs::absolute(fs::u8path(vdir))).parent_path().parent_path();
@@ -116,8 +88,7 @@ int test_z80rom(const std::string& vdir, const std::string& exe0, bool write) {
         int64_t off = -1, len = 0;
         std::string sha;
     };
-    std::vector<Drv> drv = {{"rom1", "UNITRON_ROM", "roms/rom1/rom1.ngp"},
-                            {"rom2", "UNITRON_ROM2", "roms/rom2.ngp"}};
+    std::vector<Drv> drv = {{"rom1", "UNITRON_ROM", ""}, {"rom2", "UNITRON_ROM2", ""}};
     std::map<std::string, std::string> want;
     for (auto& line : lines) {
         auto w = split_ws(line);
@@ -138,7 +109,7 @@ int test_z80rom(const std::string& vdir, const std::string& exe0, bool write) {
     fs::path d = fresh_dir("z80rom"), scratch = fresh_dir("z80romscratch");
     for (auto& v : drv) {
         const char* env = std::getenv(v.env.c_str());
-        fs::path rom = env ? fs::u8path(env) : repo.parent_path() / fs::u8path(v.rel);
+        fs::path rom = env ? fs::u8path(env) : fs::path();
         Bytes rb;
         if (v.off < 0 || !read_bytes_opt(rom.u8string(), rb)) {
             std::cout << "z80rom " << v.name << ": no ROM (set " << v.env << "); skipped\n";

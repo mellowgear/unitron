@@ -236,7 +236,7 @@ void out_text(const Args& a, const std::string& text) {
     else std::cout << text;
 }
 
-// A file name in a make rule: `$` doubled; space, `#`, `:`, `%` and `\` get a backslash (as another assembler).
+// A file name in a make rule: `$` doubled; space, `#`, `:`, `%` and `\` get a backslash.
 std::string make_escape(const std::string& s) {
     std::string o;
     for (char c : s) {
@@ -312,7 +312,7 @@ int cmd_asm(const Parser& p, const Args& a) {
     for (auto& src : a.all("sources")) as.add_module(src);
     if (deps && (scan || as.missing)) {
         // Scan only, or (-MG) a file still to be generated is missing: write the dependencies and
-        // stop (as another assembler -MG does). A scan reports its errors (bad include lines, preprocessor
+        // stop. A scan reports its errors (bad include lines, preprocessor
         // errors); a full assembly with a missing file doesn't, as they may come from that file.
         if (scan && !as.d.errors.empty()) {
             for (size_t i = 0; i < as.d.errors.size() && i < 200; i++) std::cerr << as.d.errors[i] << "\n";
@@ -547,8 +547,8 @@ bool z80_report(const z80::Assembler& as, int limit) {
 }
 
 // --equ: the labels as asm900 `equ` lines at their main-CPU address (Z80 address + base; the main
-// CPU sees Z80 RAM at 0x7000, SNK SysLib l.39), sorted by address. EQU and DEFL names are left out:
-// they are not addresses in the image.
+// CPU sees Z80 RAM at 0x7000, SNK SysLib, LINK COMMAND FILE), sorted by address. EQU and DEFL
+// names are left out: they are not addresses in the image.
 std::string z80_equ_text(const z80::Assembler& as, int64_t base, const std::string& source, std::string& err) {
     auto labels = as.labels;
     std::stable_sort(labels.begin(), labels.end(), [](auto& x, auto& y) {
@@ -686,7 +686,7 @@ int run(int argc, char** argv) {
         p.opts = {O({"-o", "--output"}, "output"),
                   O({"-I", "--include"}, "include", "", true, true),
                   O({"-D", "--define"}, "define", "", true, true),
-                  O({"--origin"}, "origin", "image start address (default: lowest code/romdata byte)"),
+                  O({"--origin"}, "origin", "image start address (default: 0x200000 for a program in the cartridge ROM, else the lowest code/romdata byte)"),
                   O({"--size"}, "size", "image size (default: up to the highest byte)"),
                   O({"--fill"}, "fill", "byte for gaps (default 0xFF)"),
                   O({"--place"}, "place", "", true, true, "SECTION=ADDR"),

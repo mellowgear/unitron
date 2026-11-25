@@ -14,7 +14,7 @@
 
 namespace unitron::z80 {
 
-constexpr int64_t RAM_SIZE = 0x1000;   // "4 KB of internal RAM" (SNK SysPro l.108)
+constexpr int64_t RAM_SIZE = 0x1000;   // "4 KB of internal RAM" (SNK SysPro, SOUND CONTROL CPU)
 
 class Assembler {
 public:

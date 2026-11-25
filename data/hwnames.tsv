@@ -1,5 +1,6 @@
 # NGPC hardware names: the single source for the C++ tables and data/ngpc_hw.inc.
-# Rebuilt from Toshiba IO900H.H (TMP95C061F) and SNK developer docs only; every entry cites its source.
+# Rebuilt from Toshiba IO900H.H (TMP95C061F) and SNK developer docs only; every entry cites its source:
+#   IO900H.H l.N (docs/toshiba/IO900H.H), or SNK DOC, SECTION / SNK DOC §X-Y (docs/snk/DOC/DOC.md).
 # docs/hardware-names.md explains the groups, the naming rule and what stays unnamed.
 # Tab-separated. Records:
 #   name  ADDR  NAME  SIZE  KIND  CITATION  OFFICIAL  (sorted by address)
@@ -108,93 +109,93 @@ name	0x7C	DMA0V	1	io	IO900H.H l.161	DMA0V
 name	0x7D	DMA1V	1	io	IO900H.H l.162	DMA1V
 name	0x7E	DMA2V	1	io	IO900H.H l.163	DMA2V
 name	0x7F	DMA3V	1	io	IO900H.H l.164	DMA3V
-name	0x6F80	BATTERY_VOLTAGE	2	sysram	SNK SysPro l.198; SysWork l.24	Battery_voltage
-name	0x6F82	SYS_LEVER	1	sysram	SNK SysPro l.200; SysWork l.28	Sys_Lever
-name	0x6F84	USER_BOOT	1	sysram	SNK SysPro l.203; SysWork l.76	User_Boot
-name	0x6F85	USER_SHUTDOWN	1	sysram	SNK SysPro l.202; SysWork l.40	User_Shutdown
-name	0x6F86	USER_ANSWER	1	sysram	SNK SysPro l.204; SysWork l.106	User_Answer
-name	0x6F87	LANGUAGE	1	sysram	SNK SysPro l.201; SysWork l.36	Language
-name	0x6F91	OS_VERSION	1	sysram	SNK SysPro l.205; SysWork l.134	OS_Version
-name	0x6FB8	VEC_SWI3	4	vector	SNK SysPro l.213	Software Interrupt (SWI 3)
-name	0x6FBC	VEC_SWI4	4	vector	SNK SysPro l.214	Software Interrupt (SWI 4)
-name	0x6FC0	VEC_SWI5	4	vector	SNK SysPro l.215	Software Interrupt (SWI 5)
-name	0x6FC4	VEC_SWI6	4	vector	SNK SysPro l.216	Software Interrupt (SWI 6)
-name	0x6FC8	VEC_RTC_ALARM	4	vector	SNK SysPro l.217	RTC Alarm Interrupt
-name	0x6FCC	VEC_VBLANK	4	vector	SNK SysPro l.218	Vertical Blanking Interrupt
-name	0x6FD0	VEC_Z80	4	vector	SNK SysPro l.219	Interrupt From Z80
-name	0x6FD4	VEC_TIMER0	4	vector	SNK SysPro l.220	Timer Interrupt (8 bit timer 0)
-name	0x6FD8	VEC_TIMER1	4	vector	SNK SysPro l.221	Timer Interrupt (8 bit timer 1)
-name	0x6FDC	VEC_TIMER2	4	vector	SNK SysPro l.222	Timer Interrupt (8 bit timer 2)
-name	0x6FE0	VEC_TIMER3	4	vector	SNK SysPro l.223	Timer Interrupt (8 bit timer 3)
-name	0x6FE4	VEC_SERIAL_TX	4	vector	SNK SysPro l.224	Serial Transmission Interrupt
-name	0x6FE8	VEC_SERIAL_RX	4	vector	SNK SysPro l.225	Serial Reception Interrupt
-name	0x6FF0	VEC_DMA0_END	4	vector	SNK SysPro l.227	End Micro DMA Interrupt (Micro DMA 0)
-name	0x6FF4	VEC_DMA1_END	4	vector	SNK SysPro l.228	End Micro DMA Interrupt (Micro DMA 1)
-name	0x6FF8	VEC_DMA2_END	4	vector	SNK SysPro l.229	End Micro DMA Interrupt (Micro DMA 2)
-name	0x6FFC	VEC_DMA3_END	4	vector	SNK SysPro l.230	End Micro DMA Interrupt (Micro DMA 3)
-name	0x7000	Z80_RAM	0x1000	mem	SNK SysLib l.39; SysPro l.108	z80
-name	0x8002	WBA_H	1	k2ge	SNK K2GETechRef §4-5 l.408; K2GEres l.7	WBA.H
-name	0x8003	WBA_V	1	k2ge	SNK K2GETechRef §4-5 l.409; K2GEres l.8	WBA.V
-name	0x8004	WSI_H	1	k2ge	SNK K2GETechRef §4-5 l.410; K2GEres l.9	WSI.H
-name	0x8005	WSI_V	1	k2ge	SNK K2GETechRef §4-5 l.411; K2GEres l.10	WSI.V
-name	0x8008	RAS_H	1	k2ge	SNK K2GETechRef §4-8 l.472; K2GEres l.11	RAS.H
-name	0x8009	RAS_V	1	k2ge	SNK K2GETechRef §4-8 l.473; K2GEres l.12	RAS.V
-name	0x8010	STATUS_2D	1	k2ge	SNK K2GEres l.14; K2GETechRef §4-10	2D Status
-name	0x8012	CONTROL_2D	1	k2ge	SNK K2GEres l.16; K2GETechRef §4-11	2D Control
-name	0x8020	PO_H	1	k2ge	SNK K2GETechRef §4-3-4 l.253; K2GEres l.17	PO.H
-name	0x8021	PO_V	1	k2ge	SNK K2GETechRef §4-3-4 l.254; K2GEres l.18	PO.V
-name	0x8030	SCROLL_PRIORITY	1	k2ge	SNK K2GEres l.20; K2GETechRef §4-4-7	Scroll Priority
-name	0x8032	S1SO_H	1	k2ge	SNK K2GETechRef §4-4-8 l.376; K2GEres l.22	S1SO.H
-name	0x8033	S1SO_V	1	k2ge	SNK K2GETechRef §4-4-8 l.377; K2GEres l.24	S1SO.V
-name	0x8034	S2SO_H	1	k2ge	SNK K2GETechRef §4-4-8 l.378; K2GEres l.26	S2SO.H
-name	0x8035	S2SO_V	1	k2ge	SNK K2GETechRef §4-4-8 l.379; K2GEres l.28	S2SO.V
-name	0x8101	SPPLT_01	1	k2ge	SNK K2GETechRef §4-12 l.543; K2GEres l.29	SPPLT.01
-name	0x8102	SPPLT_02	1	k2ge	SNK K2GETechRef §4-12 l.544; K2GEres l.30	SPPLT.02
-name	0x8103	SPPLT_03	1	k2ge	SNK K2GETechRef §4-12 l.545; K2GEres l.31	SPPLT.03
-name	0x8105	SPPLT_11	1	k2ge	SNK K2GETechRef §4-12 l.547; K2GEres l.37	SPPLT.11
-name	0x8106	SPPLT_12	1	k2ge	SNK K2GETechRef §4-12 l.548; K2GEres l.38	SPPLT.12
-name	0x8107	SPPLT_13	1	k2ge	SNK K2GETechRef §4-12 l.549; K2GEres l.39	SPPLT.13
-name	0x8109	SC1PLT_01	1	k2ge	SNK K2GEres l.41; K2GETechRef §4-13 l.594	SC1PLT.01
-name	0x810A	SC1PLT_02	1	k2ge	SNK K2GEres l.43; K2GETechRef §4-13 l.595	SC1PLT.02
-name	0x810B	SC1PLT_03	1	k2ge	SNK K2GEres l.45; K2GETechRef §4-13 l.596	SC1PLT.03
-name	0x810D	SC1PLT_11	1	k2ge	SNK K2GEres l.47; K2GETechRef §4-13 l.598	SC1PLT.11
-name	0x810E	SC1PLT_12	1	k2ge	SNK K2GEres l.49; K2GETechRef §4-13 l.599	SC1PLT.12
-name	0x810F	SC1PLT_13	1	k2ge	SNK K2GEres l.51; K2GETechRef §4-13 l.600	SC1PLT.13
-name	0x8111	SC2PLT_01	1	k2ge	SNK K2GEres l.53; K2GETechRef §4-14 l.622	SC2PLT.01
-name	0x8112	SC2PLT_02	1	k2ge	SNK K2GEres l.55; K2GETechRef §4-14 l.623	SC2PLT.02
-name	0x8113	SC2PLT_03	1	k2ge	SNK K2GEres l.57; K2GETechRef §4-14 l.624	SC2PLT.03
-name	0x8115	SC2PLT_11	1	k2ge	SNK K2GEres l.59; K2GETechRef §4-14 l.626	SC2PLT.11
-name	0x8116	SC2PLT_12	1	k2ge	SNK K2GEres l.61; K2GETechRef §4-14 l.627	SC2PLT.12
-name	0x8117	SC2PLT_13	1	k2ge	SNK K2GEres l.63; K2GETechRef §4-14 l.628	SC2PLT.13
-name	0x8118	BG	1	k2ge	SNK K2GEres l.64; K2GETechRef §4-6	BG
-name	0x8200	SPRITE_PAL	0x80	mem	SNK K2GETechRef §4-15 l.684; K2GEpal l.8	K2GE mode sprite color palette
-name	0x8280	SCROLL1_PAL	0x80	mem	SNK K2GETechRef §4-15 l.686; K2GEpal l.74	K2GE mode scroll 1 color palette
-name	0x8300	SCROLL2_PAL	0x80	mem	SNK K2GETechRef §4-15 l.688; K2GEpal l.142	K2GE mode scroll 2 color palette
-name	0x8380	K1_SPRITE_PAL	0x20	mem	SNK K2GETechRef §4-15 l.690; K2GEpal l.210	K1GE upper palette compatible (sprite)
-name	0x83A0	K1_SCROLL1_PAL	0x20	mem	SNK K2GETechRef §4-15 l.693; K2GEpal l.244	K1GE upper palette compatible (scroll 1)
-name	0x83C0	K1_SCROLL2_PAL	0x20	mem	SNK K2GETechRef §4-15 l.696; K2GEpal l.276	K1GE upper palette compatible (scroll 2)
-name	0x83E0	BG_PAL	0x10	mem	SNK K2GETechRef §4-15 l.699; K2GEpal l.309	Background color palette
-name	0x83F0	WINDOW_PAL	0x10	mem	SNK K2GETechRef §4-15 l.703; K2GEpal l.318	Window color palette
-name	0x8800	SPRITE_VRAM	0x100	mem	SNK K2GETechRef §4-3-3 l.156	Sprite VRAM
-name	0x8C00	SPRITE_PAL_CODE	0x40	mem	SNK K2GETechRef §4-3-3 l.158; §5-1 l.718	Sprite VRAM (color palette code)
-name	0x9000	SCROLL1_VRAM	0x800	mem	SNK K2GETechRef §4-4-4 l.319; §4-13 l.589	scroll plane 1 VRAM
-name	0x9800	SCROLL2_VRAM	0x800	mem	SNK K2GETechRef §4-4-5 l.339; §4-14 l.617	scroll plane 2 VRAM
-name	0xA000	CHARACTER_RAM	0x2000	mem	SNK K2GETechRef §4-2 l.121; §4-1 l.104	Character RAM
-bit	0x6F82	SYS_LEVER_UP	0	SNK SysWork l.32 (diagram)	UP
-bit	0x6F82	SYS_LEVER_DOWN	1	SNK SysWork l.32 (diagram)	DOWN
-bit	0x6F82	SYS_LEVER_LEFT	2	SNK SysWork l.32 (diagram)	LEFT
-bit	0x6F82	SYS_LEVER_RIGHT	3	SNK SysWork l.32 (diagram)	RIGHT
-bit	0x6F82	SYS_LEVER_A	4	SNK SysWork l.32 (diagram)	A BUTTON
-bit	0x6F82	SYS_LEVER_B	5	SNK SysWork l.32 (diagram)	B BUTTON
-bit	0x6F82	SYS_LEVER_OPTION	6	SNK SysWork l.34 (diagram text)	OPTION BUTTON
-bit	0x6F84	RESUME_BOOT_REQ	5	SNK SysWork l.98 (diagram l.80)	RESUME_BOOT_REQ
-bit	0x6F84	POWER_BOOT_REQ	6	SNK SysWork l.92 (diagram l.80)	POWER_BOOT_REQ
-bit	0x6F84	ALARM_BOOT_REQ	7	SNK SysWork l.84 (diagram l.80)	ALARM_BOOT_REQ
-bit	0x6F85	BAT_SHUTDOWN_REQ	5	SNK SysWork l.66 (diagram l.50)	BAT_SHUTDOWN_REQ
-bit	0x6F85	TIME_SHUTDOWN_REQ	6	SNK SysWork l.60 (diagram l.50)	TIME_SHUTDOWN_REQ
-bit	0x6F85	MP_SHUTDOWN_REQ	7	SNK SysWork l.54 (diagram l.50)	MP_SHUTDOWN_REQ
-bit	0x6F86	TIMER_SHUTDOWN_ANS	6	SNK SysWork l.124 (diagram l.110)	TIMER_SHUTDOWN_ANS
-bit	0x6F86	RESUME_ANS	7	SNK SysWork l.114 (diagram l.110)	RESUME_ANS
-bit	0x8010	STATUS_2D_C_OVR	7	SNK K2GEres l.14; K2GETechRef §4-10	C.OVR
-bit	0x8012	CONTROL_2D_NEG	7	SNK K2GEres l.16; K2GETechRef §4-11	NEG
-bit	0x8030	SCROLL_PRIORITY_P_F	7	SNK K2GEres l.20; K2GETechRef §4-4-7	P.F
+name	0x6F80	BATTERY_VOLTAGE	2	sysram	SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION	Battery_voltage
+name	0x6F82	SYS_LEVER	1	sysram	SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION	Sys_Lever
+name	0x6F84	USER_BOOT	1	sysram	SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION	User_Boot
+name	0x6F85	USER_SHUTDOWN	1	sysram	SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION	User_Shutdown
+name	0x6F86	USER_ANSWER	1	sysram	SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION	User_Answer
+name	0x6F87	LANGUAGE	1	sysram	SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION	Language
+name	0x6F91	OS_VERSION	1	sysram	SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION	OS_Version
+name	0x6FB8	VEC_SWI3	4	vector	SNK SysPro, SYSTEM INFORMATION	Software Interrupt (SWI 3)
+name	0x6FBC	VEC_SWI4	4	vector	SNK SysPro, SYSTEM INFORMATION	Software Interrupt (SWI 4)
+name	0x6FC0	VEC_SWI5	4	vector	SNK SysPro, SYSTEM INFORMATION	Software Interrupt (SWI 5)
+name	0x6FC4	VEC_SWI6	4	vector	SNK SysPro, SYSTEM INFORMATION	Software Interrupt (SWI 6)
+name	0x6FC8	VEC_RTC_ALARM	4	vector	SNK SysPro, SYSTEM INFORMATION	RTC Alarm Interrupt
+name	0x6FCC	VEC_VBLANK	4	vector	SNK SysPro, SYSTEM INFORMATION	Vertical Blanking Interrupt
+name	0x6FD0	VEC_Z80	4	vector	SNK SysPro, SYSTEM INFORMATION	Interrupt From Z80
+name	0x6FD4	VEC_TIMER0	4	vector	SNK SysPro, SYSTEM INFORMATION	Timer Interrupt (8 bit timer 0)
+name	0x6FD8	VEC_TIMER1	4	vector	SNK SysPro, SYSTEM INFORMATION	Timer Interrupt (8 bit timer 1)
+name	0x6FDC	VEC_TIMER2	4	vector	SNK SysPro, SYSTEM INFORMATION	Timer Interrupt (8 bit timer 2)
+name	0x6FE0	VEC_TIMER3	4	vector	SNK SysPro, SYSTEM INFORMATION	Timer Interrupt (8 bit timer 3)
+name	0x6FE4	VEC_SERIAL_TX	4	vector	SNK SysPro, SYSTEM INFORMATION	Serial Transmission Interrupt
+name	0x6FE8	VEC_SERIAL_RX	4	vector	SNK SysPro, SYSTEM INFORMATION	Serial Reception Interrupt
+name	0x6FF0	VEC_DMA0_END	4	vector	SNK SysPro, SYSTEM INFORMATION	End Micro DMA Interrupt (Micro DMA 0)
+name	0x6FF4	VEC_DMA1_END	4	vector	SNK SysPro, SYSTEM INFORMATION	End Micro DMA Interrupt (Micro DMA 1)
+name	0x6FF8	VEC_DMA2_END	4	vector	SNK SysPro, SYSTEM INFORMATION	End Micro DMA Interrupt (Micro DMA 2)
+name	0x6FFC	VEC_DMA3_END	4	vector	SNK SysPro, SYSTEM INFORMATION	End Micro DMA Interrupt (Micro DMA 3)
+name	0x7000	Z80_RAM	0x1000	mem	SNK SysLib, LINK COMMAND FILE; SysPro, SOUND CONTROL CPU	z80
+name	0x8002	WBA_H	1	k2ge	SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table	WBA.H
+name	0x8003	WBA_V	1	k2ge	SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table	WBA.V
+name	0x8004	WSI_H	1	k2ge	SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table	WSI.H
+name	0x8005	WSI_V	1	k2ge	SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table	WSI.V
+name	0x8008	RAS_H	1	k2ge	SNK K2GETechRef §4-8; K2GEres, K1GE Resister Table	RAS.H
+name	0x8009	RAS_V	1	k2ge	SNK K2GETechRef §4-8; K2GEres, K1GE Resister Table	RAS.V
+name	0x8010	STATUS_2D	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-10	2D Status
+name	0x8012	CONTROL_2D	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-11	2D Control
+name	0x8020	PO_H	1	k2ge	SNK K2GETechRef §4-3-4; K2GEres, K1GE Resister Table	PO.H
+name	0x8021	PO_V	1	k2ge	SNK K2GETechRef §4-3-4; K2GEres, K1GE Resister Table	PO.V
+name	0x8030	SCROLL_PRIORITY	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-4-7	Scroll Priority
+name	0x8032	S1SO_H	1	k2ge	SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table	S1SO.H
+name	0x8033	S1SO_V	1	k2ge	SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table	S1SO.V
+name	0x8034	S2SO_H	1	k2ge	SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table	S2SO.H
+name	0x8035	S2SO_V	1	k2ge	SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table	S2SO.V
+name	0x8101	SPPLT_01	1	k2ge	SNK K2GETechRef §4-12; K2GEres, K1GE Resister Table	SPPLT.01
+name	0x8102	SPPLT_02	1	k2ge	SNK K2GETechRef §4-12; K2GEres, K1GE Resister Table	SPPLT.02
+name	0x8103	SPPLT_03	1	k2ge	SNK K2GETechRef §4-12; K2GEres, K1GE Resister Table	SPPLT.03
+name	0x8105	SPPLT_11	1	k2ge	SNK K2GETechRef §4-12; K2GEres, K1GE Resister Table	SPPLT.11
+name	0x8106	SPPLT_12	1	k2ge	SNK K2GETechRef §4-12; K2GEres, K1GE Resister Table	SPPLT.12
+name	0x8107	SPPLT_13	1	k2ge	SNK K2GETechRef §4-12; K2GEres, K1GE Resister Table	SPPLT.13
+name	0x8109	SC1PLT_01	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-13	SC1PLT.01
+name	0x810A	SC1PLT_02	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-13	SC1PLT.02
+name	0x810B	SC1PLT_03	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-13	SC1PLT.03
+name	0x810D	SC1PLT_11	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-13	SC1PLT.11
+name	0x810E	SC1PLT_12	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-13	SC1PLT.12
+name	0x810F	SC1PLT_13	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-13	SC1PLT.13
+name	0x8111	SC2PLT_01	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-14	SC2PLT.01
+name	0x8112	SC2PLT_02	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-14	SC2PLT.02
+name	0x8113	SC2PLT_03	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-14	SC2PLT.03
+name	0x8115	SC2PLT_11	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-14	SC2PLT.11
+name	0x8116	SC2PLT_12	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-14	SC2PLT.12
+name	0x8117	SC2PLT_13	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-14	SC2PLT.13
+name	0x8118	BG	1	k2ge	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-6	BG
+name	0x8200	SPRITE_PAL	0x80	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	K2GE mode sprite color palette
+name	0x8280	SCROLL1_PAL	0x80	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	K2GE mode scroll 1 color palette
+name	0x8300	SCROLL2_PAL	0x80	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	K2GE mode scroll 2 color palette
+name	0x8380	K1_SPRITE_PAL	0x20	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	K1GE upper palette compatible (sprite)
+name	0x83A0	K1_SCROLL1_PAL	0x20	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	K1GE upper palette compatible (scroll 1)
+name	0x83C0	K1_SCROLL2_PAL	0x20	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	K1GE upper palette compatible (scroll 2)
+name	0x83E0	BG_PAL	0x10	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	Background color palette
+name	0x83F0	WINDOW_PAL	0x10	mem	SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table	Window color palette
+name	0x8800	SPRITE_VRAM	0x100	mem	SNK K2GETechRef §4-3-3	Sprite VRAM
+name	0x8C00	SPRITE_PAL_CODE	0x40	mem	SNK K2GETechRef §4-3-3; §5-1	Sprite VRAM (color palette code)
+name	0x9000	SCROLL1_VRAM	0x800	mem	SNK K2GETechRef §4-4-4; §4-13	scroll plane 1 VRAM
+name	0x9800	SCROLL2_VRAM	0x800	mem	SNK K2GETechRef §4-4-5; §4-14	scroll plane 2 VRAM
+name	0xA000	CHARACTER_RAM	0x2000	mem	SNK K2GETechRef §4-2; §4-1	Character RAM
+bit	0x6F82	SYS_LEVER_UP	0	SNK SysWork, SYSTEM WORK DEFINITION (diagram)	UP
+bit	0x6F82	SYS_LEVER_DOWN	1	SNK SysWork, SYSTEM WORK DEFINITION (diagram)	DOWN
+bit	0x6F82	SYS_LEVER_LEFT	2	SNK SysWork, SYSTEM WORK DEFINITION (diagram)	LEFT
+bit	0x6F82	SYS_LEVER_RIGHT	3	SNK SysWork, SYSTEM WORK DEFINITION (diagram)	RIGHT
+bit	0x6F82	SYS_LEVER_A	4	SNK SysWork, SYSTEM WORK DEFINITION (diagram)	A BUTTON
+bit	0x6F82	SYS_LEVER_B	5	SNK SysWork, SYSTEM WORK DEFINITION (diagram)	B BUTTON
+bit	0x6F82	SYS_LEVER_OPTION	6	SNK SysWork, SYSTEM WORK DEFINITION (diagram text)	OPTION BUTTON
+bit	0x6F84	RESUME_BOOT_REQ	5	SNK SysWork, Resume Function Startup	RESUME_BOOT_REQ
+bit	0x6F84	POWER_BOOT_REQ	6	SNK SysWork, Power ON Startup	POWER_BOOT_REQ
+bit	0x6F84	ALARM_BOOT_REQ	7	SNK SysWork, Alarm Startup	ALARM_BOOT_REQ
+bit	0x6F85	BAT_SHUTDOWN_REQ	5	SNK SysWork, Low Voltage Shutdown Request	BAT_SHUTDOWN_REQ
+bit	0x6F85	TIME_SHUTDOWN_REQ	6	SNK SysWork, Inactivity Shutdown Request	TIME_SHUTDOWN_REQ
+bit	0x6F85	MP_SHUTDOWN_REQ	7	SNK SysWork, Main Power OFF Shutdown Request	MP_SHUTDOWN_REQ
+bit	0x6F86	TIMER_SHUTDOWN_ANS	6	SNK SysWork, Shutdown Request Operation	TIMER_SHUTDOWN_ANS
+bit	0x6F86	RESUME_ANS	7	SNK SysWork, Resume Operation	RESUME_ANS
+bit	0x8010	STATUS_2D_C_OVR	7	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-10	C.OVR
+bit	0x8012	CONTROL_2D_NEG	7	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-11	NEG
+bit	0x8030	SCROLL_PRIORITY_P_F	7	SNK K2GEres, K1GE Resister Table; K2GETechRef §4-4-7	P.F

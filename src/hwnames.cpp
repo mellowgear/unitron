@@ -51,7 +51,7 @@ const char* hw_name_at(int64_t addr) {
 std::string render_hw_inc() {
     std::vector<std::string> out = {
         "; ngpc_hw.inc: NGPC hardware names. Generated from data/hwnames.tsv (unitron_tests hwinc --write); do not edit.",
-        "; Sources: Toshiba IO900H.H and SNK developer docs, cited per line; see docs/hardware-names.md.",
+        "; Sources: Toshiba IO900H.H and SNK developer docs, cited per name; see docs/hardware-names.md.",
     };
     for (auto& s : hw_sections()) {
         out.push_back("");

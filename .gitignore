@@ -12,3 +12,9 @@ docs/third_party/
 /build_*/
 # Claude Code agent worktrees
 .claude/
+# agent handoff notes: local only, not published
+HANDOFF*.md
+# planning notes: local only, not published
+docs/PORT_CPP.md
+docs/SPLIT.md
+docs/Z80_PLAN.md

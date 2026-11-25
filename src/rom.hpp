@@ -1,4 +1,5 @@
-// NGPC cartridge image: address mapping and the 0x40-byte header (SNK SysPro l.174-186).
+// NGPC cartridge image: address mapping and the 0x40-byte header (SNK SysPro, SOFTWARE CASSETTE
+// RECOGNITION HEADER INFORMATION FORMAT).
 #pragma once
 #include <cstdint>
 #include <string>

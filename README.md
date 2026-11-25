@@ -1,100 +1,67 @@
 # unitron
 
-A toolchain for Neo Geo Pocket Color (TLCS-900/H) decompilation and development, written in C++17.
-Its source language is Toshiba's asm900 syntax, so the same source reads like the original
-developers' and assembles with unitron byte for byte.
+A toolchain for the Neo Geo Pocket Color, in C++17. It assembles, links and disassembles programs
+for the console's main CPU (Toshiba TLCS-900/H) in Toshiba's own assembler language, asm900, and
+for its Z80 sound CPU in Zilog's. A disassembled ROM comes out as source that assembles back to
+the same bytes, so it can be the start of a decompilation.
 
-- `unitron asm`: asm900 assembler and linker (sections, `org`, `equ`, `db/dw/dp/dl`, `dfb..`,
-  `dsb..`, `public/extern`, `$include`, the `:n` width operator) with Toshiba's macro
-  preprocessor subset (`#include`, `#define`, `#if`, `?macro ... ?endm`) and a subset of
-  Toshiba's link command files (`--lcf`). Output: a raw image.
-- `unitron dis`: TLCS-900/H disassembler. `-o DIR` traces a ROM and writes asm900 source that
-  assembles back to the same bytes, with a placeholder label (`sub_XXXXXX`, `loc_XXXXXX`, ...) on
-  every jump or call target in its code; without `-o` it lists.
-- `unitron roundtrip ROM`: dis then asm, and compare.
-- `unitron mac`: the macro preprocessor alone.
-- `unitron gfx topng|frompng|palette`: 2bpp tiles and palettes to indexed PNG and back, as a
-  plain sheet or laid out by a tile map (`--map`); a PNG's pixels as bytes (`--indices`); a PNG's
-  palette as 0x0BGR words. See "Graphics and text" below.
-- `unitron bin2db`: binary file to `db` lines for `$include`; `unitron text`: text with a
-  character map to `db` lines (asm900 has no charmap), optionally padded to fixed-size slots.
-- `unitron z80 dis|asm|roundtrip`: the same for the Z80 sound CPU's program, in Zilog's own
-  assembly language (docs/z80.md). `dis` traces from the Z80's reset and interrupt addresses and
-  writes source that assembles back to the same bytes; `asm` builds a raw image at Z80 0000H,
-  and with `--equ`/`--db` the two files the main CPU's asm900 source includes.
+## Build
 
-## Build and install
-
-Needs CMake 3.24 or later and a C++17 compiler. The first configure downloads zlib 1.4 and
-libpng 1.6.59 (pinned by SHA256, built static; `cmake/deps.cmake`), so it needs internet. If the
-libpng download fails its TLS check (the SourceForge mirror does this sometimes), run the
-configure again. `-DUNITRON_SYSTEM_DEPS=ON` uses installed copies instead.
+You need CMake 3.24 or later and a C++17 compiler. The first build downloads zlib and libpng
+(pinned versions, built in; see `cmake/deps.cmake`), so it needs internet. If the libpng download
+fails its TLS check (the SourceForge mirror sometimes does), run the first command again.
 
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j8
-(cd build && ctest)                   # rom and z80rom skip themselves without the ROMs
-cmake --install build --prefix ~/.local    # puts unitron in ~/.local/bin
+(cd build && ctest)                          # runs the tests
+cmake --install build --prefix ~/.local      # optional: puts unitron in ~/.local/bin
 ```
 
-The result is one binary, `build/unitron`, with no runtime dependencies. It has been built and
-tested on Linux only so far; the code is meant to be portable (macOS, Windows MSVC and MinGW).
+The result is one program, `build/unitron`, with no other files needed. It has been built and
+tested on Linux; the code is written to be portable to macOS and Windows.
 
-## Use
+## Quick start
+
+### Turn a ROM into source, and back
 
 ```
-unitron asm main.asm -o game.ngp --origin 0x200000 --size 0x100000
-unitron asm crt.asm main.asm -o game.ngp --lcf game.lcf
-unitron dis game.ngp -o src/        # src/main.asm + src/hw.inc
+unitron dis game.ngp -o src/
+```
+
+This writes `src/main.asm` (the whole ROM as asm900 source) and `src/hw.inc` (the names of the
+hardware registers the code uses). To build a ROM from that source again:
+
+```
+unitron asm src/main.asm -o rebuilt.ngp
+cmp game.ngp rebuilt.ngp                     # no output: the two files are identical
+```
+
+The source holds every byte of the ROM, so no options are needed.
+
+`unitron roundtrip game.ngp` does both steps in one go and says whether the bytes match.
+
+The labels in the source are placeholders built from addresses (`sub_2004A0` for a routine that
+is called, `loc_2004B2` for a place that is jumped to, `swp_...` for code found by scanning). A
+disassembler can't know what anything is called; renaming them is the decompilation work.
+
+Some code is only reached through tables of addresses, which the disassembler can't always follow.
+A hints file tells it where code starts or where data is:
+
+```
+# hints.txt: comments start with # or ;
+code 200185 hidden_fn     ; code starts here (the name is optional)
+data 20018C 200191        ; these bytes are data: never decode them as code
+```
+
+```
 unitron dis game.ngp -o src/ --hints hints.txt
-unitron roundtrip game.ngp
-unitron z80 dis driver.bin           # Z80 listing; -o DIR writes DIR/main.z80
-unitron z80 asm main.z80 -o driver.bin --equ driver.inc --db driver.db
-unitron z80 roundtrip driver.bin
 ```
 
-`unitron asm` options: `-I DIR`, `-D NAME=VAL`, `--origin`, `--size`, `--fill` (0-255),
-`--place SECTION=ADDR`, `--lcf FILE` (docs/lcf.md), `--data-base`, `--code-base`, `--no-link`
-(check one module), `--no-mpp`, `--strict` (asm900's include limits are errors), `--sym FILE`,
-`-H` (asm900's suffixed numbers), `-O0`/`-O1` (how `j`/`cal` choose, as asm900's `-O`; default
-`-O1`). Errors look like `file:line: error E217: ...` with Toshiba's error numbers where one fits;
-no output is written when there are errors. A 1 MB ROM round trip (dis and asm) takes under a
-second.
+### Write a program
 
-Make dependencies, as another assembler's `-M`: `-M FILE` (`-` for the screen) writes one line
-`TARGET: FILE` for every file the assembly reads (the sources, `#include` and `$include` files,
-the `--lcf` file). The target is the `-o` file, or `-MT TARGET` (may be given more than once).
-`-MG` lists an include file that doesn't exist yet (one the build will make) instead of stopping
-with an error; if one is missing, nothing is assembled. `-MP` adds an empty rule `FILE:` for each
-include file, so make doesn't fail when one is deleted. Without `-o`, `-M` only reads what decides
-the includes (the preprocessor, `$include` lines, `end`) and writes nothing else; with no target
-either, it lists the files alone, one per line, which a Makefile can read while it starts:
-
-```
-PRODUCTS := $(filter build/%,$(shell unitron asm src/main.asm -I . -M - -MG))
-game.ngp: src/main.asm
-	unitron asm src/main.asm -I . -o $@ -M build/game.d -MP
--include build/game.d
-```
-
-`dis` and `roundtrip` take `--executed FILE` (extra code entry points, hex addresses)
-and `--hints FILE`, which makes the gap sweep reproducible (docs/language.md, "Trace hints"):
-
-```
-# comments start with # or ;
-code 200185 hidden_fn     ; trace from here (name optional, default code_200185)
-data 20018C 200191        ; no swept instruction touches [start, end)
-```
-
-The gap sweep covers the whole image after the header; outside the span of traced code
-it starts only from call targets and from pointer tables that also point at known
-code (docs/language.md, "Trace hints").
-
-## The language
-
-docs/language.md is the reference as implemented; docs/encoding.md says which encoding unitron
-picks when several are legal; docs/lcf.md covers link command files; docs/OPEN.md lists what is
-not settled. In short:
+A small program in one file. Every address is written in the source (`abs=`), so no link file is
+needed:
 
 ```
 $maximum
@@ -111,22 +78,102 @@ Vblank:	reti
 	end
 ```
 
-Lowercase mnemonics, uppercase registers, `0x` hex, `Routine.label` local labels, `jp XHL`
-without parentheses, `(XHL+:1)` for a step that differs from the operand size, `ld (wX:24),A` to
-force a width.
+```
+unitron asm main.asm -o game.ngp
+```
 
-## Graphics and text
+The image starts at 0x200000, where the cartridge sits in memory, and ends at the program's last
+byte; `--size 0x100000` pads it to a full 1 MB cartridge (see "Addresses and image size"). A real cartridge also needs SNK's header at 0x200000 (a recognition string, the start address,
+the game's title and so on). `tests/cart/` is a complete example cartridge, written for unitron's
+tests, with the header, interrupt handlers, several source files, a link file and a Z80 sound
+program; the comment at the top of `tests/cart/main.asm` shows how it is built.
 
-The NGPC formats these commands write are SNK's (K2GETechRef 4-3-5 tiles, 4-4-4 map entries,
-4-15 colour palettes). A game's own formats (compression, image headers) belong in the game's
-repository.
+### Several source files and a link file
+
+In a bigger program, sections can leave their address out:
+
+```
+code	section	code            ; no abs=: the linker decides where this goes
+```
+
+Each source file on the command line is one *module*, and a section without `abs=` is
+*relocatable*. Something has to decide where those sections go, and there are three ways:
+
+1. **Nothing:** unitron puts each one in the first free space (code from 0x200000, data from 0x4000).
+2. **`--place NAME=ADDR`**, once per section, on the command line.
+3. **A link command file** (`.lcf`), Toshiba's format for this. You write it yourself: it lists the
+   memory areas (RAM at 0x4000, the cartridge ROM at 0x200000) and which sections go where, in
+   order. Start from `tests/cart/cart.lcf` (a complete, commented one for a small cartridge) or
+   the example in `docs/lcf.md`, which also lists everything unitron supports.
+
+```
+unitron asm crt.asm main.asm -o game.ngp --lcf game.lcf
+```
+
+Source that comes out of `unitron dis` gives every section an address, so it never needs a link
+file.
+
+### The Z80 sound program
+
+The NGPC's Z80 runs a separate sound program, which the main CPU copies into the Z80's memory.
+It has its own commands, in Zilog's assembly language (`docs/z80.md`):
+
+```
+unitron z80 dis driver.bin -o zsrc/          # zsrc/main.z80
+unitron z80 asm zsrc/main.z80 -o driver.bin  # and back
+unitron z80 roundtrip driver.bin
+unitron z80 asm sound.z80 -o sound.bin --equ sound.inc --db sound.db
+```
+
+`--db` writes the Z80 program as asm900 `db` lines and `--equ` its labels as asm900 `equ` lines,
+for the main program to include.
+
+## Addresses and image size
+
+`unitron asm` writes a raw image: the bytes of one range of the main CPU's addresses. `--origin`
+is the address of the image's first byte, and `--size` is how many bytes the image holds.
+
+- The NGPC puts the cartridge's first ROM chip at CPU address 0x200000 (SNK's SysPro document,
+  "Main CPU memory map", and its software header: "Placement address 0x200000 = software cassette
+  ROM address 0x000000"). So byte 0 of a `.ngp` file is address 0x200000. A first chip holds at
+  most 2 MB (0x200000-0x3FFFFF).
+- `--origin` defaults to 0x200000 when the program is in that chip, else to its lowest address.
+  `unitron dis` reads a `.ngp` file the same way, so it needs no option either.
+- `--size` defaults to the program's last byte. Give it to pad the image to the cartridge's size;
+  unused bytes become 0xFF (`--fill` changes that).
+- RAM is at 0x4000-0x6BFF for the program (SysPro); sections placed there are not part of the
+  image.
+
+## Other commands
+
+- **`unitron mac FILE`** runs only the macro preprocessor (`#include`, `#define`, `#if`,
+  `?macro`) and prints the result.
+- **`unitron bin2db FILE -o FILE.asm`** turns a binary file into `db` lines, to `$include` in a
+  source (asm900 has no command for including a binary file).
+- **`unitron text charmap.txt strings.txt -o strings.asm`** turns text into `db` lines through a
+  character map (see "Text" below).
+- **`unitron gfx`** converts the NGPC's tiles and palettes to and from PNG (see "Graphics" below).
+
+## The language
+
+`docs/language.md` describes the asm900 language as unitron implements it, `docs/encoding.md`
+which encoding unitron picks when several are possible, `docs/lcf.md` link files, `docs/z80.md`
+the Z80 side, and `docs/OPEN.md` what is not settled. The style unitron writes: lowercase
+mnemonics, uppercase registers, `0x` hex numbers, `Routine.label` for labels local to a routine,
+`jp XHL` without parentheses, `(XHL+:1)` for a step that differs from the operand size, and
+`ld (wX:24),A` to force an address width.
+
+## Graphics
+
+The tile, map and palette formats are SNK's (K2GETechRef 4-3-5 tiles, 4-4-4 map entries, 4-15
+colour palettes). A game's own formats (compression, image headers) belong in that game's
+repository, as separate tools run after these.
 
 ```
 unitron gfx topng tiles.bin sheet.png [--width 16] [--palette pal.bin --pal N] [--map map.bin]
 unitron gfx frompng sheet.png tiles.bin [--count N] [--trim] [--map map.bin --count N]
 unitron gfx frompng image.png pixels.bin --indices
 unitron gfx palette image.png pal.bin [--colors 4]
-unitron text charmap.txt strings.txt -o strings.asm
 ```
 
 - **Tiles** are 8x8 pixels, 2 bits per pixel, 16 bytes each. In the PNG a pixel is a palette
@@ -137,21 +184,28 @@ unitron text charmap.txt strings.txt -o strings.asm
 - **`frompng`** reads the cells of the sheet left to right, top to bottom: every cell, or the
   first `--count N`. A PNG written by `topng --map` carries its layout, and then every tile in it
   is read. With `--map`, `--count` is needed.
+- **`--map`** lays the sheet out as a tile map shows it: sheet tile n is character code
+  `base + n + 1` (`--base`, default 0), and code 0 is an empty cell. `--map-format` gives the map
+  file's form: `wh8` (a width byte, a height byte, then the entries; the default, and the reference
+  ROM's form) or `raw` (the entries only, with `--map-width`).
 - **`--trim`** drops blank cells from the end of the last row of cells; that row's first cell
   always stays. A cell is blank when every pixel is palette index 0: a cell drawn only in index 4
   is kept, though its tile bytes are all zero. `--count` wins over `--trim`. Plain sheets only.
 - **`--indices`** writes each pixel's palette index as one byte, left to right, top to bottom,
   with no tiles and no `& 3`; any width and height.
 - **`palette`** writes the PNG's first N palette colours (default 4) as little-endian 16-bit words
-  0x0BGR, 4 bits per channel. Each channel becomes the nearest of the 16 levels (round(c / 17));
-  c / 17 is never exactly halfway, so there are no ties. Fewer colours than N is an error.
+  0x0BGR, 4 bits per channel. Each channel becomes the nearest of the 16 levels (round(c / 17)).
+  Fewer colours than N is an error.
 
-`unitron text` turns lines of a text file into `db` lines, with a character map: `char "a" 01`
-lines give each character's byte, `cmd NAME XX [string]` lines name commands (`cmd text - string`,
-`cmd done FF`). In both files a doubled quote inside a string is one quote character
+## Text
+
+`unitron text` turns the lines of a text file into `db` lines with a character map. In the map,
+`char "a" 01` gives a character's byte, and `cmd NAME XX [string]` names a command (`cmd text -
+string`, `cmd done FF`). In both files a doubled quote inside a string is one quote character
 (`char """" 22`, `text "say ""hi"""`). In the text file, `{XX}` is a byte with no character,
-`Name:` lines are labels and `;` lines are comments. A **`slot WIDTH PAD`** line (`slot 7 FF`: decimal width, hex byte) makes
-every string after it exactly WIDTH bytes, for a table of fixed-size names:
+`Name:` lines are labels and `;` lines are comments. A **`slot WIDTH PAD`** line (`slot 7 FF`:
+decimal width, hex byte) makes every string after it exactly WIDTH bytes, for a table of
+fixed-size names:
 
 ```
 PartNames:
@@ -164,50 +218,84 @@ slot 0
 ```
 
 A string starts at a `text` line and ends before the next `text` line, label, `slot` line or the
-end of the file. It is padded with PAD up to WIDTH (a `dfb` line); a longer one is an error with
-its line, byte count and width. A string that fills the slot without `done` has no end byte.
-`slot 0` ends slot mode.
+end of the file. It is padded with PAD up to WIDTH; a longer one is an error with its line, byte
+count and width. `slot 0` ends slot mode.
+
+## Command reference
+
+**`unitron asm`** options:
+
+| Option | Meaning |
+|---|---|
+| `-o FILE` | the image to write |
+| `--origin ADDR`, `--size N`, `--fill BYTE` | the image's first address, its size, and the byte for unused space (0-255, default 0xFF) |
+| `-I DIR` | another directory to search for included files |
+| `-D NAME=VAL` | define a preprocessor name |
+| `--lcf FILE` | place sections with a link command file (`docs/lcf.md`) |
+| `--place SECTION=ADDR` | place one section |
+| `--data-base ADDR`, `--code-base ADDR` | where automatic placement starts (0x4000 and 0x200000) |
+| `--no-link` | check one module alone (externals stay unresolved) |
+| `--no-mpp` | skip the macro preprocessor |
+| `--strict` | make asm900's include limits (8 deep, 99 per file) errors instead of warnings |
+| `--sym FILE` | write a symbol file (address and name per line) |
+| `-H` | also accept asm900's suffixed numbers (`1234H`, `101B`, `17O`, `99D`) |
+| `-O0`, `-O1` | how `j`/`cal` choose a jump: `-O1` (default) the shortest form, `-O0` always `jp`/`call` |
+| `-M FILE`, `-MG`, `-MP`, `-MT TARGET` | Make dependency output (below) |
+
+Errors look like `file:line: error E217: ...`, with Toshiba's error numbers where one fits. No
+output is written when there are errors.
+
+**Make dependencies.** `-M FILE` (`-` for the screen) writes one line `TARGET: FILE` for every
+file the assembly reads (the sources, `#include` and `$include` files, the `--lcf` file). The
+target is the `-o` file, or `-MT TARGET`. `-MG` lists an include file that doesn't exist yet (one
+the build will make) instead of stopping with an error; then nothing is assembled. `-MP` adds an
+empty rule for each include file, so make doesn't fail when one is deleted. Without `-o`, `-M`
+only reads what decides the includes; with no target either, it lists the files alone, one per
+line, for a Makefile to read:
+
+```
+PRODUCTS := $(filter build/%,$(shell unitron asm src/main.asm -I . -M - -MG))
+game.ngp: src/main.asm
+	unitron asm src/main.asm -I . -o $@ -M build/game.d -MP
+-include build/game.d
+```
+
+**`unitron dis` and `unitron roundtrip`** options: `-o DIR` (dis: write source instead of a
+listing), `--hints FILE` (above; `docs/language.md`, "Trace hints"), `--executed FILE` (more
+addresses where code starts, in hex), `--no-sweep` (only follow the code from its entry points; no
+scanning of the rest). The scan covers the whole image after the header; past the code it has
+traced it starts only from call targets and from address tables that also point at known code.
 
 ## Tests
 
-`(cd build && ctest)` runs them all; tests/README.md says how to run one, add a case and rewrite
-expected outputs (`--write`).
+`(cd build && ctest)` runs them all. `tests/README.md` says how to run one, add a case and rewrite
+the expected outputs.
 
-| Test | Checks |
-|---|---|
-| `cases-asm`, `cases-mpp`, `cases-link`, `cases-lcf`, `cases-dis`, `cases-gfx`, `cases-text`, `cases-bin2db`, `cases-z80`, `cases-cli` | about 500 small cases in the style of another toolchain's tests: `tests/asm/NAME.asm` with `NAME.flags` or `NAME.cmd`, and the exact expected stdout (`NAME.out`), stderr (`NAME.err`) and output files (`NAME.out.bin`, ...) |
-| `datasheet` | encodings from Toshiba's datasheet and Assembler Reference and from Zilog's UM0080, with their pages (`tests/datasheet/`) |
-| `opspace`, `lines` | every TLCS-900 opcode decoded and re-assembled; 346,448 instruction lines (vectors frozen from the original Python implementation) |
-| `z80opspace`, `z80shift` | every documented Z80 form; one inserted `NOP` moves every labeled reference by one |
-| `lcf` | the link command file parser and placement |
-| `hwinc`, `hwnames` | `data/ngpc_hw.inc` against `data/hwnames.tsv`; the table itself (unique, sorted, cited, spelled by the naming rule) |
-| `cart` | our own test cartridge (`tests/cart/`, an asm900 program with a Z80 program, also an example): `dis`, `roundtrip`, `z80 dis`, `z80 roundtrip`, compared with `tests/cart/expected/` |
-| `rom`, `z80rom` | the reference ROM's round trip and the Z80 drivers of the reference ROM and the second ROM by hash; skipped without the ROMs |
-
-No test needs a ROM except `rom` and `z80rom`. tests/README.md "Known issues" lists the cases
-that freeze behavior that looks wrong.
-
-## What is ours and what is cited
+## Sources
 
 All code here is ours (MIT, see LICENSE), except zlib and libpng, which the build downloads and
-which keep their own licenses. It cites, and never contains, these sources:
+which keep their own licenses. These documents are cited:
 
-- Toshiba *TLCS-900 Assembler Reference* tde122-01_96 (the language, the macro preprocessor, the
-  linker's command files, the error numbers), the TLCS-900 CPU datasheet instruction lists (forms,
-  codes, size columns), the sample programs SAMPLE1.ASM/SAMPLE2.ASM (tests check them by hash
-  when present), and the TMP95C061F register header IO900H.H (on-chip I/O names).
-- A static reading of asm900's own tables (asm900-analysis/ASM900_STATIC.md; asm900 was never run)
-  for the points TR leaves open.
+- Toshiba's *TLCS-900 Assembler Reference* (the language, the macro preprocessor, link command
+  files, the error numbers), the TLCS-900 CPU datasheet's instruction lists, Toshiba's sample
+  programs, and its TMP95C061F register header IO900H.H (the CPU's on-chip I/O names).
+- A static reading of Toshiba's assembler program asm900 (its tables, never run) for points the
+  manual leaves open.
 - SNK's NGPC developer documents (K2GETechRef, K2GEres, SysWork, SysPro, SysCall, SysLib, ...):
-  K2GE registers, system RAM, interrupt vectors, tile, map and palette formats, the cartridge
-  header. `data/hwnames.tsv` is the single table of hardware names, with a source for each;
-  docs/hardware-names.md explains it and lists where homebrew headers disagree.
-- Zilog's *Z80 CPU User Manual* UM0080 (the Z80 instructions and their codes) and Zilog's *Z80
-  Assembly Language Programming Manual* (1978; the Z80 assembler language and its error numbers),
-  for the `z80` commands (docs/z80.md).
+  the video chip's registers, system RAM, interrupt vectors, tile, map and palette formats, the
+  cartridge header (copies in `docs/snk/`). `data/hwnames.tsv` holds every hardware name with
+  its source; `docs/hardware-names.md` explains it.
+- Zilog's *Z80 CPU User Manual* (UM0080) and *Z80 Assembly Language Programming Manual* (1978),
+  for the `z80` commands (`docs/z80.md`).
 
-No emulator code, no emulator-derived names, no Toshiba or SNK files, and no ROM data are in this
-repository.
+Copies of some of these files are included, unchanged, so that the tests and the citations need
+nothing outside the repository. They remain their owners' (Toshiba's, SNK's):
 
-The original Python implementation was removed on 2026-11-25; its behavior lives on in the frozen
-test vectors, and its code is in git history (before the commit that removed `legacy/python/`).
+- `tests/toshiba/samples/`: Toshiba's sample programs SAMPLE1.ASM and SAMPLE2.ASM, assembled by
+  the `cases-toshiba` test.
+- `docs/toshiba/IO900H.H`: the register header, cited by line in `data/hwnames.tsv`.
+- `docs/snk/`: SNK's developer documents as markdown with their images (for example
+  [docs/snk/SysPro/SysPro.md](docs/snk/SysPro/SysPro.md)), cited by section; the `hwnames` test
+  checks that every section `data/hwnames.tsv` cites is a heading there.
+
+No emulator code, no emulator-derived names and no ROM data are in this repository.

@@ -2,8 +2,8 @@
 ; preprocessor"). Hand-written sources join with #include, so these work in every module.
 
 ; Constants and one-line helpers (#define, like C's)
-#define WDT_CLEAR	0x4E			/* the watchdog clear code (SNK SysPro l.312) */
-#define STACK_TOP	0x6C00			/* the end of the user work RAM (SysPro l.194) */
+#define WDT_CLEAR	0x4E			/* the watchdog clear code (SNK SysPro, CLEARING WATCH DOG TIMER) */
+#define STACK_TOP	0x6C00			/* the end of the user work RAM (SysPro, WORK RAM AREA) */
 #define MAP_ROW(r)	((r) * 64)		/* a scroll plane is 32 entries of 2 bytes per row */
 #define MAP_AT(x, y)	(MAP_ROW(y) + (x) * 2)
 
