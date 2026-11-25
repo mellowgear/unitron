@@ -930,6 +930,159 @@ $ gfx topng sheet.bin base.png --map rawmap.bin --map-format raw --map-width 2 -
 $ gfx frompng base.png base.bin --count 7
 $ gfx topng sheet.bin nopal.png --map map.bin
 
+=== gfx_frompng_trim
+# --count is optional: every cell, row by row. --trim drops blank cells (every pixel index 0)
+# from the end of the last row only, and keeps that row's first cell. A cell drawn only in
+# index 4 (palette 1, shade 0) is not blank, though its 2bpp bytes are zero.
+--- t1.png hex
+89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 20 00 00 00 10 08 03 00 00 00 40 de 8d 6b 00 00 00 18 50 4c 54 45 ff ff ff aa aa aa 55
+55 55 00 00 00 ff 00 ff c8 00 00 00 c8 00 00 00 c8 3b 41 52 b5 00 00 00 34 49 44 41 54 78 da 63 60 60 64 62 06 61 28 c5 00 a5 18 a1 14 13 03 d9
+12 30 79 06 5c 12 30 8d 0c 83 c2 0d 68 80 05 0a 18 70 01 8a 14 30 d2 de 0a f2 14 00 00 d4 c7 02 82 e3 9d 40 ad 00 00 00 00 49 45 4e 44 ae 42 60
+82
+--- t2.png hex
+89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 18 00 00 00 10 08 03 00 00 00 3b fa 4f a7 00 00 00 18 50 4c 54 45 ff ff ff aa aa aa 55
+55 55 00 00 00 ff 00 ff c8 00 00 00 c8 00 00 00 c8 3b 41 52 b5 00 00 00 2f 49 44 41 54 78 da 63 60 40 03 4c 50 c0 c0 c0 c8 c4 0c c6 30 09 08 8f
+11 c8 82 42 98 04 9c cb cc c4 08 c6 30 09 08 8f 99 61 20 ec 18 a2 00 00 ba 70 00 a1 9c 0b fd 4d 00 00 00 00 49 45 4e 44 ae 42 60 82
+--- t3.png hex
+89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 20 00 00 00 08 08 03 00 00 00 af 5b 0d 9d 00 00 00 18 50 4c 54 45 ff ff ff aa aa aa 55
+55 55 00 00 00 ff 00 ff c8 00 00 00 c8 00 00 00 c8 3b 41 52 b5 00 00 00 0f 49 44 41 54 78 da 63 60 66 20 04 46 84 0a 00 0e 88 00 19 e9 6d ba 7e
+00 00 00 00 49 45 4e 44 ae 42 60 82
+--- odd.png hex
+89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 05 00 00 00 03 08 03 00 00 00 6c e8 35 ca 00 00 00 18 50 4c 54 45 ff ff ff aa aa aa 55
+55 55 00 00 00 ff 00 ff c8 00 00 00 c8 00 00 00 c8 3b 41 52 b5 00 00 00 1a 49 44 41 54 78 da 63 60 60 64 62 66 61 60 65 63 67 63 65 60 61 66 62
+64 00 00 01 cb 00 32 ed 28 0c ad 00 00 00 00 49 45 4e 44 ae 42 60 82
+--- sheet.bin hex
+00 00 ff ff 55 55 aa aa 01 c0 03 30 0c 0c 30 03 12 34 56 78 9a bc de f0 0f 1e 2d 3c 4b 5a 69 78
+--- map.bin hex
+02 01 01 00 02 00
+$ gfx frompng t1.png all.bin
+$ gfx frompng t1.png trim.bin --trim
+$ gfx frompng t1.png c3.bin --trim --count 3
+$ gfx frompng t2.png t2.bin --trim
+$ gfx frompng t3.png t3.bin --trim
+$ gfx topng sheet.bin map.png --map map.bin
+$ gfx frompng map.png map.bin2
+$ gfx frompng map.png x.bin --trim
+$ gfx frompng map.png x.bin --map map.bin
+$ gfx frompng map.png x.bin --map map.bin --count 2 --trim
+$ gfx frompng odd.png odd.bin --indices
+$ gfx frompng t3.png t3px.bin --indices
+$ gfx frompng odd.png x.bin --indices --count 1
+$ gfx frompng odd.png x.bin --indices --trim
+
+=== gfx_palette
+# 0x0BGR words, the nearest 4-bit level of each channel (round(c / 17)); none of these
+# channels is a multiple of 17
+--- p.png hex
+89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 02 00 00 00 01 08 03 00 00 00 c3 fc 8f b8 00 00 00 0f 50 4c 54 45 00 00 00 08 09 19 ff
+80 7f 10 21 32 c8 64 3c fd b7 0d 5e 00 00 00 0b 49 44 41 54 78 da 63 60 60 01 00 00 07 00 05 e0 31 f2 e4 00 00 00 00 49 45 4e 44 ae 42 60 82
+$ gfx palette p.png p4.bin
+$ gfx palette p.png p5.bin --colors 5
+$ gfx palette p.png p1.bin --colors 1
+$ gfx palette p.png x.bin --colors 6
+$ gfx palette p.png x.bin --colors 0
+$ gfx palette p4.bin x.bin
+$ gfx bogus
+
+=== text_slot
+--- c.txt
+char " " 00
+char "a" 01
+char "b" 02
+cmd text - string
+cmd line FE string
+cmd done FF
+--- s.txt
+; names in 4-byte slots
+Names:
+slot 4 FF
+	text "ab"
+	done
+	text "aba"	; exactly 4 bytes with the done
+	done
+	text "abab"	; fills the slot: no terminator
+	text "{12}"
+	line "a"
+	done
+	text ""
+	done
+
+Descs:
+slot 6 00
+	text "a"
+	done
+	; a comment inside the string
+slot 0
+	text "b"
+	done
+--- long.txt
+slot 3 FF
+	text "ab"
+	done
+	text "aba"
+	done
+--- loose.txt
+slot 3 FF
+	done
+--- nopad.txt
+slot 7
+--- badwidth.txt
+slot x FF
+$ text c.txt s.txt
+$ text c.txt long.txt
+$ text c.txt loose.txt
+$ text c.txt nopad.txt
+$ text c.txt badwidth.txt
+
+=== asm_deps
+--- main.asm
+$maximum
+#include "macros.inc"
+#if 0
+#include "never.inc"
+#endif
+c	section	code abs=0x200000
+	ld	A,V
+	$include "data.inc"
+	$include "build/gen.asm"
+	end
+	$include "after_end.inc"
+--- macros.inc
+#define V 7
+--- data.inc
+	db	1,2
+	$include "more.inc"
+--- more.inc
+	db	4
+--- build/gen.asm
+	db	3
+--- miss.asm
+$maximum
+#include "gen.inc"
+c	section	code abs=0x200000
+	$include "data.inc"
+	$include "build/missing.asm"
+	end
+--- bad.asm
+$maximum
+	$include data.inc
+	end
+--- ok.asm
+$maximum
+	end
+$ asm main.asm -o out.bin -M out.d
+$ asm main.asm -o out.bin -M - -MP
+$ asm main.asm -M -
+$ asm main.asm -M - -MT game.ngp -MT game.sym
+$ asm main.asm -M main.d -MT game.ngp
+$ asm miss.asm -M -
+$ asm miss.asm -M - -MG
+$ asm miss.asm -o miss.bin -M miss.d -MG
+$ asm bad.asm -M -
+$ asm ok.asm -o 'a$b.bin' -M -
+$ asm main.asm -MG
+$ asm main.asm -M - -MP
+
 === tiny_rom
 --- tiny.asm
 $maximum
@@ -1299,3 +1452,236 @@ sections { x addr=nosuch( : {*(f_code)} }
 $ asm main.asm sub.asm --lcf cart.lcf -o cart.bin --origin 0x200000 --sym cart.sym
 $ asm main.asm sub.asm --lcf bad.lcf -o bad.bin
 $ asm main.asm sub.asm --lcf cart.lcf --place f_code=0x200100 -o x.bin
+
+# ---- Z80 (the sound CPU; docs/z80.md). Small programs of our own.
+=== z80_asm
+--- main.z80
+; Zilog syntax: labels in column one or ending in a colon, ; comments (ZM p.6)
+NOTES	EQU	10H		; ZM p.10 pseudo-ops
+PORT	EQU	0FFH
+COUNT	DEFL	3
+COUNT	DEFL	COUNT+1
+	ORG	0000H
+Reset:	DI
+	LD	SP,STACK
+	IM	1
+	JP	Init
+	ORG	0038H
+Int38:	EX	AF,AF'		; AF' is a keyword, not a string
+	INC	A
+	OUT	(PORT),A
+	EI
+	RETI
+	ORG	0066H
+Nmi:	PUSH	AF
+	LD	A,(8000H)
+	CPL
+	LD	(8000H),A
+	POP	AF
+	RETN
+Init:	ld	hl,Table	; lower case works too (ZM p.12)
+	ld	b,COUNT
+loop:	ld	a,(hl)
+	inc	hl
+	djnz	loop
+	LD	IX,Table
+	LD	A,(IX+2)
+	LD	(IY-1),A
+	LD	(IX),5
+	BIT	7,(IX+1)
+	SET	0,(IY+7FH)
+	RST	08H
+	JR	NZ,$+4
+	JR	Init
+	LD	BC,-1
+	LD	DE,1 .SHL. 4 .OR. 1
+	LD	A,10101B+17Q+12D+1FH-9
+	LD	HL,5 .GT. 3
+	LD	HL,7 .MOD. 3 * 2 ** 3
+	LD	A,.RES.(0FFFFH+2)
+	IN	A,(PORT)
+	OUT	(C),B
+	EX	(SP),IX
+	JP	(IY)
+	CP	NOTES
+	ADD	A,(HL)
+	SBC	HL,DE
+	HALT
+Table:	DEFB	1
+	DEFB	'A'
+	DEFB	''''
+	DEFB	-1
+	DEFW	Table
+	DEFM	'It''s ok'
+	DEFS	4
+	COND	COUNT .EQ. 4
+	DEFB	44H
+	ENDC
+	COND	0
+	DEFB	99H
+	ENDC
+*Include part.z80
+*List OFF
+STACK	EQU	00C0H
+	END
+	this line is ignored after END
+--- part.z80
+Part:	DEFW	Part
+$ z80 asm main.z80 -o main.bin --sym main.sym
+$ z80 dis main.bin
+$ z80 dis main.bin -o src
+$ z80 roundtrip main.bin
+$ z80 asm main.z80
+
+=== z80_asm_errors
+--- e.z80
+	LD	A,nowhere
+	JR	far
+	LD	A,(IX+128)
+	IM	3
+	RST	09H
+	BIT	8,A
+	Ld	A,B
+	LD	A,0AB
+	LD	A,19Q
+	LD	A,1 .FOO. 2
+	DEFB	'ab
+dup:	NOP
+dup:	NOP
+	LD	(BC),B
+	LD	A,256
+	LD	A,B+1
+	DEFM	'0123456789012345678901234567890123456789012345678901234567890123'
+	MACRO
+	FROB	A
+	LD	A,1/0
+	DEFB	1,2
+	DEFS	200
+far:	NOP
+--- fwd.z80
+	ORG	later
+later	EQU	10H
+--- big.z80
+	ORG	0FFEH
+	LD	HL,0
+--- deep.z80
+*Include deep.z80
+$ z80 asm e.z80 -o e.bin
+$ z80 asm fwd.z80 -o f.bin
+$ z80 asm big.z80 -o b.bin
+$ z80 asm deep.z80 -o d.bin
+$ z80 asm nosuch.z80 -o n.bin
+
+=== z80_dis
+# undocumented sequences come out as DEFB; ED 6B (a second encoding of LD HL,(nn)) too;
+# an address inside an instruction is written label+k (LD (0017H),A; JR to its own operand);
+# hints and --executed add code
+--- p.bin hex
+F3 31 C0 00 C3 10 00 00 4B 31 00 00 00 00 00 00
+21 34 12 32 17 00 3E 05 CD 20 00 ED 6B 34 12 C9
+ED 70 00 00 00 00 00 00 41 42 43 44 45 46 47 48
+00 00 00 00 00 00 00 00 CB 30 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+3E 01 C9 00 AF C9 00 00 18 FF 00 00 00 00 00 00
+00 00 00 00 00 00 ED 45 00 00
+--- h.txt
+# a routine the trace can't find on its own
+code 50 Helper
+data 08 10
+--- x.txt
+54 58
+$ z80 dis p.bin
+$ z80 dis p.bin -o out --hints h.txt --executed x.txt
+$ z80 roundtrip p.bin --hints h.txt
+$ z80 roundtrip p.bin --workdir keep
+
+=== z80_end
+# the end of the image and the bytes just past it are written DriverEnd+k (memory operands, 16-bit
+# immediates, a data word that holds the image size); a rewritten operand is label+k; other
+# immediates and hardware addresses stay numbers
+--- prog.z80
+	ORG	0000H
+Reset:	DI
+	LD	SP,0080H
+	JP	Init
+	ORG	0038H
+Int38:	EI
+	RETI
+	ORG	0066H
+Nmi:	RETN
+Id:	DEFB	4BH
+	DEFW	Top
+Init:	LD	HL,(Top+2)
+	LD	DE,Top+6
+	LD	BC,0010H
+	LD	(Self+1),A
+	LD	(4001H),A
+	CALL	Self
+	JP	Top+15
+Self:	LD	A,00H
+	LD	HL,Top+16
+	LD	IX,(Top)
+	RET
+Top	EQU	$
+	END
+$ z80 asm prog.z80 -o prog.bin
+$ z80 dis prog.bin
+$ z80 dis prog.bin -o out
+$ z80 roundtrip prog.bin
+
+=== z80_equ
+# the hand-off into the main asm900 build: --equ writes the Z80 labels at their main-CPU address
+# (Z80 address + 0x7000, or --equ-base), --db the image as bin2db's db lines; a main-CPU file
+# includes both
+--- drv.z80
+PORT	EQU	0FFH		; EQU names are not addresses: not in --equ
+	ORG	0000H
+Reset:	DI
+	LD	SP,Stack
+	JR	Loop
+	ORG	0038H
+Int38:	EX	AF,AF'
+	INC	A
+	OUT	(PORT),A
+	EI
+	RETI
+	ORG	0066H
+Nmi:	LD	(Cmd),A
+	RETN
+Loop:	LD	A,(Cmd)
+	JR	Loop
+Cmd:	DEFB	0
+Tick_seen:	DEFB	0
+Stack:	DEFS	10H
+	END
+--- main.asm
+$maximum
+	module	main
+$include "drv.inc"
+c	section	code abs=0x200000
+Start:	ld	A,(Tick_seen)
+	ld	(Cmd),A
+	ld	XHL,Z80Driver
+	ld	BC,Stack-Reset
+	jr	Start
+Z80Driver:
+$include "drv.db"
+	end
+--- q.z80
+What?:	NOP
+--- r.z80
+XHL:	NOP
+$ z80 asm drv.z80 -o drv.bin --equ drv.inc --db drv.db
+$ bin2db drv.bin -o drv2.db
+$ asm main.asm -o main.bin
+$ z80 asm drv.z80 --equ base.inc --equ-base 0x8000
+$ z80 asm drv.z80 --equ bad.inc --equ-base zz
+$ z80 asm q.z80 -o q.bin --equ q.inc
+$ z80 asm r.z80 -o r.bin --equ r.inc
+
+=== z80_cli
+$ z80
+$ z80 bogus
+$ z80 -h
+$ z80 asm
+$ z80 dis

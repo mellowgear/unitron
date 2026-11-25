@@ -13,11 +13,16 @@ developers' and assembles with unitron byte for byte.
 - `unitron roundtrip ROM`: dis then asm, and compare.
 - `unitron mac`: the macro preprocessor alone.
 - `unitron lz c|d`: LZSS with Okumura's LZSS.C parameters.
-- `unitron gfx topng|frompng`: 2bpp tiles and palettes to indexed PNG and back, as a plain sheet
-  or laid out by a tile map (`--map`).
+- `unitron gfx topng|frompng|palette`: 2bpp tiles and palettes to indexed PNG and back, as a
+  plain sheet or laid out by a tile map (`--map`); a PNG's pixels as bytes (`--indices`); a PNG's
+  palette as 0x0BGR words. See "Graphics and text" below.
 - `unitron bin2db`: binary file to `db` lines for `$include`; `unitron text`: text with a
-  character map to `db` lines (asm900 has no charmap).
+  character map to `db` lines (asm900 has no charmap), optionally padded to fixed-size slots.
 - `unitron lift`: traced code to C (experimental).
+- `unitron z80 dis|asm|roundtrip`: the same for the Z80 sound CPU's program, in Zilog's own
+  assembly language (docs/z80.md). `dis` traces from the Z80's reset and interrupt addresses and
+  writes source that assembles back to the same bytes; `asm` builds a raw image at Z80 0000H,
+  and with `--equ`/`--db` the two files the main CPU's asm900 source includes.
 
 ## Build and install
 
@@ -44,6 +49,9 @@ unitron asm crt.asm main.asm -o game.ngp --lcf game.lcf
 unitron dis game.ngp -o src/        # src/main.asm + src/hw.inc
 unitron dis game.ngp -o src/ --hints hints.txt
 unitron roundtrip game.ngp
+unitron z80 dis driver.bin           # Z80 listing; -o DIR writes DIR/main.z80
+unitron z80 asm main.z80 -o driver.bin --equ driver.inc --db driver.db
+unitron z80 roundtrip driver.bin
 ```
 
 `unitron asm` options: `-I DIR`, `-D NAME=VAL`, `--origin`, `--size`, `--fill` (0-255),
@@ -53,6 +61,22 @@ unitron roundtrip game.ngp
 `-O1`). Errors look like `file:line: error E217: ...` with Toshiba's error numbers where one fits;
 no output is written when there are errors. A 1 MB ROM round trip (dis and asm) takes under a
 second.
+
+Make dependencies, as another assembler's `-M`: `-M FILE` (`-` for the screen) writes one line
+`TARGET: FILE` for every file the assembly reads (the sources, `#include` and `$include` files,
+the `--lcf` file). The target is the `-o` file, or `-MT TARGET` (may be given more than once).
+`-MG` lists an include file that doesn't exist yet (one the build will make) instead of stopping
+with an error; if one is missing, nothing is assembled. `-MP` adds an empty rule `FILE:` for each
+include file, so make doesn't fail when one is deleted. Without `-o`, `-M` only reads what decides
+the includes (the preprocessor, `$include` lines, `end`) and writes nothing else; with no target
+either, it lists the files alone, one per line, which a Makefile can read while it starts:
+
+```
+PRODUCTS := $(filter build/%,$(shell unitron asm src/main.asm -I . -M - -MG))
+game.ngp: src/main.asm
+	unitron asm src/main.asm -I . -o $@ -M build/game.d -MP
+-include build/game.d
+```
 
 `dis`, `roundtrip` and `lift` take `--executed FILE` (extra code entry points, hex addresses)
 and `--hints FILE`, which makes the gap sweep reproducible (docs/language.md, "Trace hints"):
@@ -88,12 +112,65 @@ Lowercase mnemonics, uppercase registers, `0x` hex, `Routine.label` local labels
 without parentheses, `(XHL+:1)` for a step that differs from the operand size, `ld (wX:24),A` to
 force a width.
 
+## Graphics and text
+
+The NGPC formats these commands write are SNK's (K2GETechRef 4-3-5 tiles, 4-4-4 map entries,
+4-15 colour palettes). A game's own formats (compression, image headers) belong in the game's
+repository.
+
+```
+unitron gfx topng tiles.bin sheet.png [--width 16] [--palette pal.bin --pal N] [--map map.bin]
+unitron gfx frompng sheet.png tiles.bin [--count N] [--trim] [--map map.bin --count N]
+unitron gfx frompng image.png pixels.bin --indices
+unitron gfx palette image.png pal.bin [--colors 4]
+unitron text charmap.txt strings.txt -o strings.asm
+```
+
+- **Tiles** are 8x8 pixels, 2 bits per pixel, 16 bytes each. In the PNG a pixel is a palette
+  index; the tile keeps `index & 3` (the shade). Index 4p + s is shade s in palette p (what
+  `topng --palette` writes), so colouring a PNG never changes its tiles.
+- **`frompng`** reads the cells of the sheet left to right, top to bottom: every cell, or the
+  first `--count N`. A PNG written by `topng --map` carries its layout, and then every tile in it
+  is read. With `--map`, `--count` is needed.
+- **`--trim`** drops blank cells from the end of the last row of cells; that row's first cell
+  always stays. A cell is blank when every pixel is palette index 0: a cell drawn only in index 4
+  is kept, though its tile bytes are all zero. `--count` wins over `--trim`. Plain sheets only.
+- **`--indices`** writes each pixel's palette index as one byte, left to right, top to bottom,
+  with no tiles and no `& 3`; any width and height.
+- **`palette`** writes the PNG's first N palette colours (default 4) as little-endian 16-bit words
+  0x0BGR, 4 bits per channel. Each channel becomes the nearest of the 16 levels (round(c / 17));
+  c / 17 is never exactly halfway, so there are no ties. Fewer colours than N is an error.
+
+`unitron text` turns lines of a text file into `db` lines, with a character map: `char "a" 01`
+lines give each character's byte, `cmd NAME XX [string]` lines name commands (`cmd text - string`,
+`cmd done FF`). In the text file, `{XX}` is a byte with no character, `Name:` lines are labels and
+`;` lines are comments. A **`slot WIDTH PAD`** line (`slot 7 FF`: decimal width, hex byte) makes
+every string after it exactly WIDTH bytes, for a table of fixed-size names:
+
+```
+PartNames:
+slot 7 FF
+	text "Body1"
+	done
+	text "Body10"	; 6 characters + done = 7 bytes: no padding
+	done
+slot 0
+```
+
+A string starts at a `text` line and ends before the next `text` line, label, `slot` line or the
+end of the file. It is padded with PAD up to WIDTH (a `dfb` line); a longer one is an error with
+its line, byte count and width. A string that fills the slot without `done` has no end byte.
+`slot 0` ends slot mode.
+
 ## Tests
 
 `tests/cpp/` checks the C++ build against vectors frozen from the original Python implementation:
 the whole opcode space decoded and re-assembled, 346,448 instruction lines, the CLI golden cases
 (`tests/golden/`), the `.lcf` cases, `data/ngpc_hw.inc` against `data/hwnames.tsv`, and the
-the reference ROM round trip by hash. `unitron_tests <test> ... --write` rewrites the expected outputs after
+the reference ROM round trip by hash. The Z80 side has its own: the Z80 opcode space (`z80opspace`), golden
+cases, `z80shift` (one inserted `NOP` moves every labeled reference by one), and the Z80 sound
+drivers of the reference ROM and the second ROM round-tripped by hash and shifted (`z80rom`; skipped
+without the ROMs). `unitron_tests <test> ... --write` rewrites the expected outputs after
 a deliberate change; review `git diff tests/` afterwards.
 
 ## What is ours and what is cited
@@ -111,6 +188,9 @@ which keep their own licenses. It cites, and never contains, these sources:
   K2GE registers, system RAM, interrupt vectors, tile, map and palette formats, the cartridge
   header. `data/hwnames.tsv` is the single table of hardware names, with a source for each;
   docs/hardware-names.md explains it and lists where homebrew headers disagree.
+- Zilog's *Z80 CPU User Manual* UM0080 (the Z80 instructions and their codes) and Zilog's *Z80
+  Assembly Language Programming Manual* (1978; the Z80 assembler language and its error numbers),
+  for the `z80` commands (docs/z80.md).
 - Haruhiko Okumura's LZSS.C (1989, public domain): the compressor's algorithm and parameters.
 
 No emulator code, no emulator-derived names, no Toshiba or SNK files, and no ROM data are in this

@@ -63,4 +63,15 @@ Bytes from_png(const std::string& path, int64_t count, const std::optional<TileM
 Bytes from_png_bytes(const Bytes& png, const std::string& path, int64_t count,
                      const std::optional<TileMap>& tile_map = std::nullopt, int64_t base = 0);
 
+// How many tiles `gfx frompng` reads when --count is not given. A plain sheet: every 8x8 cell,
+// row-major ((width / 8) * (height / 8)). With trim: less the blank cells (every pixel palette
+// index 0) at the end of the last row of cells; that row's first cell always stays. A PNG with a
+// unitron-layout chunk: every position in it (trim is an error there).
+int64_t from_png_count(const Bytes& file, const std::string& path, bool trim);
+// Every pixel's palette index, one byte each, row-major; width and height are set.
+Bytes png_indices(const Bytes& file, const std::string& path, uint32_t& width, uint32_t& height);
+// The first `colors` PLTE entries as little-endian 0x0BGR words, 4 bits per channel (nearest
+// level, round(c / 17)). Fewer entries than `colors` is an error.
+Bytes png_palette_words(const Bytes& file, const std::string& path, int64_t colors);
+
 }  // namespace unitron

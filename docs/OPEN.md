@@ -64,11 +64,33 @@ emit `db`. If other NGPC games show the same rule, it may become a unitron optio
   DMA and watchdog pages give the same addresses; nothing confirms the rest.
 - BIOS call numbers: SNK SysCall points to SNK's SYSTEM.INC, which we don't have; no vector
   numbers are named. (Plan 4: the reference ROM's reset call RW3=1 could be CLOCKGEARSET or INTLVSET.)
-- Z80 interface 0xB8/0xBA/0xBC: no SNK document; unnamed until the Z80 driver is read.
+- Z80 interface 0xB8/0xBA/0xBC: no SNK document; unnamed. The drivers have been read since (rows
+  under "Z80 sound CPU" below): what the code does with them is known, but no source names them.
 - K2GE 0x8000, 0x8006 (frame rate), 0x8400, 0x87E0, 0x87E2 (mode), 0x87FE: no SNK address.
 - K2GE fields BLNK, OOWC, BGON/BGC: no bit positions in our SNK text.
 - Sys_Lever bit 7 (probably the NEO GEO controller's D button; the SNK diagram is cropped).
 - 0x6FEC vector slot: reserved in SNK SysPro; unnamed.
+
+## Z80 sound CPU (docs/z80.md, docs/Z80_PLAN.md)
+
+| Point | Status | unitron does |
+|---|---|---|
+| 0xB8/0xB9 | the main CPU writes the word 0xAAAA to stop the Z80 and 0x5555 to start it (Z80_PLAN.md 1.3, code evidence only); what each byte does alone is unknown; no SNK document | numeric |
+| 0xBA | every command write is followed by a write here, and the Z80's NMI reads the command; whether a read also raises the NMI is unknown | numeric |
+| 0xBC = Z80 8000H | the shared command byte (the Z80 writes back its complement); no source names it | numeric on both sides |
+| Z80 4000H/4001H | the sound chip, written in the SN76489-style latch format, apparently two outputs; its name, registers and clock are in no source (SNK SoundMan is empty in our copy) | numeric; a game's own include file may name them |
+| Z80 port 0FFH, Z80 0C000H | written by both drivers; purpose unknown (perhaps the "Interrupt From Z80" path, SysPro l.219) | numeric |
+| the tick rate | which TO3 edge interrupts the Z80, and fT1: SNK 8Bit gives 20.83 µs, a homebrew comment 1.302 µs (Z80_PLAN.md 1.3) | nothing depends on it |
+| the Z80 memory map | 4 KB of RAM (SysPro l.108); mirrors and unmapped areas unknown | `z80 asm` rejects bytes past 0FFFH; anything outside the RAM is an `EQU` |
+| `IM` detection | not done: the tracer always starts from 0000H, 0038H and 0066H | traces all three |
+| immediates inside the image | `LD HL,00C0H` may be an address or a count | stays a number; a source that moves code labels it by hand |
+| `DriverEnd` reach | the drivers hard-code their end and up to 6 bytes past it; 15 is a margin, and a data word equal to the image size could be a coincidence | `DriverEnd+0` .. `+15` for memory operands and `LD rr,nn`; `DEFW DriverEnd` for a data word equal to the size (docs/z80.md, "Labels") |
+| 694 vs 696 forms | ZM's listing has two `LD` statements fewer than unitron's table; which two wasn't found (noisy text extraction); all 696 agree with AS | all 696 (docs/z80.md, "Instructions") |
+| the one-character `.OR.` | unreadable in our copy of ZM | only `.OR.` |
+| macros | ZM chapter III, not needed yet | error "macros are not supported yet" |
+| `--equ` names | Z80 labels may clash with main-CPU names; there is no prefix option | labels as they are; `?` and asm900 reserved words are errors |
+| who wrote the driver | likely SNK (the second ROM carries a version), unproven (Z80_PLAN.md 9) | nothing driver-specific in unitron |
+| the music data | stream encoding, voice fields and tempo unknown (Z80_PLAN.md 6) | no tool yet (step 13) |
 
 ## Tools
 

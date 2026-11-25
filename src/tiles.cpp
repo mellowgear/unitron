@@ -475,4 +475,79 @@ Bytes from_png(const std::string& path, int64_t count, const std::optional<TileM
     return from_png_bytes(read_file(path), path, count, tile_map, base);
 }
 
+namespace {
+
+// The signature and color-type checks from_png_bytes makes, for the functions below.
+PngImage read_indexed(const Bytes& file, const std::string& path, bool decode) {
+    static const uint8_t SIG[8] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+    if (file.size() < 8 || !std::equal(SIG, SIG + 8, file.begin()))
+        throw std::runtime_error("cannot identify image file '" + path + "'");
+    PngImage head = png_read(file, false);
+    if (head.color_type != 3) throw std::runtime_error(path + ": expected an indexed (palette) PNG");
+    return decode ? png_read(file, true) : head;
+}
+
+}  // namespace
+
+int64_t from_png_count(const Bytes& file, const std::string& path, bool trim) {
+    PngImage head = read_indexed(file, path, false);
+    const PngText* lay = nullptr;
+    for (const PngText& t : head.text)
+        if (t.before_idat && t.key == LAYOUT_KEY) lay = &t;
+    if (lay) {
+        if (trim)
+            throw std::runtime_error(path + ": --trim works on a plain sheet only (this PNG has a " +
+                                     std::string(LAYOUT_KEY) + " chunk)");
+        JsonParser jp(lay->value);
+        Json root = jp.value();
+        jp.ws();
+        if (jp.p != lay->value.size()) jp.bad();
+        if (root.kind != Json::Obj) throw std::runtime_error(std::string(LAYOUT_KEY) + ": not a JSON object");
+        for (auto& kv : root.obj)
+            if (kv.first == "pos") {
+                if (kv.second.kind != Json::Arr) throw std::runtime_error(std::string(LAYOUT_KEY) + ": pos is not a list");
+                return static_cast<int64_t>(kv.second.arr.size());
+            }
+        throw std::runtime_error("'pos'");
+    }
+    const int64_t W = head.width, H = head.height, tw = W / 8, th = H / 8;
+    int64_t n = tw * th;
+    if (!trim || n == 0) return n;
+    PngImage img = read_indexed(file, path, true);
+    auto blank = [&](int64_t i) {
+        int64_t tx = (i % tw) * 8, ty = (i / tw) * 8;
+        for (int64_t y = 0; y < 8; y++)
+            for (int64_t x = 0; x < 8; x++)
+                if (img.pixels[static_cast<size_t>((ty + y) * W + tx + x)] != 0) return false;
+        return true;
+    };
+    // only cells of the last row go, and that row's first cell always stays
+    while (n > tw * (th - 1) + 1 && blank(n - 1)) n--;
+    return n;
+}
+
+Bytes png_indices(const Bytes& file, const std::string& path, uint32_t& width, uint32_t& height) {
+    PngImage img = read_indexed(file, path, true);
+    width = img.width;
+    height = img.height;
+    return img.pixels;
+}
+
+Bytes png_palette_words(const Bytes& file, const std::string& path, int64_t colors) {
+    PngImage head = read_indexed(file, path, false);
+    const int64_t have = static_cast<int64_t>(head.palette.size());
+    if (have < colors)
+        throw std::runtime_error(path + ": the palette has " + itos(have) + " colors, " + itos(colors) + " are needed");
+    // the nearest 4-bit level of each channel, round(c / 17); c / 17 is never exactly halfway
+    auto level = [](uint8_t v) { return static_cast<unsigned>((v + 8) / 17); };
+    Bytes out;
+    for (int64_t k = 0; k < colors; k++) {
+        const Rgb& c = head.palette[static_cast<size_t>(k)];
+        unsigned w = level(c[0]) | level(c[1]) << 4 | level(c[2]) << 8;   // 0x0BGR
+        out.push_back(static_cast<uint8_t>(w & 0xFF));
+        out.push_back(static_cast<uint8_t>(w >> 8));
+    }
+    return out;
+}
+
 }  // namespace unitron

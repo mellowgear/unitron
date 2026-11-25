@@ -1615,6 +1615,329 @@ file nopal.png
 |12131011111122220200000000000000
 |22232021111122221000000000000000
 |32333031111122222000000000000000
+=== gfx_frompng_trim
+$ gfx frompng t1.png all.bin
+exit 0
+stdout
+|wrote all.bin: 8 tiles
+stderr
+file all.bin
+#1b1b6c6cb1b1c6c61b1b6c6cb1b1c6c66c6cb1b1c6c61b1b6c6cb1b1c6c61b1b
+#b1b1c6c61b1b6c6cb1b1c6c61b1b6c6cc6c61b1b6c6cb1b1c6c61b1b6c6cb1b1
+#0000000000000000000000000000000000000000000000010000000000000000
+#0000000000000000000000000000000000000000000000000000000000000000
+$ gfx frompng t1.png trim.bin --trim
+exit 0
+stdout
+|wrote trim.bin: 7 tiles
+stderr
+file trim.bin
+#1b1b6c6cb1b1c6c61b1b6c6cb1b1c6c66c6cb1b1c6c61b1b6c6cb1b1c6c61b1b
+#b1b1c6c61b1b6c6cb1b1c6c61b1b6c6cc6c61b1b6c6cb1b1c6c61b1b6c6cb1b1
+#0000000000000000000000000000000000000000000000010000000000000000
+#00000000000000000000000000000000
+$ gfx frompng t1.png c3.bin --trim --count 3
+exit 0
+stdout
+|wrote c3.bin: 3 tiles
+stderr
+file c3.bin
+#1b1b6c6cb1b1c6c61b1b6c6cb1b1c6c66c6cb1b1c6c61b1b6c6cb1b1c6c61b1b
+#b1b1c6c61b1b6c6cb1b1c6c61b1b6c6c
+$ gfx frompng t2.png t2.bin --trim
+exit 0
+stdout
+|wrote t2.bin: 4 tiles
+stderr
+file t2.bin
+#00001b1b2222393900001b1b2222393900000000000000000000000000000000
+#aaaab1b188889393aaaab1b18888939300000000000000000000000000000000
+$ gfx frompng t3.png t3.bin --trim
+exit 0
+stdout
+|wrote t3.bin: 1 tiles
+stderr
+file t3.bin
+#00c00030000c0003c00030000c000300
+$ gfx topng sheet.bin map.png --map map.bin
+exit 0
+stdout
+|wrote map.png: 2 tiles
+stderr
+file map.png
+|png 16x8 mode P
+|color 0 ffffff
+|color 1 aaaaaa
+|color 2 555555
+|color 3 000000
+|text unitron-layout {"w":2,"rows":1,"pos":[[0,0],[1,0]]}
+|0000000003100102
+|3333333313201112
+|1111111123302122
+|2222222233003132
+|3000000101320033
+|0300000303300231
+|0030003011221023
+|0003030013201221
+$ gfx frompng map.png map.bin2
+exit 0
+stdout
+|wrote map.bin2: 2 tiles
+stderr
+file map.bin2
+#0000ffff5555aaaa01c003300c0c3003123456789abcdef00f1e2d3c4b5a6978
+$ gfx frompng map.png x.bin --trim
+exit 1
+stdout
+stderr
+|error: map.png: --trim works on a plain sheet only (this PNG has a unitron-layout chunk)
+$ gfx frompng map.png x.bin --map map.bin
+exit 2
+stdout
+stderr
+|usage: unitron gfx frompng [-h] [--map MAP] [--map-format MAP_FORMAT] [--map-width MAP_WIDTH] [--base BASE] [--count COUNT] [--trim] [--indices] input output
+|unitron gfx frompng: error: argument --map: needs --count
+$ gfx frompng map.png x.bin --map map.bin --count 2 --trim
+exit 2
+stdout
+stderr
+|usage: unitron gfx frompng [-h] [--map MAP] [--map-format MAP_FORMAT] [--map-width MAP_WIDTH] [--base BASE] [--count COUNT] [--trim] [--indices] input output
+|unitron gfx frompng: error: argument --trim: works on a plain sheet only, not with --map
+$ gfx frompng odd.png odd.bin --indices
+exit 0
+stdout
+|wrote odd.bin: 5x3 pixels
+stderr
+file odd.bin
+#000102030405060706050403020100
+$ gfx frompng t3.png t3px.bin --indices
+exit 0
+stdout
+|wrote t3px.bin: 32x8 pixels
+stderr
+file t3px.bin
+#0300000000000000000000000000000000000000000000000000000000000000
+#0003000000000000000000000000000000000000000000000000000000000000
+#0000030000000000000000000000000000000000000000000000000000000000
+#0000000300000000000000000000000000000000000000000000000000000000
+#0000000003000000000000000000000000000000000000000000000000000000
+#0000000000030000000000000000000000000000000000000000000000000000
+#0000000000000300000000000000000000000000000000000000000000000000
+#0000000000000003000000000000000000000000000000000000000000000000
+$ gfx frompng odd.png x.bin --indices --count 1
+exit 2
+stdout
+stderr
+|usage: unitron gfx frompng [-h] [--map MAP] [--map-format MAP_FORMAT] [--map-width MAP_WIDTH] [--base BASE] [--count COUNT] [--trim] [--indices] input output
+|unitron gfx frompng: error: argument --indices: not allowed with --count, --trim or --map
+$ gfx frompng odd.png x.bin --indices --trim
+exit 2
+stdout
+stderr
+|usage: unitron gfx frompng [-h] [--map MAP] [--map-format MAP_FORMAT] [--map-width MAP_WIDTH] [--base BASE] [--count COUNT] [--trim] [--indices] input output
+|unitron gfx frompng: error: argument --indices: not allowed with --count, --trim or --map
+=== gfx_palette
+$ gfx palette p.png p4.bin
+exit 0
+stdout
+|wrote p4.bin: 4 colors
+stderr
+file p4.bin
+#000010018f072103
+$ gfx palette p.png p5.bin --colors 5
+exit 0
+stdout
+|wrote p5.bin: 5 colors
+stderr
+file p5.bin
+#000010018f0721036c04
+$ gfx palette p.png p1.bin --colors 1
+exit 0
+stdout
+|wrote p1.bin: 1 colors
+stderr
+file p1.bin
+#0000
+$ gfx palette p.png x.bin --colors 6
+exit 1
+stdout
+stderr
+|error: p.png: the palette has 5 colors, 6 are needed
+$ gfx palette p.png x.bin --colors 0
+exit 2
+stdout
+stderr
+|usage: unitron gfx palette [-h] [--colors N] input output
+|unitron gfx palette: error: argument --colors: must be 1 to 256, not 0
+$ gfx palette p4.bin x.bin
+exit 1
+stdout
+stderr
+|error: cannot identify image file 'p4.bin'
+$ gfx bogus
+exit 2
+stdout
+stderr
+|usage: unitron gfx [-h] {topng,frompng,palette} ...
+|unitron gfx: error: argument gcmd: invalid choice: 'bogus' (choose from topng, frompng, palette)
+=== text_slot
+$ text c.txt s.txt
+exit 0
+stdout
+|; generated by unitron text from s.txt: edit the text, not this file
+|; names in 4-byte slots
+|Names:
+|; slot 4 FF
+|	db	0x01,0x02	; text "ab"
+|	db	0xFF	; done
+|	dfb	1,0xFF	; pad to 4
+|	db	0x01,0x02,0x01	; text "aba"	; exactly 4 bytes with the done
+|	db	0xFF	; done
+|	db	0x01,0x02,0x01,0x02	; text "abab"	; fills the slot: no terminator
+|	db	0x12	; text "{12}"
+|	db	0xFE,0x01	; line "a"
+|	db	0xFF	; done
+|	; text ""
+|	db	0xFF	; done
+|	dfb	3,0xFF	; pad to 4
+|
+|Descs:
+|; slot 6 00
+|	db	0x01	; text "a"
+|	db	0xFF	; done
+|	dfb	4,0x00	; pad to 6
+|	; a comment inside the string
+|; slot 0
+|	db	0x02	; text "b"
+|	db	0xFF	; done
+stderr
+$ text c.txt long.txt
+exit 1
+stdout
+stderr
+|error: long.txt:4: the string needs 4 bytes, the slot is 3
+$ text c.txt loose.txt
+exit 1
+stdout
+stderr
+|error: loose.txt:2: in a slot, each string starts with a text line
+$ text c.txt nopad.txt
+exit 1
+stdout
+stderr
+|error: nopad.txt:1: bad slot line: slot 7 (slot WIDTH PAD, e.g. slot 7 FF; slot 0 ends slot mode)
+$ text c.txt badwidth.txt
+exit 1
+stdout
+stderr
+|error: badwidth.txt:1: bad slot line: slot x FF (slot WIDTH PAD, e.g. slot 7 FF; slot 0 ends slot mode)
+=== asm_deps
+$ asm main.asm -o out.bin -M out.d
+exit 0
+stdout
+|wrote out.bin: 0x6 bytes at 0x200000
+stderr
+|main.asm:11: warning W507: text after `end` is ignored
+file out.bin
+|!
+~
+file out.d
+|out.bin: main.asm
+|out.bin: macros.inc
+|out.bin: data.inc
+|out.bin: more.inc
+|out.bin: build/gen.asm
+$ asm main.asm -o out.bin -M - -MP
+exit 0
+stdout
+|out.bin: main.asm
+|out.bin: macros.inc
+|macros.inc:
+|out.bin: data.inc
+|data.inc:
+|out.bin: more.inc
+|more.inc:
+|out.bin: build/gen.asm
+|build/gen.asm:
+stderr
+|main.asm:11: warning W507: text after `end` is ignored
+$ asm main.asm -M -
+exit 0
+stdout
+|main.asm
+|macros.inc
+|data.inc
+|more.inc
+|build/gen.asm
+stderr
+$ asm main.asm -M - -MT game.ngp -MT game.sym
+exit 0
+stdout
+|game.ngp game.sym: main.asm
+|game.ngp game.sym: macros.inc
+|game.ngp game.sym: data.inc
+|game.ngp game.sym: more.inc
+|game.ngp game.sym: build/gen.asm
+stderr
+$ asm main.asm -M main.d -MT game.ngp
+exit 0
+stdout
+stderr
+file main.d
+|game.ngp: main.asm
+|game.ngp: macros.inc
+|game.ngp: data.inc
+|game.ngp: more.inc
+|game.ngp: build/gen.asm
+$ asm miss.asm -M -
+exit 1
+stdout
+stderr
+|miss.asm:2: error: can't find include file 'gen.inc'
+|1 error(s); no dependency file written
+$ asm miss.asm -M - -MG
+exit 0
+stdout
+|miss.asm
+|gen.inc
+|data.inc
+|more.inc
+|build/missing.asm
+stderr
+$ asm miss.asm -o miss.bin -M miss.d -MG
+exit 0
+stdout
+stderr
+file miss.d
+|miss.bin: miss.asm
+|miss.bin: gen.inc
+|miss.bin: data.inc
+|miss.bin: more.inc
+|miss.bin: build/missing.asm
+$ asm bad.asm -M -
+exit 1
+stdout
+stderr
+|bad.asm:2: error E218: $include needs "file"
+|1 error(s); no dependency file written
+$ asm ok.asm -o a$b.bin -M -
+exit 0
+stdout
+|a$$b.bin: ok.asm
+stderr
+file a$b.bin
+$ asm main.asm -MG
+exit 2
+stdout
+stderr
+|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] [-M FILE] [-MG] [-MP] [-MT TARGET] sources [sources ...]
+|unitron asm: error: argument -MG/-MP/-MT: needs -M FILE
+$ asm main.asm -M - -MP
+exit 2
+stdout
+stderr
+|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] [-M FILE] [-MG] [-MP] [-MT TARGET] sources [sources ...]
+|unitron asm: error: argument -MP: needs a target (-o or -MT)
 === tiny_rom
 $ asm tiny.asm -o tiny.ngp --origin 0x200000 --size 0x200 --no-mpp
 exit 0
@@ -4661,7 +4984,7 @@ $ asm t.asm -o t2.bin -O2
 exit 2
 stdout
 stderr
-|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] sources [sources ...]
+|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] [-M FILE] [-MG] [-MP] [-MT TARGET] sources [sources ...]
 |unitron asm: error: argument -O: invalid level '2' (0 or 1)
 === lcf
 $ asm main.asm sub.asm --lcf cart.lcf -o cart.bin --origin 0x200000 --sym cart.sym
@@ -4686,5 +5009,658 @@ $ asm main.asm sub.asm --lcf cart.lcf --place f_code=0x200100 -o x.bin
 exit 2
 stdout
 stderr
-|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] sources [sources ...]
+|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] [-M FILE] [-MG] [-MP] [-MT TARGET] sources [sources ...]
 |unitron asm: error: argument --lcf: not allowed with --place (the link file places the sections)
+=== z80_asm
+$ z80 asm main.z80 -o main.bin --sym main.sym
+exit 0
+stdout
+|wrote main.bin: 0xC7 bytes at Z80 0x0000
+stderr
+file main.bin
+#f331c000ed56c371000000000000000000000000000000000000000000000000
+#000000000000000000000000000000000000000000000000083cd3fffbed4d00
+#0000000000000000000000000000000000000000000000000000000000000000
+#000000000000f53a00802f320080f1ed4521b30006047e2310fcdd21b300dd7e
+#02fd77ffdd360005ddcb017efdcb7fc6cf200218dc01ffff1111003e4621ffff
+#2108003e01dbffed41dde3fde9fe1086ed5276014127ffb30049742773206f6b
+#0000000044c500
+file main.sym
+|0000 Reset
+|0004 COUNT
+|0010 NOTES
+|0038 Int38
+|0066 Nmi
+|0071 Init
+|0076 loop
+|00B3 Table
+|00C0 STACK
+|00C5 Part
+|00FF PORT
+$ z80 dis main.bin
+exit 0
+stdout
+|Reset:
+|0000  F3             DI
+|0001  31 C0 00       LD SP,00C0H
+|0004  ED 56          IM 1
+|L0006:
+|0006  C3 71 00       JP L0071
+|0009  00 00 00 00 .. DEFS 2FH
+|Int38:
+|0038  08             EX AF,AF'
+|0039  3C             INC A
+|003A  D3 FF          OUT (0FFH),A
+|003C  FB             EI
+|003D  ED 4D          RETI
+|003F  00 00 00 00 .. DEFS 27H
+|Nmi:
+|0066  F5             PUSH AF
+|0067  3A 00 80       LD A,(8000H)
+|006A  2F             CPL
+|006B  32 00 80       LD (8000H),A
+|006E  F1             POP AF
+|006F  ED 45          RETN
+|L0071:
+|0071  21 B3 00       LD HL,00B3H
+|0074  06 04          LD B,04H
+|L0076:
+|0076  7E             LD A,(HL)
+|0077  23             INC HL
+|0078  10 FC          DJNZ L0076
+|007A  DD 21 B3 00    LD IX,00B3H
+|007E  DD 7E 02       LD A,(IX+02H)
+|0081  FD 77 FF       LD (IY-01H),A
+|0084  DD 36 00 05    LD (IX+00H),05H
+|0088  DD CB 01 7E    BIT 7,(IX+01H)
+|008C  FD CB 7F C6    SET 0,(IY+7FH)
+|0090  CF             RST 08H
+|0091  20 02          JR NZ,L0095
+|0093  18 DC          JR L0071
+|L0095:
+|0095  01 FF FF       LD BC,0FFFFH
+|0098  11 11 00       LD DE,0011H
+|009B  3E 46          LD A,46H
+|009D  21 FF FF       LD HL,0FFFFH
+|00A0  21 08 00       LD HL,0008H
+|00A3  3E 01          LD A,01H
+|00A5  DB FF          IN A,(0FFH)
+|00A7  ED 41          OUT (C),B
+|00A9  DD E3          EX (SP),IX
+|00AB  FD E9          JP (IY)
+|00AD  FE             DEFB 0FEH
+|00AE  10             DEFB 10H
+|00AF  86             DEFB 86H
+|00B0  ED             DEFB 0EDH
+|00B1  52             DEFB 52H
+|00B2  76             DEFB 76H
+|00B3  01             DEFB 01H
+|00B4  41             DEFB 41H
+|00B5  27             DEFB 27H
+|00B6  FF             DEFB 0FFH
+|00B7  B3             DEFB 0B3H
+|00B8  00             DEFB 00H
+|00B9  49             DEFB 49H
+|00BA  74             DEFB 74H
+|00BB  27             DEFB 27H
+|00BC  73             DEFB 73H
+|00BD  20             DEFB 20H
+|00BE  6F             DEFB 6FH
+|00BF  6B             DEFB 6BH
+|00C0  00             DEFB 00H
+|00C1  00             DEFB 00H
+|00C2  00             DEFB 00H
+|00C3  00             DEFB 00H
+|00C4  44             DEFB 44H
+|00C5  C5             DEFB 0C5H
+|00C6  00             DEFB 00H
+stderr
+$ z80 dis main.bin -o src
+exit 0
+stdout
+|wrote src/main.z80: 39 instructions (0 bytes as DEFB), 112 data bytes
+stderr
+file src/main.z80
+|; main.bin: a Z80 program of 199 bytes, written by unitron z80 dis.
+|; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+|	ORG	0000H
+|Reset:
+|	DI
+|	LD	SP,00C0H
+|	IM	1
+|L0006:
+|	JP	L0071
+|	DEFS	2FH
+|Int38:
+|	EX	AF,AF'
+|	INC	A
+|	OUT	(0FFH),A
+|	EI
+|	RETI
+|	DEFS	27H
+|Nmi:
+|	PUSH	AF
+|	LD	A,(8000H)
+|	CPL
+|	LD	(8000H),A
+|	POP	AF
+|	RETN
+|L0071:
+|	LD	HL,00B3H
+|	LD	B,04H
+|L0076:
+|	LD	A,(HL)
+|	INC	HL
+|	DJNZ	L0076
+|	LD	IX,00B3H
+|	LD	A,(IX+02H)
+|	LD	(IY-01H),A
+|	LD	(IX+00H),05H
+|	BIT	7,(IX+01H)
+|	SET	0,(IY+7FH)
+|	RST	08H
+|	JR	NZ,L0095
+|	JR	L0071
+|L0095:
+|	LD	BC,0FFFFH
+|	LD	DE,0011H
+|	LD	A,46H
+|	LD	HL,0FFFFH
+|	LD	HL,0008H
+|	LD	A,01H
+|	IN	A,(0FFH)
+|	OUT	(C),B
+|	EX	(SP),IX
+|	JP	(IY)
+|	DEFB	0FEH
+|	DEFB	10H
+|	DEFB	86H
+|	DEFB	0EDH
+|	DEFB	52H
+|	DEFB	76H
+|	DEFB	01H
+|	DEFB	41H
+|	DEFB	27H
+|	DEFB	0FFH
+|	DEFB	0B3H
+|	DEFB	00H
+|	DEFB	49H
+|	DEFB	74H
+|	DEFB	27H
+|	DEFB	73H
+|	DEFB	20H
+|	DEFB	6FH
+|	DEFB	6BH
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	44H
+|	DEFB	0C5H
+|	DEFB	00H
+|	END
+$ z80 roundtrip main.bin
+exit 0
+stdout
+|OK: 39 instructions (0 bytes as DEFB), 112 data bytes; sha1 07d13a202b47409bb7ba51417ded90c1f1c73e7a
+stderr
+$ z80 asm main.z80
+exit 0
+stdout
+stderr
+=== z80_asm_errors
+$ z80 asm e.z80 -o e.bin
+exit 1
+stdout
+stderr
+|e.z80:1: error E8: undefined symbol 'nowhere'
+|e.z80:2: error E10: relative jump to far is out of range (211 bytes)
+|e.z80:3: error E10: displacement (IX+128) (= 128) is out of range
+|e.z80:4: error E10: IM 3 is out of range (0, 1 or 2)
+|e.z80:5: error E10: RST 09H (= 9) is out of range (00H, 08H, 10H, 18H, 20H, 28H, 30H or 38H)
+|e.z80:6: error E10: BIT 8 is out of range (0 to 7)
+|e.z80:7: error E3: invalid opcode 'Ld' (mixed case)
+|e.z80:8: error E4: invalid number '0AB'
+|e.z80:9: error E4: invalid number '19Q'
+|e.z80:10: error E5: invalid operator '.FOO.'
+|e.z80:11: error E13: unbalanced quotes
+|e.z80:13: error E11: multiple declaration of 'dup'
+|e.z80:14: error E9: invalid operand combination for LD (BC),B
+|e.z80:15: error E10: byte 256 is out of range
+|e.z80:16: error E9: register or condition 'B' in an expression
+|e.z80:17: error E6: DEFM string longer than 63 characters
+|e.z80:18: error: macros are not supported yet (docs/z80.md)
+|e.z80:19: error E3: invalid opcode 'FROB'
+|e.z80:20: error E10: division by zero
+|e.z80:21: error E9: DEFB takes one operand (ZM p.10)
+|20 error(s); no output written
+$ z80 asm fwd.z80 -o f.bin
+exit 1
+stdout
+stderr
+|fwd.z80:1: error E8: undefined symbol 'later' (it must be defined before this line)
+|1 error(s); no output written
+$ z80 asm big.z80 -o b.bin
+exit 1
+stdout
+stderr
+|big.z80:2: error: address 1000H is beyond the Z80's 4 KB of RAM (0000H-0FFFH)
+|1 error(s); no output written
+$ z80 asm deep.z80 -o d.bin
+exit 1
+stdout
+stderr
+|deep.z80:1: error E17: include nested too deep (four levels at most)
+|    included from deep.z80:1
+|    included from deep.z80:1
+|    included from deep.z80:1
+|1 error(s); no output written
+$ z80 asm nosuch.z80 -o n.bin
+exit 1
+stdout
+stderr
+|error: can't open 'nosuch.z80'
+|1 error(s); no output written
+=== z80_dis
+$ z80 dis p.bin
+exit 0
+stdout
+|Reset:
+|0000  F3             DI
+|0001  31 C0 00       LD SP,00C0H
+|0004  C3 10 00       JP L0010
+|0007  00             DEFB 00H
+|0008  4B             DEFB 4BH
+|0009  31             DEFB 31H
+|000A  00             DEFB 00H
+|000B  00             DEFB 00H
+|000C  00             DEFB 00H
+|000D  00             DEFB 00H
+|000E  00             DEFB 00H
+|000F  00             DEFB 00H
+|L0010:
+|0010  21 34 12       LD HL,1234H
+|0013  32 17 00       LD (L0016+1),A
+|L0016:
+|0016  3E 05          LD A,05H
+|0018  CD 20 00       CALL L0020
+|001B  ED             DEFB 0EDH  ; LD HL,(1234H) (the ED 6B encoding; UM0080 p.45)
+|001C  6B             DEFB 6BH
+|001D  34             DEFB 34H
+|001E  12             DEFB 12H
+|001F  C9             RET
+|L0020:
+|0020  ED             DEFB 0EDH  ; not a documented Z80 instruction
+|0021  70             DEFB 70H
+|0022  00             DEFB 00H
+|0023  00             DEFB 00H
+|0024  00             DEFB 00H
+|0025  00             DEFB 00H
+|0026  00             DEFB 00H
+|0027  00             DEFB 00H
+|0028  41 42 43 44 .. DEFM 'ABCDEFGH'
+|0030  00 00 00 00 .. DEFS 08H
+|Int38:
+|0038  CB             DEFB 0CBH  ; not a documented Z80 instruction
+|0039  30             DEFB 30H
+|003A  00 00 00 00 .. DEFS 16H
+|0050  3E             DEFB 3EH
+|0051  01             DEFB 01H
+|0052  C9             DEFB 0C9H
+|0053  00             DEFB 00H
+|0054  AF             DEFB 0AFH
+|0055  C9             DEFB 0C9H
+|0056  00             DEFB 00H
+|0057  00             DEFB 00H
+|0058  18             DEFB 18H
+|0059  FF             DEFB 0FFH
+|005A  00 00 00 00 .. DEFS 0CH
+|Nmi:
+|0066  ED 45          RETN
+|0068  00             DEFB 00H
+|0069  00             DEFB 00H
+stderr
+$ z80 dis p.bin -o out --hints h.txt --executed x.txt
+exit 0
+stdout
+|wrote out/main.z80: 14 instructions (6 bytes as DEFB), 72 data bytes
+stderr
+file out/main.z80
+|; p.bin: a Z80 program of 106 bytes, written by unitron z80 dis.
+|; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+|	ORG	0000H
+|Reset:
+|	DI
+|	LD	SP,00C0H
+|	JP	L0010
+|	DEFB	00H
+|	DEFB	4BH
+|	DEFB	31H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|L0010:
+|	LD	HL,1234H
+|	LD	(L0016+1),A
+|L0016:
+|	LD	A,05H
+|	CALL	L0020
+|	DEFB	0EDH	; LD HL,(1234H) (the ED 6B encoding; UM0080 p.45)
+|	DEFB	6BH
+|	DEFB	34H
+|	DEFB	12H
+|	RET
+|L0020:
+|	DEFB	0EDH	; not a documented Z80 instruction
+|	DEFB	70H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFM	'ABCDEFGH'
+|	DEFS	08H
+|Int38:
+|	DEFB	0CBH	; not a documented Z80 instruction
+|	DEFB	30H
+|	DEFS	16H
+|Helper:
+|	LD	A,01H
+|	RET
+|	DEFB	00H
+|	XOR	A
+|	RET
+|	DEFB	00H
+|	DEFB	00H
+|L0058:
+|	JR	L0058+1
+|	DEFS	0CH
+|Nmi:
+|	RETN
+|	DEFB	00H
+|	DEFB	00H
+|	END
+$ z80 roundtrip p.bin --hints h.txt
+exit 0
+stdout
+|OK: 11 instructions (6 bytes as DEFB), 76 data bytes; sha1 49303d42fbabeeb2259f64e1a9b2e7b54595c72b
+stderr
+$ z80 roundtrip p.bin --workdir keep
+exit 0
+stdout
+|OK: 9 instructions (6 bytes as DEFB), 79 data bytes; sha1 49303d42fbabeeb2259f64e1a9b2e7b54595c72b
+stderr
+file keep/main.z80
+|; p.bin: a Z80 program of 106 bytes, written by unitron z80 dis.
+|; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+|	ORG	0000H
+|Reset:
+|	DI
+|	LD	SP,00C0H
+|	JP	L0010
+|	DEFB	00H
+|	DEFB	4BH
+|	DEFB	31H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|L0010:
+|	LD	HL,1234H
+|	LD	(L0016+1),A
+|L0016:
+|	LD	A,05H
+|	CALL	L0020
+|	DEFB	0EDH	; LD HL,(1234H) (the ED 6B encoding; UM0080 p.45)
+|	DEFB	6BH
+|	DEFB	34H
+|	DEFB	12H
+|	RET
+|L0020:
+|	DEFB	0EDH	; not a documented Z80 instruction
+|	DEFB	70H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFM	'ABCDEFGH'
+|	DEFS	08H
+|Int38:
+|	DEFB	0CBH	; not a documented Z80 instruction
+|	DEFB	30H
+|	DEFS	16H
+|	DEFB	3EH
+|	DEFB	01H
+|	DEFB	0C9H
+|	DEFB	00H
+|	DEFB	0AFH
+|	DEFB	0C9H
+|	DEFB	00H
+|	DEFB	00H
+|	DEFB	18H
+|	DEFB	0FFH
+|	DEFS	0CH
+|Nmi:
+|	RETN
+|	DEFB	00H
+|	DEFB	00H
+|	END
+=== z80_end
+$ z80 asm prog.z80 -o prog.bin
+exit 0
+stdout
+|wrote prog.bin: 0x8A bytes at Z80 0x0000
+stderr
+file prog.bin
+#f3318000c36b0000000000000000000000000000000000000000000000000000
+#000000000000000000000000000000000000000000000000fbed4d0000000000
+#0000000000000000000000000000000000000000000000000000000000000000
+#000000000000ed454b8a002a8c00119000011000328100320140cd8000c39900
+#3e00219a00dd2a8a00c9
+$ z80 dis prog.bin
+exit 0
+stdout
+|Reset:
+|0000  F3             DI
+|0001  31 80 00       LD SP,0080H
+|0004  C3 6B 00       JP L006B
+|0007  00 00 00 00 .. DEFS 31H
+|Int38:
+|0038  FB             EI
+|0039  ED 4D          RETI
+|003B  00 00 00 00 .. DEFS 2BH
+|Nmi:
+|0066  ED 45          RETN
+|0068  4B             DEFB 4BH
+|0069  8A 00          DEFW DriverEnd
+|L006B:
+|006B  2A 8C 00       LD HL,(DriverEnd+2)
+|006E  11 90 00       LD DE,DriverEnd+6
+|0071  01 10 00       LD BC,0010H
+|0074  32 81 00       LD (L0080+1),A
+|0077  32 01 40       LD (4001H),A
+|007A  CD 80 00       CALL L0080
+|007D  C3 99 00       JP 0099H
+|L0080:
+|0080  3E 00          LD A,00H
+|0082  21 9A 00       LD HL,009AH
+|0085  DD 2A 8A 00    LD IX,(DriverEnd)
+|0089  C9             RET
+|DriverEnd:
+|008A                 ; the end of the image
+stderr
+$ z80 dis prog.bin -o out
+exit 0
+stdout
+|wrote out/main.z80: 17 instructions (0 bytes as DEFB), 95 data bytes
+stderr
+file out/main.z80
+|; prog.bin: a Z80 program of 138 bytes, written by unitron z80 dis.
+|; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+|	ORG	0000H
+|Reset:
+|	DI
+|	LD	SP,0080H
+|	JP	L006B
+|	DEFS	31H
+|Int38:
+|	EI
+|	RETI
+|	DEFS	2BH
+|Nmi:
+|	RETN
+|	DEFB	4BH
+|	DEFW	DriverEnd
+|L006B:
+|	LD	HL,(DriverEnd+2)
+|	LD	DE,DriverEnd+6
+|	LD	BC,0010H
+|	LD	(L0080+1),A
+|	LD	(4001H),A
+|	CALL	L0080
+|	JP	0099H
+|L0080:
+|	LD	A,00H
+|	LD	HL,009AH
+|	LD	IX,(DriverEnd)
+|	RET
+|DriverEnd:
+|	END
+$ z80 roundtrip prog.bin
+exit 0
+stdout
+|OK: 17 instructions (0 bytes as DEFB), 95 data bytes; sha1 c52b8e673869f2b9633bdb072a17843034aa54af
+stderr
+=== z80_equ
+$ z80 asm drv.z80 -o drv.bin --equ drv.inc --db drv.db
+exit 0
+stdout
+|wrote drv.bin: 0x82 bytes at Z80 0x0000
+stderr
+file drv.bin
+#f331720018650000000000000000000000000000000000000000000000000000
+#000000000000000000000000000000000000000000000000083cd3fffbed4d00
+#0000000000000000000000000000000000000000000000000000000000000000
+#000000000000327000ed453a700018fb00000000000000000000000000000000
+#0000
+file drv.db
+|; generated by unitron z80 asm from drv.z80: edit the source, not this file
+|	db	0xF3,0x31,0x72,0x00,0x18,0x65,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x3C,0xD3,0xFF,0xFB,0xED,0x4D,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x32,0x70,0x00,0xED,0x45,0x3A,0x70,0x00,0x18,0xFB
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00
+file drv.inc
+|; generated by unitron z80 asm from drv.z80: edit the source, not this file
+|; Z80 labels at their main-CPU address (Z80 address + 0x7000)
+|Reset	equ	0x7000
+|Int38	equ	0x7038
+|Nmi	equ	0x7066
+|Loop	equ	0x706B
+|Cmd	equ	0x7070
+|Tick_seen	equ	0x7071
+|Stack	equ	0x7072
+$ bin2db drv.bin -o drv2.db
+exit 0
+stdout
+stderr
+file drv2.db
+|; generated by unitron bin2db from drv.bin: edit the source, not this file
+|	db	0xF3,0x31,0x72,0x00,0x18,0x65,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x3C,0xD3,0xFF,0xFB,0xED,0x4D,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x32,0x70,0x00,0xED,0x45,0x3A,0x70,0x00,0x18,0xFB
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0x00,0x00
+$ asm main.asm -o main.bin
+exit 0
+stdout
+|wrote main.bin: 0x94 bytes at 0x200000
+stderr
+file main.bin
+#c1717021f1707041431200200031720068eef331720018650000000000000000
+#0000000000000000000000000000000000000000000000000000000000000000
+#00000000000000000000083cd3fffbed4d000000000000000000000000000000
+#000000000000000000000000000000000000000000000000327000ed453a7000
+#18fb000000000000000000000000000000000000
+$ z80 asm drv.z80 --equ base.inc --equ-base 0x8000
+exit 0
+stdout
+stderr
+file base.inc
+|; generated by unitron z80 asm from drv.z80: edit the source, not this file
+|; Z80 labels at their main-CPU address (Z80 address + 0x8000)
+|Reset	equ	0x8000
+|Int38	equ	0x8038
+|Nmi	equ	0x8066
+|Loop	equ	0x806B
+|Cmd	equ	0x8070
+|Tick_seen	equ	0x8071
+|Stack	equ	0x8072
+$ z80 asm drv.z80 --equ bad.inc --equ-base zz
+exit 2
+stdout
+stderr
+|usage: unitron z80 asm [-h] [-o OUTPUT] [-I INCLUDE] [--sym SYM] [--equ EQU] [--equ-base EQU_BASE] [--db DB] source
+|unitron z80 asm: error: argument --equ-base: invalid num value: 'zz'
+$ z80 asm q.z80 -o q.bin --equ q.inc
+exit 1
+stdout
+stderr
+|error: label 'What?' is not an asm900 name ('?'); rename it for --equ; no output written
+$ z80 asm r.z80 -o r.bin --equ r.inc
+exit 1
+stdout
+stderr
+|error: label 'XHL' is an asm900 reserved word; rename it for --equ; no output written
+=== z80_cli
+$ z80
+exit 2
+stdout
+stderr
+|usage: unitron z80 [-h] {dis,asm,roundtrip} ...
+|unitron z80: error: the following arguments are required: zcmd
+$ z80 bogus
+exit 2
+stdout
+stderr
+|usage: unitron z80 [-h] {dis,asm,roundtrip} ...
+|unitron z80: error: argument zcmd: invalid choice: 'bogus' (choose from dis, asm, roundtrip)
+$ z80 -h
+exit 0
+stdout
+|usage: unitron z80 [-h] {dis,asm,roundtrip} ...
+|
+|the NGPC's Z80 sound CPU, in Zilog syntax (docs/z80.md)
+|
+|    dis                 a listing, or (-o DIR) source that assembles back to the same bytes
+|    asm                 assemble Zilog Z80 source into a raw image at Z80 0x0000
+|    roundtrip           dis -> asm a Z80 image and compare the bytes
+stderr
+$ z80 asm
+exit 2
+stdout
+stderr
+|usage: unitron z80 asm [-h] [-o OUTPUT] [-I INCLUDE] [--sym SYM] [--equ EQU] [--equ-base EQU_BASE] [--db DB] source
+|unitron z80 asm: error: the following arguments are required: source
+$ z80 dis
+exit 2
+stdout
+stderr
+|usage: unitron z80 dis [-h] [-o OUTPUT] [--executed EXECUTED] [--hints HINTS] file
+|unitron z80 dis: error: the following arguments are required: file

@@ -5,6 +5,7 @@
 // are the label name plus a 3-digit decimal count per name (lab000, lab001, ... TR p.65-66).
 // Comments: `;` is kept, `//` and `/* */` are dropped (TR p.60). Other ?functions are rejected.
 #pragma once
+#include <functional>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -23,8 +24,12 @@ struct MppError : std::runtime_error {
 using SrcLine = std::pair<std::string, Where>;
 using Defines = std::vector<std::pair<std::string, std::string>>;   // -D NAME=VAL, in order
 
+// Called for every #include that is read: the name as written and the file found ("" if none).
+// Returning false skips a missing file instead of failing (asm -MG).
+using IncludeHook = std::function<bool(const std::string& name, const std::string& found)>;
+
 std::vector<SrcLine> preprocess(const std::string& path, const std::vector<std::string>& include_dirs,
-                                const Defines& defines);
+                                const Defines& defines, const IncludeHook* hook = nullptr);
 
 // THOME900/include, if $THOME900 is set ("" otherwise)
 std::string thome_include();

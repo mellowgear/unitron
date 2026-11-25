@@ -237,8 +237,18 @@ Assembler::Assembler(const std::vector<std::string>& include_dirs, bool strict, 
 std::vector<SrcLine> Assembler::lines_of(const std::string& path) {
     std::vector<SrcLine> out;
     if (use_mpp_) {
+        IncludeHook hook = [this](const std::string& name, const std::string& found) {
+            if (!found.empty()) {
+                add_dep(found);
+                return true;
+            }
+            if (!missing_ok_) return true;   // the preprocessor reports it
+            add_dep(name);
+            missing = true;
+            return false;
+        };
         try {
-            return preprocess(path, include_dirs_, defines_);
+            return preprocess(path, include_dirs_, defines_, track_ ? &hook : nullptr);
         } catch (MppError& e) {
             d.error(e.where, 0, e.what());
             return {};
@@ -269,6 +279,7 @@ std::string Assembler::find_include(const std::string& name, const std::string& 
 
 void Assembler::add_module(const std::string& path0) {
     std::string path = path_norm(path0);
+    add_dep(path);
     auto lines = lines_of(path);
     modules_.push_back(std::make_unique<Module>());
     Module& mod = *modules_.back();
@@ -325,6 +336,10 @@ void Assembler::statement(Module& mod, const std::string& text, const Where& whe
     if (st.has_op && st.op[0] == '$') {
         if (st.has_label && !st.label.empty()) throw AsmError(200, "a control instruction cannot have a label");
         control(mod, upper(st.op.substr(1)), st.field, where);
+        return;
+    }
+    if (scan_) {   // asm -M without -o: only the includes matter
+        if (st.has_op && upper(st.op) == "END") mod.ended = true;
         return;
     }
     if (first_) {
@@ -474,7 +489,13 @@ void Assembler::control(Module& mod, const std::string& name, const std::string&
             mod.warned_count = true;
         }
         std::string p = find_include(fname, where.file);
+        if (p.empty() && track_ && missing_ok_) {   // -MG: it will be generated
+            add_dep(fname);
+            missing = true;
+            return;
+        }
         if (p.empty()) throw AsmError(20, "can't open " + py_repr(fname));
+        add_dep(p);
         std::string text = read_source(p);
         std::vector<SrcLine> lines;
         int n = 1;

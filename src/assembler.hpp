@@ -6,6 +6,7 @@
 #pragma once
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -134,7 +135,24 @@ public:
     void set_lcf(const std::string& path) { lcf_path_ = path; }
     Diags d;
 
+    // `asm -M`: list every file the assembly reads (the sources, #include and $include files), in
+    // the order read, each once. missing_ok (-MG): an include file that can't be found is listed
+    // as written and skipped, and `missing` is set. scan_only: add_module reads only what decides
+    // the includes (the preprocessor, $ control lines, `end`), so nothing else is checked.
+    void track_deps(bool missing_ok, bool scan_only) {
+        track_ = true;
+        missing_ok_ = missing_ok;
+        scan_ = scan_only;
+    }
+    std::vector<std::string> deps;
+    bool missing = false;
+
 private:
+    bool track_ = false, missing_ok_ = false, scan_ = false;
+    std::set<std::string> dep_seen_;
+    void add_dep(const std::string& p) {
+        if (track_ && dep_seen_.insert(p).second) deps.push_back(p);
+    }
     std::vector<std::string> include_dirs_;
     bool strict_, use_mpp_, optimize_;
     Defines defines_;

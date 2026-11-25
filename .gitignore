@@ -8,3 +8,5 @@ build/
 docs/third_party/
 *.egg-info/
 build_*/
+# Claude Code agent worktrees
+.claude/

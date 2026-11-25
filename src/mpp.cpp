@@ -306,6 +306,7 @@ int64_t cexpr(const std::string& t, const Where& where) {
 
 struct Pre {
     std::vector<std::string> include_dirs;
+    const IncludeHook* hook = nullptr;
     std::map<std::string, Def> defs;
     std::map<std::string, Macro> macros;
     std::map<std::string, int> counters;
@@ -418,6 +419,7 @@ struct Pre {
                     }
                     if (!ok) throw MppError("#include needs \"file\" or <file>", where);
                     std::string f = find(name, path, angle);
+                    if (hook && *hook && !(*hook)(name, f)) continue;   // a missing file the caller skips
                     if (f.empty()) throw MppError("can't find include file " + py_repr(name), where);
                     std::vector<Loc> ch = chain;
                     ch.push_back(where.loc());
@@ -770,8 +772,10 @@ struct Pre {
 
 }  // namespace
 
-std::vector<SrcLine> preprocess(const std::string& path0, const std::vector<std::string>& include_dirs, const Defines& defines) {
+std::vector<SrcLine> preprocess(const std::string& path0, const std::vector<std::string>& include_dirs, const Defines& defines,
+                                const IncludeHook* hook) {
     Pre p;
+    p.hook = hook;
     for (auto& d : include_dirs) p.include_dirs.push_back(path_norm(d));
     std::string th = thome_include();
     if (!th.empty()) p.include_dirs.push_back(th);
