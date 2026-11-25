@@ -1,0 +1,2 @@
+error: link.lcf:6: can't link "f_const" (romdata) into output section code (code) with different attribute (TR 8.3.6)
+1 error(s); no output written

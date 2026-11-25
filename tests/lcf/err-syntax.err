@@ -1,0 +1,2 @@
+error: bad.lcf:1: unknown function 'nosuch'
+1 error(s); no output written

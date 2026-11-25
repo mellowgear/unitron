@@ -1,0 +1,3 @@
+error: link.lcf:6: attributes mismatch between section and memory: code (code) needs RX, memory ram is RW (TR 8.2.2)
+error: link.lcf:8: attributes mismatch between section and memory: ram (data) needs RW, memory rom is RX (TR 8.2.2)
+2 error(s); no output written

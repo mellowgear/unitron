@@ -1,0 +1,2 @@
+err-end-operand.z80:2: error E9: END takes no operand
+1 error(s); no output written

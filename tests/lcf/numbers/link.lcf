@@ -1,0 +1,10 @@
+sections {
+    code addr=0x200000 : { *(f_code) }
+    rodata addr=0x200100 : { *(f_const) }
+    ram addr=0x4000 : { *(f_data) }
+    hex = 0x1F;
+    bin = 0y101;
+    oct = 017;
+    dec = 99;
+    big = 0x1FFFFFFFF;
+}

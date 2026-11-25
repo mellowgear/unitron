@@ -1,0 +1,4 @@
+err-cond.z80:2: error E6: COND cannot be nested
+err-cond.z80:4: error E6: ENDC without COND
+err-cond.z80:5: error E6: COND takes no label
+3 error(s); no output written

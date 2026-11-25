@@ -1,0 +1,2 @@
+	ld	A,5
+	ld	(XHL),B

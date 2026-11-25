@@ -1,0 +1,2 @@
+err-equ-no-name.asm:3: error E200: `equ` needs a name
+1 error(s); no output written

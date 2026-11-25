@@ -1,0 +1,24 @@
+	ORG	0000H
+Reset:	DI
+	LD	SP,0080H
+	JP	Init
+	ORG	0038H
+Int38:	EI
+	RETI
+	ORG	0066H
+Nmi:	RETN
+Id:	DEFB	4BH
+	DEFW	Top
+Init:	LD	HL,(Top+2)
+	LD	DE,Top+6
+	LD	BC,0010H
+	LD	(Self+1),A
+	LD	(4001H),A
+	CALL	Self
+	JP	Top+15
+Self:	LD	A,00H
+	LD	HL,Top+16
+	LD	IX,(Top)
+	RET
+Top	EQU	$
+	END

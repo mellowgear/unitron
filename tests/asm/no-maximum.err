@@ -1,0 +1,2 @@
+no-maximum.asm:1: error E218: `$maximum` must be the first statement (TR p.25)
+1 error(s); no output written

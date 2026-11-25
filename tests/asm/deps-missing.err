@@ -1,0 +1,2 @@
+miss.asm:2: error: can't find include file 'gen.inc'
+1 error(s); no dependency file written

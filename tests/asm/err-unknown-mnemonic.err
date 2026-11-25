@@ -1,0 +1,3 @@
+err-unknown-mnemonic.asm:3: error E200: unknown mnemonic or directive 'frob'
+err-unknown-mnemonic.asm:4: error E200: missing operand
+2 error(s); no output written

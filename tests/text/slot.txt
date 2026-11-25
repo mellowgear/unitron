@@ -1,0 +1,22 @@
+; names in 4-byte slots
+Names:
+slot 4 FF
+	text "ab"
+	done
+	text "aba"	; exactly 4 bytes with the done
+	done
+	text "abab"	; fills the slot: no terminator
+	text "{12}"
+	line "a"
+	done
+	text ""
+	done
+
+Descs:
+slot 6 00
+	text "a"
+	done
+	; a comment inside the string
+slot 0
+	text "b"
+	done

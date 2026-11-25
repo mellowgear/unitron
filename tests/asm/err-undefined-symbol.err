@@ -1,0 +1,3 @@
+err-undefined-symbol.asm:3: error E221: undefined symbol 'nowhere'
+err-undefined-symbol.asm:4: error E221: undefined symbol 'nowhere2'
+2 error(s); no output written

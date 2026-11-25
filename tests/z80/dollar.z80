@@ -1,0 +1,5 @@
+	NOP
+	JR	$
+	LD	HL,$+2
+	JR	C,$+4
+	END

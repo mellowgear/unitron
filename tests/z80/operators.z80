@@ -1,0 +1,27 @@
+; each operator once (ZM p.7-9); DEFW shows the 16-bit result
+	DEFW	+5
+	DEFW	-5
+	DEFW	.NOT. 0
+	DEFW	\ 0
+	DEFW	.RES.(0FFFFH+2)
+	DEFW	2 ** 4
+	DEFW	6 * 7
+	DEFW	45 / 7
+	DEFW	45 .MOD. 7
+	DEFW	0F0H .SHR. 4
+	DEFW	0FH .SHL. 4
+	DEFW	3 + 4
+	DEFW	3 - 4
+	DEFW	0F0H .AND. 3CH
+	DEFW	0F0H & 3CH
+	DEFW	0F0H .OR. 0FH
+	DEFW	0F0H .XOR. 3CH
+	DEFW	2 .EQ. 2
+	DEFW	2 = 3
+	DEFW	3 .GT. 2
+	DEFW	3 > 4
+	DEFW	2 .LT. 3
+	DEFW	3 < 2
+	DEFW	0FFFFH .UGT. 1
+	DEFW	1 .ULT. 0FFFFH
+	END

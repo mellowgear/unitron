@@ -1,0 +1,11 @@
+; a charmap of our own
+char " " 00
+char "a" 01
+char "b" 02
+char "ab" 7F
+char "é" 30
+char """" 22
+cmd text - string
+cmd line FE string
+cmd wait FD
+cmd done FF

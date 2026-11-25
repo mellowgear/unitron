@@ -1,0 +1,21 @@
+err-many.z80:1: error E8: undefined symbol 'nowhere'
+err-many.z80:2: error E10: relative jump to far is out of range (211 bytes)
+err-many.z80:3: error E10: displacement (IX+128) (= 128) is out of range
+err-many.z80:4: error E10: IM 3 is out of range (0, 1 or 2)
+err-many.z80:5: error E10: RST 09H (= 9) is out of range (00H, 08H, 10H, 18H, 20H, 28H, 30H or 38H)
+err-many.z80:6: error E10: BIT 8 is out of range (0 to 7)
+err-many.z80:7: error E3: invalid opcode 'Ld' (mixed case)
+err-many.z80:8: error E4: invalid number '0AB'
+err-many.z80:9: error E4: invalid number '19Q'
+err-many.z80:10: error E5: invalid operator '.FOO.'
+err-many.z80:11: error E13: unbalanced quotes
+err-many.z80:13: error E11: multiple declaration of 'dup'
+err-many.z80:14: error E9: invalid operand combination for LD (BC),B
+err-many.z80:15: error E10: byte 256 is out of range
+err-many.z80:16: error E9: register or condition 'B' in an expression
+err-many.z80:17: error E6: DEFM string longer than 63 characters
+err-many.z80:18: error: macros are not supported yet (docs/z80.md)
+err-many.z80:19: error E3: invalid opcode 'FROB'
+err-many.z80:20: error E10: division by zero
+err-many.z80:21: error E9: DEFB takes one operand (ZM p.10)
+20 error(s); no output written

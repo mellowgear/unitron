@@ -1,0 +1,2 @@
+err-func-not-allowed.asm:3: error E206: sizeof() is not allowed here
+1 error(s); no output written

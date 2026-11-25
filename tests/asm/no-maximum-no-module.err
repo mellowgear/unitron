@@ -1,0 +1,3 @@
+no-maximum-no-module.asm:1: error E218: `$maximum` must be the first statement (TR p.25)
+no-maximum-no-module.asm:1: error E215: no section definition before this statement
+2 error(s); no output written

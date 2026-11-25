@@ -1,0 +1,3 @@
+nosuch.asm:0: warning W506: no `end` directive
+error: can't open 'nosuch.asm'
+1 error(s); no output written

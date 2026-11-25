@@ -1,0 +1,3 @@
+err-minimum.asm:1: error E218: $minimum is not supported (the 900/H has only maximum mode)
+err-minimum.asm:2: error E218: `$maximum` must be the first statement (TR p.25)
+2 error(s); no output written

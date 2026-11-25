@@ -1,0 +1,3 @@
+warning: link.lcf: section f_data is not named in the section definition part: linked as its own output section at 0x200108 (TR 8.3.6)
+error: link.lcf:4: location counter can't point lower address: 0x200000 < 0x200106
+1 error(s); no output written

@@ -1,0 +1,1 @@
+sections { x addr=nosuch( : {*(f_code)} }

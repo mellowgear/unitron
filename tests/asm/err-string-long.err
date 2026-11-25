@@ -1,0 +1,2 @@
+err-string-long.asm:3: error E209: string longer than 511 bytes
+1 error(s); no output written

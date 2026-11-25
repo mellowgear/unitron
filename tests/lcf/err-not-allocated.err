@@ -1,0 +1,3 @@
+warning: link.lcf: section f_data is not named in the section definition part: linked as its own output section at 0x200102 (TR 8.3.6)
+error: link.lcf:2: output section code: "rodata" not yet allocated (addr() needs a section defined earlier)
+1 error(s); no output written

@@ -1,0 +1,4 @@
+; Data is an asm900 reserved word (the section type), in any case
+Start:	JR	Start
+Data:	DEFB	1
+	END

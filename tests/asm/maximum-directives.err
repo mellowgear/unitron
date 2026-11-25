@@ -1,0 +1,8 @@
+maximum-directives.asm:2: warning W218: `$maximum` should be the first statement
+maximum-directives.asm:6: warning: $system only records a mode in asm900; ignored
+maximum-directives.asm:7: warning: $normal only records a mode in asm900; ignored
+maximum-directives.asm:21: warning W506: no `end` directive
+maximum-directives.asm:4: error E200: a control instruction cannot have a label
+maximum-directives.asm:5: error E218: $minimum is not supported (the 900/H has only maximum mode)
+maximum-directives.asm:20: error E218: unknown control instruction $frob
+3 error(s); no output written

@@ -1,0 +1,3 @@
+err-bank-register.asm:3: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+err-bank-register.asm:4: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+2 error(s); no output written

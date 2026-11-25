@@ -1,0 +1,3 @@
+err-defined-twice.z80:2: error E11: multiple declaration of 'x'
+err-defined-twice.z80:4: error E11: multiple declaration of 'K'
+2 error(s); no output written

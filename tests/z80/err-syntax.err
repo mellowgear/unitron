@@ -1,0 +1,6 @@
+err-syntax.z80:1: error E6: missing operand
+err-syntax.z80:2: error E6: unmatched parenthesis
+err-syntax.z80:3: error E6: syntax error in expression '1 2'
+err-syntax.z80:4: error E6: unexpected character '#'
+err-syntax.z80:5: error E6: a string is not allowed in an expression
+5 error(s); no output written

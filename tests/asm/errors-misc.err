@@ -1,0 +1,161 @@
+errors-misc.asm:40: warning W508: align 3 is not a power of 2
+errors-misc.asm:42: warning W508: align 0 is not a power of 2
+errors-misc.asm:183: warning W507: text after `end` is ignored
+errors-misc.asm:25: warning W501: ds count of 0 or less; 1 assumed
+errors-misc.asm:26: warning W501: ds count of 0 or less; 1 assumed
+errors-misc.asm:6: error E203: multi-defined symbol 'foo' (first defined at errors-misc.asm:5)
+errors-misc.asm:9: error E501: value 256 does not fit in 1 byte(s)
+errors-misc.asm:13: error E501: value -129 does not fit in 1 byte(s)
+errors-misc.asm:14: error E501: value 65536 does not fit in 2 byte(s)
+errors-misc.asm:15: error E501: value 16777216 does not fit in 3 byte(s)
+errors-misc.asm:16: error E501: value 4294967296 does not fit in 4 byte(s)
+errors-misc.asm:17: error E209: unterminated string
+errors-misc.asm:18: error E209: strings are allowed in db/dfb only
+errors-misc.asm:19: error E231: db needs values
+errors-misc.asm:20: error E206: empty value
+errors-misc.asm:21: error E231: dfb takes count,value
+errors-misc.asm:27: error E200: `equ` needs a name
+errors-misc.asm:28: error E208: illegal label '9bad'
+errors-misc.asm:29: error E208: illegal label 'bad-label'
+errors-misc.asm:30: error E208: 'small' is a reserved word
+errors-misc.asm:31: error E208: 'LD' is a reserved word
+errors-misc.asm:32: error E208: 'xwa' is a reserved word
+errors-misc.asm:33: error E208: 'Xwa' is a reserved word
+errors-misc.asm:34: error E200: `section` needs a name
+errors-misc.asm:35: error E212: section type must be code, data or romdata
+errors-misc.asm:36: error E216: only data sections can be small (TR p.19)
+errors-misc.asm:37: error E216: a section is either relocatable (small/medium/large) or abs=
+errors-misc.asm:38: error E216: bad section attribute 'foo'
+errors-misc.asm:39: error E223: 'nosuch' must be defined before this point
+errors-misc.asm:41: error E223: 'nosuch2' must be defined before this point
+errors-misc.asm:44: error E208: illegal symbol name '9x'
+errors-misc.asm:45: error E208: illegal symbol name '9b'
+errors-misc.asm:46: error E200: `fdatas` is not supported (floating point / debug information)
+errors-misc.asm:47: error E200: `file` is not supported (floating point / debug information)
+errors-misc.asm:48: error E200: missing operand
+errors-misc.asm:50: error E200: unknown mnemonic or directive 'frob'
+errors-misc.asm:54: error E200: unexpected ')'
+errors-misc.asm:55: error E200: step must be 1, 2 or 4, not '3'
+errors-misc.asm:57: error E200: bad index register in 'XHL+XDE'
+errors-misc.asm:58: error E200: bad index register in 'XHL-A'
+errors-misc.asm:59: error E200: write XHL without parentheses (asm900 JP/CALL/LDA syntax)
+errors-misc.asm:60: error E200: write 0x1234 without parentheses (asm900 JP/CALL/LDA syntax)
+errors-misc.asm:61: error E200: illegal numeric constant '0b101': asm900 writes binary as 0y (0b is rejected, E202)
+errors-misc.asm:62: error E200: illegal numeric constant '12H': suffixed numbers need -H (E202)
+errors-misc.asm:63: error E200: illegal numeric constant '08' (E202)
+errors-misc.asm:64: error E200: unexpected "'"
+errors-misc.asm:65: error E200: empty character constant
+errors-misc.asm:66: error E200: unexpected '"x"'
+errors-misc.asm:67: error E200: the width after ':' must be a constant 1..32
+errors-misc.asm:68: error E200: the width after ':' must be a constant 1..32
+errors-misc.asm:69: error E200: the width after ':' must be a constant 1..32
+errors-misc.asm:70: error E200: division by zero
+errors-misc.asm:71: error E200: division by zero
+errors-misc.asm:72: error E200: negative shift count
+errors-misc.asm:74: error E200: sizeof() takes a section name
+errors-misc.asm:75: error E200: unbalanced parentheses
+errors-misc.asm:76: error E200: unexpected ')'
+errors-misc.asm:77: error E200: unexpected '$'
+errors-misc.asm:78: error E200: unknown escape \q
+errors-misc.asm:79: error E200: \x needs hex digits
+errors-misc.asm:80: error E200: octal escape \777 above 377
+errors-misc.asm:81: error E200: unexpected '"\tdb\t"\\400"'
+errors-misc.asm:125: error E200: 'A' is not a condition
+errors-misc.asm:138: error E200: write XHL without parentheses (asm900 JP/CALL/LDA syntax)
+errors-misc.asm:160: error E200: '1' is not a condition
+errors-misc.asm:23: error E223: count uses 'x', not defined before this line
+errors-misc.asm:24: error E223: count uses 'y', not defined before this line
+errors-misc.asm:43: error E229: org 0x100 is below the location counter 0x2000DF
+errors-misc.asm:4: error E221: undefined symbol 'nowhere'
+errors-misc.asm:7: error E230: one side of a memory-to-memory LD must be a 16-bit address
+errors-misc.asm:8: error E230: operand type mismatch; legal forms: ADD R,r | ADD r,# | ADD R,(mem) | ADD (mem),R | ADD<W> (mem),#
+errors-misc.asm:10: error E230: relative target out of range (+200 bytes, E227)
+errors-misc.asm:22: error: size changed from 1 to 0 bytes between passes (internal)
+errors-misc.asm:49: error E230: operand type mismatch; legal forms: LD R,r | LD r,# | LD R,(mem) | LD (mem),R | LD<W> (mem),# | LD<W> (#16),(mem) | LD<W> (mem),(#16)
+errors-misc.asm:51: error E230: NOP takes no operands
+errors-misc.asm:52: error E230: NORMAL is undefined on the 900/H
+errors-misc.asm:53: error E230: MAX is undefined on the 900/H
+errors-misc.asm:56: error E230: memory base register BC must be 32-bit
+errors-misc.asm:73: error E206: section 'nosect' does not exist (E232)
+errors-misc.asm:83: error E230: value 256 out of range -128..255
+errors-misc.asm:84: error E230: value 65536 out of range -32768..65535
+errors-misc.asm:85: error E230: value -129 out of range -128..255
+errors-misc.asm:86: error E230: address 0x1000000 out of range
+errors-misc.asm:87: error E230: address 0xFFFFFFFF out of range
+errors-misc.asm:88: error E230: displacement 32768 out of range -32768..32767
+errors-misc.asm:89: error E230: a displacement is at most 16 bits, not 24
+errors-misc.asm:92: error E230: an absolute address is at most 24 bits, not 32
+errors-misc.asm:93: error E230: size suffix does not match the 8-bit operand
+errors-misc.asm:94: error E230: LD is byte/word only
+errors-misc.asm:95: error E230: register sizes differ
+errors-misc.asm:96: error E230: one of the registers must be a current-bank register
+errors-misc.asm:98: error E230: LDX address must be 8-bit
+errors-misc.asm:99: error E230: LDX takes (#8),#
+errors-misc.asm:100: error E230: register bank 8 out of range 0..7
+errors-misc.asm:101: error E230: interrupt level 8 out of range 0..7
+errors-misc.asm:102: error E230: SWI number 8 out of range 0..7
+errors-misc.asm:103: error E230: value 65536 out of range -32768..65535
+errors-misc.asm:104: error E230: LINK is long only
+errors-misc.asm:105: error E230: value 65536 out of range -32768..65535
+errors-misc.asm:106: error E230: UNLK is long only
+errors-misc.asm:107: error E230: count 9 out of range 1..8
+errors-misc.asm:108: error E230: count 0 out of range 1..8
+errors-misc.asm:109: error E230: operand type mismatch; legal forms: INC #3,r | INC<W> #3,(mem)
+errors-misc.asm:110: error E230: shift count 17 out of range 1..16
+errors-misc.asm:111: error E230: shift count 0 out of range 1..16
+errors-misc.asm:112: error E230: bit number 16 out of range 0..15
+errors-misc.asm:113: error E230: bit number 8 out of range 0..7
+errors-misc.asm:114: error E230: operand type mismatch; legal forms: BIT #4,r | BIT #3,(mem)
+errors-misc.asm:116: error E230: MUL: the first operand is the double-size register (WA.. or XWA..)
+errors-misc.asm:117: error E230: register sizes do not fit
+errors-misc.asm:119: error E230: MUL RR,r: RR must be WA, BC, DE or HL
+errors-misc.asm:120: error E230: MUL RR,r: RR must be WA, BC, DE or HL
+errors-misc.asm:121: error E230: value 256 out of range -128..255
+errors-misc.asm:122: error E230: MINC1 is word only
+errors-misc.asm:123: error E230: MINC1 takes #,r
+errors-misc.asm:124: error E230: SCC is byte/word only
+errors-misc.asm:126: error E230: DMAS0 is 32-bit
+errors-misc.asm:127: error E230: LDC takes cr,r or r,cr
+errors-misc.asm:129: error E230: operand type mismatch; legal forms: EX F,F' | EX R,r | EX (mem),R
+errors-misc.asm:130: error E230: register sizes differ
+errors-misc.asm:131: error E230: one of the registers must be a current-bank register
+errors-misc.asm:132: error E230: EX is byte/word only
+errors-misc.asm:133: error E230: operand type mismatch; legal forms: PUSH F | PUSH A | PUSH SR | PUSH r | PUSH<W> # | PUSH<W> (mem)
+errors-misc.asm:134: error E230: PUSH is byte/word only
+errors-misc.asm:135: error E230: operand type mismatch; legal forms: POP F | POP A | POP SR | POP r | POP<W> (mem)
+errors-misc.asm:136: error E230: operand type mismatch; legal forms: POP F | POP A | POP SR | POP r | POP<W> (mem)
+errors-misc.asm:140: error E230: LDA is word/long only
+errors-misc.asm:141: error E230: operand type mismatch; legal forms: LDAR R,label (R word or long)
+errors-misc.asm:142: error E230: LDAR is word/long only
+errors-misc.asm:143: error E230: LDI operands are (XDE+),(XHL+) or (XIX+),(XIY+)
+errors-misc.asm:144: error E230: LDI operands are (XDE+),(XHL+) or (XIX+),(XIY+)
+errors-misc.asm:145: error E230: LDDR operands are (XDE-),(XHL-) or (XIX-),(XIY-)
+errors-misc.asm:146: error E230: CPI operands are A,(R+) or WA,(R+)
+errors-misc.asm:147: error E230: CPI operands are A,(R+) or WA,(R+)
+errors-misc.asm:148: error E230: CPI operands are A,(R+) or WA,(R+)
+errors-misc.asm:152: error E230: operand type mismatch
+errors-misc.asm:153: error E230: RLD takes [A,](mem)
+errors-misc.asm:154: error E230: RLD takes [A,](mem)
+errors-misc.asm:155: error E230: BS1F is word only
+errors-misc.asm:156: error E230: BS1F takes A,r
+errors-misc.asm:157: error E230: DAA is byte only
+errors-misc.asm:158: error E230: NEG is byte/word only
+errors-misc.asm:159: error E230: EXTZ is word/long only
+errors-misc.asm:161: error E230: RET takes [cc]
+errors-misc.asm:162: error E230: CALR takes [cc,]address
+errors-misc.asm:163: error E230: DJNZ is byte/word only
+errors-misc.asm:164: error E230: DJNZ takes [r,]label
+errors-misc.asm:165: error E230: branch target must be an address
+errors-misc.asm:166: error E221: undefined symbol 'Z'
+errors-misc.asm:167: error E230: JP takes [cc,]address
+errors-misc.asm:168: error E230: address 0x1000000 out of range
+errors-misc.asm:170: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+errors-misc.asm:171: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+errors-misc.asm:172: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+errors-misc.asm:173: error E230: register sizes differ
+errors-misc.asm:174: error E230: memory base register SP must be 32-bit
+errors-misc.asm:175: error E221: undefined symbol 'nosym3'
+errors-misc.asm:176: error E230: address 0x20000 is not 16-bit
+errors-misc.asm:177: error E230: one side of a memory-to-memory LD must be a 16-bit address
+errors-misc.asm:178: error E221: undefined symbol 'nosym4'
+155 error(s); no output written

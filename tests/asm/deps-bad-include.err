@@ -1,0 +1,2 @@
+bad.asm:2: error E218: $include needs "file"
+1 error(s); no dependency file written

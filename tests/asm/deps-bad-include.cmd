@@ -1,0 +1,1 @@
+asm bad.asm -M -

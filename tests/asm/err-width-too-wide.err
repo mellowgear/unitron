@@ -1,0 +1,2 @@
+err-width-too-wide.asm:3: error E230: a 16-bit value does not fit a 8-bit operand
+1 error(s); no output written

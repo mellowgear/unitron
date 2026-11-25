@@ -1,0 +1,9 @@
+n8.asm:1: warning: include nesting deeper than 8 (asm900's limit; --strict makes it an error)
+    included from deep.asm:3
+    included from n1.asm:1
+    included from n2.asm:1
+    included from n3.asm:1
+    included from n4.asm:1
+    included from n5.asm:1
+    included from n6.asm:1
+    included from n7.asm:1

@@ -1,0 +1,2 @@
+usage: unitron z80 dis [-h] [-o OUTPUT] [--executed EXECUTED] [--hints HINTS] file
+unitron z80 dis: error: the following arguments are required: file

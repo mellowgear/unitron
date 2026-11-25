@@ -1,0 +1,11 @@
+; out.bin: a Z80 program of 35 bytes, written by unitron z80 dis.
+; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+	ORG	0000H
+Reset:
+	JR	L0022
+	DEFM	'printable text here'
+	DEFS	0CH
+	DEFB	01H
+L0022:
+	HALT
+	END

@@ -1,0 +1,2 @@
+org-align-outside.asm:9: warning W508: align 3 is not a power of 2
+warning: 5 code/romdata bytes lie outside the image 0x200010+0x8

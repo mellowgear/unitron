@@ -1,0 +1,2 @@
+usage: unitron text [-h] [-o OUTPUT] charmap input
+unitron text: error: the following arguments are required: charmap, input

@@ -1,0 +1,5 @@
+err-memory-operand.asm:3: error E200: empty memory operand
+err-memory-operand.asm:4: error E200: bad memory operand 'XHL*2'
+err-memory-operand.asm:5: error E200: bad index register in 'XHL+XDE'
+err-memory-operand.asm:6: error E230: memory base register BC must be 32-bit
+4 error(s); no output written

@@ -1,0 +1,1 @@
+warn-data-in-ram.asm:3: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)

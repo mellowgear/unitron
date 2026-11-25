@@ -1,0 +1,2 @@
+err-string-in-dw.asm:3: error E209: strings are allowed in db/dfb only
+1 error(s); no output written

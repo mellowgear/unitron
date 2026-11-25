@@ -1,0 +1,5 @@
+?macro m a
+	nop
+?endm
+?macro m a
+?endm

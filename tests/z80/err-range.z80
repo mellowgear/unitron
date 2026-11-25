@@ -1,0 +1,7 @@
+	LD	A,256
+	LD	A,-129
+	LD	(IX-129),A
+	LD	HL,10000H
+	DEFW	2 ** -1
+	LD	A,1/0
+	END

@@ -1,0 +1,12 @@
+usage: unitron mac [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] source
+
+run the macro preprocessor only
+
+positional arguments:
+  source
+
+options:
+  -h, --help	show this help message and exit
+  -o, --output OUTPUT
+  -I, --include INCLUDE
+  -D, --define DEFINE

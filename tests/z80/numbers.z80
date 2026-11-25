@@ -1,0 +1,9 @@
+; a leading digit and an optional base letter (ZM p.12-13)
+	DEFB	0FFH
+	DEFB	101B
+	DEFB	17Q
+	DEFB	17O
+	DEFB	12D
+	DEFB	12
+	DEFW	0ABCDH
+	END

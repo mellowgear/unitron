@@ -1,0 +1,7 @@
+reserved-labels.asm:3: error E208: 'small' is a reserved word
+reserved-labels.asm:4: error E208: 'abs' is a reserved word
+reserved-labels.asm:5: error E208: 'LOC0' is a reserved word
+reserved-labels.asm:6: error E208: 'ldw' is a reserved word
+reserved-labels.asm:7: error E208: 'nz' is a reserved word
+reserved-labels.asm:8: error E208: 'Sizeof' is a reserved word
+6 error(s); no output written

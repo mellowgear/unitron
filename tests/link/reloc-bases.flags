@@ -1,0 +1,1 @@
+--origin 0x200000 --size 0x60 --data-base 0x5000 --code-base 0x210000 --sym out.sym

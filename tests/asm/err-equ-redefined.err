@@ -1,0 +1,2 @@
+err-equ-redefined.asm:4: error E203: multi-defined symbol 'X' (first defined at err-equ-redefined.asm:3)
+1 error(s); no output written

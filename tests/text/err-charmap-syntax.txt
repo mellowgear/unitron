@@ -1,0 +1,12 @@
+; dialogue
+Hello:
+    text "ab a"
+    line "{12}"
+    done
+    text "a""a"
+    text "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    text "é"
+    text ""
+
+Bye.x:
+    done ; end

@@ -1,0 +1,2 @@
+err-number-0b.asm:3: error E200: illegal numeric constant '0b101': asm900 writes binary as 0y (0b is rejected, E202)
+1 error(s); no output written

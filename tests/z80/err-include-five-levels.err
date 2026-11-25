@@ -1,0 +1,5 @@
+d.z80:1: error E17: include nested too deep (four levels at most)
+    included from a.z80:1
+    included from b.z80:1
+    included from c.z80:1
+1 error(s); no output written

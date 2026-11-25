@@ -1,0 +1,4 @@
+err-not-supported.asm:3: error E200: `fdatas` is not supported (floating point / debug information)
+err-not-supported.asm:4: error E200: `file` is not supported (floating point / debug information)
+err-not-supported.asm:5: error E200: `line` is not supported (floating point / debug information)
+3 error(s); no output written

@@ -1,0 +1,2 @@
+usage: unitron dis [-h] [-o OUTPUT] [--start START] [--count COUNT] [--executed EXECUTED] [--no-sweep] [--hints HINTS] rom
+unitron dis: error: argument --count: invalid num value: 'x'

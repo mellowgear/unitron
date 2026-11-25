@@ -1,0 +1,1 @@
+err-macro-recursive.asm:4: error: macro nesting deeper than 32

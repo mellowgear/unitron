@@ -1,0 +1,2 @@
+ds-zero.asm:3: warning W501: ds count of 0 or less; 1 assumed
+ds-zero.asm:4: warning W501: ds count of 0 or less; 1 assumed

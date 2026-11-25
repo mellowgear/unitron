@@ -1,0 +1,3 @@
+# a routine the trace can't find on its own
+code 50 Helper
+data 08 10

@@ -1,0 +1,4 @@
+	NOP
+*Include part.z80
+	HALT
+	END

@@ -1,0 +1,4 @@
+	LD	A,nowhere
+	DEFS	later
+later	EQU	2
+	END

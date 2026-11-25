@@ -1,0 +1,2 @@
+	text "a{12}{ff}b"
+	done

@@ -1,0 +1,7 @@
+/* a C comment (TR 8.1.8); they do not nest */
+// a line comment (an extension)
+sections {
+    code addr=0x200000 : { *(f_code) }   /* after a definition */
+    rodata addr=0x200100 : { *(f_const) } // and here
+    ram addr=0x4000 : { *(f_data) }
+}

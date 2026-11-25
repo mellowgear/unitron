@@ -1,0 +1,11 @@
+; unary; **; * / .MOD. .SHR. .SHL.; + -; .AND.; .OR. .XOR.; comparisons; then left to right
+	DEFW	-2 ** 2		; (-2)**2 = 4
+	DEFW	2 * 3 ** 2	; 2*(3**2) = 18
+	DEFW	1 + 2 * 3	; 7
+	DEFW	1 .SHL. 2 + 1	; (1 .SHL. 2)+1 = 5
+	DEFW	6 .AND. 3 + 1	; 6 .AND. (3+1) = 4
+	DEFW	1 .OR. 6 .AND. 3	; 1 .OR. (6 .AND. 3) = 3
+	DEFW	1 + 1 .EQ. 2	; (1+1) .EQ. 2 = 0FFFFH
+	DEFW	10 - 4 - 3	; left to right: 3
+	DEFW	(1 + 2) * 3	; 9
+	END

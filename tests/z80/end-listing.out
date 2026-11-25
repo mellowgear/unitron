@@ -1,0 +1,29 @@
+wrote out.bin: 0x8A bytes at Z80 0x0000
+Reset:
+0000  F3             DI
+0001  31 80 00       LD SP,0080H
+0004  C3 6B 00       JP L006B
+0007  00 00 00 00 .. DEFS 31H
+Int38:
+0038  FB             EI
+0039  ED 4D          RETI
+003B  00 00 00 00 .. DEFS 2BH
+Nmi:
+0066  ED 45          RETN
+0068  4B             DEFB 4BH
+0069  8A 00          DEFW DriverEnd
+L006B:
+006B  2A 8C 00       LD HL,(DriverEnd+2)
+006E  11 90 00       LD DE,DriverEnd+6
+0071  01 10 00       LD BC,0010H
+0074  32 81 00       LD (L0080+1),A
+0077  32 01 40       LD (4001H),A
+007A  CD 80 00       CALL L0080
+007D  C3 99 00       JP 0099H
+L0080:
+0080  3E 00          LD A,00H
+0082  21 9A 00       LD HL,009AH
+0085  DD 2A 8A 00    LD IX,(DriverEnd)
+0089  C9             RET
+DriverEnd:
+008A                 ; the end of the image

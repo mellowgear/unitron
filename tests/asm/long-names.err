@@ -1,0 +1,1 @@
+long-names.asm:4: warning: 'abcdefghijklmnopqrstuvwxyz0123456_two' and 'abcdefghijklmnopqrstuvwxyz0123456_one' agree in their first 32 characters (asm900 V2.2d keeps only 32)

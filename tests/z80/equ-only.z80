@@ -1,0 +1,4 @@
+	ORG	0000H
+Start:	JR	Start
+Value:	DEFB	1
+	END

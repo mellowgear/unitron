@@ -1,0 +1,4 @@
+err-defb.z80:1: error E9: DEFB takes one character; use DEFM for a string
+err-defb.z80:2: error E9: DEFB takes one operand (ZM p.10)
+err-defb.z80:3: error E9: DEFW takes one operand (ZM p.10)
+3 error(s); no output written

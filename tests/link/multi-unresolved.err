@@ -1,0 +1,7 @@
+multi-unresolved.asm:10: error E221: undefined symbol 'sub1'
+multi-unresolved.asm:11: error E221: undefined symbol 'counter'
+multi-unresolved.asm:12: error E221: undefined symbol 'tiny'
+multi-unresolved.asm:13: error E221: undefined symbol 'sub1'
+multi-unresolved.asm:14: error E221: undefined symbol 'sub1'
+multi-unresolved.asm:14: error E221: undefined symbol 'counter'
+6 error(s); no output written

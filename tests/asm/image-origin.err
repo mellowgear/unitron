@@ -1,0 +1,3 @@
+image-origin.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+image-origin.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+warning: 2 code/romdata bytes lie outside the image 0x200008+0x9

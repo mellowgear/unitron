@@ -1,0 +1,7 @@
+	ORG	0000H
+	JR	End
+	DEFM	'printable text here'
+	DEFS	12
+	DEFB	1
+End:	HALT
+	END

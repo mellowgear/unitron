@@ -1,0 +1,5 @@
+game.ngp game.sym: main.asm
+game.ngp game.sym: macros.inc
+game.ngp game.sym: data.inc
+game.ngp game.sym: more.inc
+game.ngp game.sym: build/gen.asm

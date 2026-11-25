@@ -1,0 +1,2 @@
+err-written-twice.z80:4: error: address 0010H is written twice (check the ORG lines)
+1 error(s); no output written

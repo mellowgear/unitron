@@ -1,0 +1,7 @@
+K	EQU	5
+V	DEFL	1
+	DEFB	V
+V	DEFL	V+K
+	DEFB	V
+	LD	A,K
+	END

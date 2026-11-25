@@ -1,0 +1,7 @@
+again000:
+	djnz	again000
+again001:
+	djnz	again001
+first:
+again002:
+	djnz	again002

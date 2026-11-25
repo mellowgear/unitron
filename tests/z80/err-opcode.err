@@ -1,0 +1,4 @@
+err-opcode.z80:1: error E3: invalid opcode 'FROB'
+err-opcode.z80:2: error E3: invalid opcode 'Ld' (mixed case)
+err-opcode.z80:3: error E3: invalid opcode 'GLOBAL'
+3 error(s); no output written

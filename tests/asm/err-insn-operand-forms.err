@@ -1,0 +1,10 @@
+err-insn-operand-forms.asm:3: error E230: EI takes [#3]
+err-insn-operand-forms.asm:4: error E230: SWI takes [#3]
+err-insn-operand-forms.asm:5: error E230: LDF takes #3
+err-insn-operand-forms.asm:6: error E230: RETD takes d16
+err-insn-operand-forms.asm:7: error E230: LDC takes cr,r or r,cr
+err-insn-operand-forms.asm:8: error E230: LINK takes r,d16
+err-insn-operand-forms.asm:9: error E230: SCC takes cc,r
+err-insn-operand-forms.asm:10: error E230: EXTZ takes one register
+err-insn-operand-forms.asm:11: error E230: DJNZ takes [r,]label
+9 error(s); no output written

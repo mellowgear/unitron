@@ -1,0 +1,4 @@
+err-escape.asm:3: error E200: unknown escape \q
+err-escape.asm:4: error E200: \x needs hex digits
+err-escape.asm:5: error E200: octal escape \777 above 377
+3 error(s); no output written

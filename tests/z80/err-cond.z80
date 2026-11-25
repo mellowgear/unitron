@@ -1,0 +1,7 @@
+	COND	1
+	COND	1
+	ENDC
+	ENDC
+L	COND	1
+	ENDC
+	END

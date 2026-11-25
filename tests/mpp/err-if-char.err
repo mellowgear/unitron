@@ -1,0 +1,1 @@
+err-if-char.asm:1: error: bad #if expression '1 $ 2'

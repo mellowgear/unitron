@@ -1,0 +1,4 @@
+1abc:	NOP
+HL:	NOP
+ab$:	NOP
+	END

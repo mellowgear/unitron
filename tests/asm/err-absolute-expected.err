@@ -1,0 +1,2 @@
+err-absolute-expected.asm:5: error E222: absolute expression expected
+1 error(s); no output written

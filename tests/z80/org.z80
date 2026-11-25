@@ -1,0 +1,5 @@
+	ORG	0004H
+	NOP
+	ORG	0010H
+Late:	HALT
+	END

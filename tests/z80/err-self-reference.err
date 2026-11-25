@@ -1,0 +1,2 @@
+err-self-reference.z80:3: error E8: 'A1' is defined in terms of itself
+1 error(s); no output written

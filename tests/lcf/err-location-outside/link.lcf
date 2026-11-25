@@ -1,0 +1,4 @@
+. = 0x200000;
+sections {
+    code addr=0x200000 : { *(f_code) }
+}

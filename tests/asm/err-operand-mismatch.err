@@ -1,0 +1,4 @@
+err-operand-mismatch.asm:3: error E230: one side of a memory-to-memory LD must be a 16-bit address
+err-operand-mismatch.asm:4: error E230: operand type mismatch; legal forms: ADD R,r | ADD r,# | ADD R,(mem) | ADD (mem),R | ADD<W> (mem),#
+err-operand-mismatch.asm:5: error E230: operand type mismatch; legal forms: INC #3,r | INC<W> #3,(mem)
+3 error(s); no output written

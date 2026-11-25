@@ -1,0 +1,26 @@
+$maximum
+c	section	code abs=0x200000
+resume000:
+	ld	XWA,resume000
+	ld	(XIZ+8),XWA
+	cpb	(XIZ+12),0
+	ret	NZ
+here:
+resume001:
+	ld	XWA,resume001
+	ld	(XIZ+8),XWA
+	cpb	(XIZ+12),0
+	ret	NZ
+	ld	A,5
+	ld	(XHL),B
+	ld	A,
+	ld	C,1
+	ld	C,2
+	nop
+put	nop
+resume002:
+	ld	XWA,resume002
+	ld	(XIZ+8),XWA
+	cpb	(XIZ+12),0
+	ret	NZ
+	end

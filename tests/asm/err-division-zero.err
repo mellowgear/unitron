@@ -1,0 +1,2 @@
+err-division-zero.asm:3: error E200: division by zero
+1 error(s); no output written

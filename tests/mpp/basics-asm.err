@@ -1,0 +1,21 @@
+t.asm:5: error E215: no section definition before this statement
+t.asm:9: error E215: no section definition before this statement
+t.asm:11: error E215: no section definition before this statement
+t.asm:12: error E215: no section definition before this statement
+t.asm:15: error E215: no section definition before this statement
+t.asm:16: error E215: no section definition before this statement
+t.asm:19: error E215: no section definition before this statement
+t.asm:21: error E215: no section definition before this statement
+t.asm:26: error E215: no section definition before this statement
+t.asm:33: error E215: no section definition before this statement
+t.asm:41: error E215: no section definition before this statement
+t.asm:43: error E215: no section definition before this statement
+t.asm:46: error E215: no section definition before this statement
+t.asm:49: error E215: no section definition before this statement
+t.asm:51: error E215: no section definition before this statement
+t.asm:52: error E215: no section definition before this statement
+t.asm:53: error E215: no section definition before this statement
+t.asm:54: error E215: no section definition before this statement
+t.asm:55: error E215: no section definition before this statement
+t.asm:56: error E215: no section definition before this statement
+20 error(s); no output written

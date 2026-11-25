@@ -1,0 +1,2 @@
+err-sizeof-not-section.asm:3: error E200: sizeof() takes a section name
+1 error(s); no output written

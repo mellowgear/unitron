@@ -1,0 +1,4 @@
+	FROB
+	Ld	A,B
+	GLOBAL	x
+	END

@@ -167,17 +167,22 @@ its line, byte count and width. A string that fills the slot without `done` has 
 
 ## Tests
 
-`tests/cpp/` checks the C++ build against vectors frozen from the original Python implementation:
-the whole opcode space decoded and re-assembled, 346,448 instruction lines, the CLI golden cases
-(`tests/golden/`), the `.lcf` cases, `data/ngpc_hw.inc` against `data/hwnames.tsv`, and the
-the reference ROM round trip by hash. The Z80 side has its own: the Z80 opcode space (`z80opspace`), golden
-cases, `z80shift` (one inserted `NOP` moves every labeled reference by one), and the Z80 sound
-drivers of the reference ROM and the second ROM round-tripped by hash and shifted (`z80rom`; skipped
-without the ROMs). The `cart` test needs no ROM, so CI runs it: it builds our own test cartridge
-(`tests/cart/`, an asm900 program with a Z80 program, also an example), runs `dis`, `roundtrip`,
-`z80 dis` and `z80 roundtrip` on it, and compares with `tests/cart/expected/`.
-`unitron_tests <test> ... --write` rewrites the expected outputs after
-a deliberate change; review `git diff tests/` afterwards.
+`(cd build && ctest)` runs them all; tests/README.md says how to run one, add a case and rewrite
+expected outputs (`--write`).
+
+| Test | Checks |
+|---|---|
+| `cases-asm`, `cases-mpp`, `cases-link`, `cases-lcf`, `cases-dis`, `cases-gfx`, `cases-text`, `cases-bin2db`, `cases-z80`, `cases-cli` | about 500 small cases in the style of another toolchain's tests: `tests/asm/NAME.asm` with `NAME.flags` or `NAME.cmd`, and the exact expected stdout (`NAME.out`), stderr (`NAME.err`) and output files (`NAME.out.bin`, ...) |
+| `datasheet` | encodings from Toshiba's datasheet and Assembler Reference and from Zilog's UM0080, with their pages (`tests/datasheet/`) |
+| `opspace`, `lines` | every TLCS-900 opcode decoded and re-assembled; 346,448 instruction lines (vectors frozen from the original Python implementation) |
+| `z80opspace`, `z80shift` | every documented Z80 form; one inserted `NOP` moves every labeled reference by one |
+| `lcf` | the link command file parser and placement |
+| `hwinc`, `hwnames` | `data/ngpc_hw.inc` against `data/hwnames.tsv`; the table itself (unique, sorted, cited, spelled by the naming rule) |
+| `cart` | our own test cartridge (`tests/cart/`, an asm900 program with a Z80 program, also an example): `dis`, `roundtrip`, `z80 dis`, `z80 roundtrip`, compared with `tests/cart/expected/` |
+| `rom`, `z80rom` | the reference ROM's round trip and the Z80 drivers of the reference ROM and the second ROM by hash; skipped without the ROMs |
+
+No test needs a ROM except `rom` and `z80rom`. tests/README.md "Known issues" lists the cases
+that freeze behavior that looks wrong.
 
 ## What is ours and what is cited
 

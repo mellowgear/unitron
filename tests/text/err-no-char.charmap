@@ -1,0 +1,9 @@
+; a charmap
+char " " 00
+char "a" 01
+char "ab" 7F
+char """" 22
+char "é" 30
+cmd text - string
+cmd line FE string
+cmd done FF

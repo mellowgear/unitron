@@ -1,0 +1,65 @@
+wrote out.ngp: 0x200 bytes at 0x200000
+200100  06 07                    di
+200102  47 00 6c 00 00           ld XSP,0x6C00
+200107  43 75 01 20 00           ld XHL,0x200175
+20010C  f1 cc 6f 63              ld (0x6FCC),XHL
+200110  40 76 01 20 00           ld XWA,0x200176
+200115  f1 d4 6f 60              ld (0x6FD4),XWA
+200119  c1 82 6f 21              ld A,(0x6F82)
+20011D  f2 aa 62 00 41           ld (0x62AA),A
+200122  31 02 00                 ld BC,2
+200125  c3 ed 0f 00 23           ld C,(XHL+0xF)
+20012A  cd cf 00                 cp E,0
+20012D  d9 88                    ld WA,BC
+20012F  c9 08 05                 mul WA,5
+200132  eb cf 00 00 00 00        cp XHL,0
+200138  f5 f1 52                 ld (XIX+),DE
+20013B  d4 ec 20                 ld WA,(-XHL:1)
+20013E  f3 07 ec e8 33           lda XHL,XHL+DE
+200143  1e 2c 00                 calr 0x200172
+200146  1d 72 01 20              call 0x200172
+20014A  bc 02 d7                 jp C,XIX+2
+20014D  c7 31 03 12              ld RW3,0x12
+200151  f9                       swi 1
+200152  f9                       swi 1
+200153  f1 02 80 41              ld (0x8002),A
+200157  f3 13 21 00 35           ldar XIY,0x20017C
+20015C  c3 03 ec e0 21           ld A,(XHL+A)
+200161  f1 00 80 41              ld (0x8000),A
+200165  f1 e2 87 41              ld (0x87E2),A
+200169  f1 10 80 cb              bit 3,(0x8010)
+20016D  ca 1c fd                 djnz B,0x20016D
+200170  68 fb                    jr 0x20016D
+200172  28                       push WA
+200173  48                       pop WA
+200174  0e                       ret
+200175  07                       reti
+200176  21 01                    ld A,1
+200178  b0 f6                    ret Z
+20017A  68 fa                    jr 0x200176
+20017C  01                       normal  ; 900 minimum/maximum mode switch; undefined on 900/H
+20017D  02                       push SR
+20017E  03                       pop SR
+20017F  85                       db 0x85
+200180  01                       normal  ; 900 minimum/maximum mode switch; undefined on 900/H
+200181  20 00                    ld W,0
+200183  ff                       swi 7
+200184  ff                       swi 7
+200185  21 02                    ld A,2
+200187  1d 8e 01 20              call 0x20018E
+20018B  0e                       ret
+20018C  55                       db 0x55
+20018D  66 22                    jr Z,0x2001B1
+20018F  03                       pop SR
+200190  0e                       ret
+200191  50                       db 0x50
+200192  51                       db 0x51
+200193  1f                       db 0x1F
+200194  ff                       swi 7
+200195  ff                       swi 7
+200196  ff                       swi 7
+200197  00                       nop
+200198  00                       nop
+200199  00                       nop
+20019A  00                       nop
+20019B  ff                       swi 7

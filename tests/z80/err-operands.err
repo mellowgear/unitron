@@ -1,0 +1,4 @@
+err-operands.z80:1: error E9: invalid operand combination for LD (BC),B
+err-operands.z80:2: error E9: register or condition 'B' in an expression
+err-operands.z80:3: error E9: invalid operand combination for JP (BC)
+3 error(s); no output written

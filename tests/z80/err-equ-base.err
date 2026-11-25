@@ -1,0 +1,2 @@
+usage: unitron z80 asm [-h] [-o OUTPUT] [-I INCLUDE] [--sym SYM] [--equ EQU] [--equ-base EQU_BASE] [--db DB] source
+unitron z80 asm: error: argument --equ-base: invalid num value: 'zz'

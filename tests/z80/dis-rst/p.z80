@@ -1,0 +1,11 @@
+	ORG	0000H
+Reset:	DI
+	RST	08H
+	RST	38H
+	JR	Reset
+	ORG	0008H
+	RET
+	ORG	0038H
+	EI
+	RETI
+	END

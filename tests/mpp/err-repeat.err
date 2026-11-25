@@ -1,0 +1,1 @@
+err-repeat.asm:1: error: ?repeat is not supported (only ?macro/?endm)

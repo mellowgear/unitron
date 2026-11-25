@@ -1,0 +1,1 @@
+--origin 0x200000 --size 0x60 --place m=0x40 --place l=0x80 --sym out.sym

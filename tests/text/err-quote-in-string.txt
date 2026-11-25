@@ -1,0 +1,3 @@
+; BUG?: the charmap reads """" as a quote character, but a text line does not
+	text "a""a"
+	done

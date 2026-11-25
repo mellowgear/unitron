@@ -1,0 +1,2 @@
+err-range-jr.z80:1: error E10: relative jump to far is out of range (200 bytes)
+1 error(s); no output written

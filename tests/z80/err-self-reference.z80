@@ -1,0 +1,4 @@
+A1	EQU	A2
+A2	EQU	A1
+	DEFB	A1
+	END

@@ -1,0 +1,2 @@
+usage: unitron gfx palette [-h] [--colors N] input output
+unitron gfx palette: error: argument --colors: must be 1 to 256, not 0

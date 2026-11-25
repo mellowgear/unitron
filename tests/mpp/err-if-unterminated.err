@@ -1,0 +1,1 @@
+err-if-unterminated.asm:1: error: #if without #endif

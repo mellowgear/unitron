@@ -1,0 +1,11 @@
+memory {
+    ram (RW) : org=0x4000, len=0x1000
+    rom (RX) : org=0x200000, len=0x1000
+}
+/* BUG?: docs/lcf.md says OVERLAY sections may overlap other sections; the .lcf check
+   allows it, but the assembler writes both sections' bytes and reports E217 */
+sections {
+    code addr=0x200000 : { *(f_code) }
+    rodata addr=0x200002 (OVERLAY) : { *(f_const) }
+    ram addr=0x4000 : { *(f_data) }
+}

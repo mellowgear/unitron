@@ -1,0 +1,8 @@
+memory {
+    ram (RW) : org=0x4000, len=0x1000
+    rom (RX) : org=0x200000, len=0x1000
+}
+sections {
+    /* every f_a first, in input order, then every f_b */
+    all addr=0x200000 : { *(f_a f_b) }
+}

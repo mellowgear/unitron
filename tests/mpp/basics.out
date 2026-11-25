@@ -1,0 +1,23 @@
+$maximum
+	db	((3)*2)
+	db	1 
+
+	db	2 ; kept
+	ex	F,F' ; it's fine
+	db	"hello"
+	db	1 #"2"
+	db	1 +  2
+	db	"ifdef"
+	db	"elif"
+	db	"elif2"
+	db	N
+	db	"builtin"
+	db	"cexpr"
+	db	9
+	db	((2)*2)+1
+	db	((3)*2)
+	db	TWICE
+	db	"TWICE(1)"
+	db	'N'
+	db	2N
+	end

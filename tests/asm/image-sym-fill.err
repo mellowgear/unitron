@@ -1,0 +1,2 @@
+image-sym-fill.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+image-sym-fill.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)

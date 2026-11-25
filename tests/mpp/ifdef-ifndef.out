@@ -1,0 +1,3 @@
+	db	"ifdef yes"
+	db	"ifndef no"
+	db	"defined"

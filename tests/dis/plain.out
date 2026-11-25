@@ -1,0 +1,13 @@
+wrote out.ngp: 0x70 bytes at 0x200000
+200040  47 00 6c 00 00           ld XSP,0x6C00
+200045  43 5c 00 20 00           ld XHL,0x20005C
+20004A  f1 cc 6f 63              ld (0x6FCC),XHL
+20004E  44 5d 00 20 00           ld XIX,0x20005D
+200053  a4 23                    ld XHL,(XIX)
+200055  b3 e8                    call XHL
+200057  ca 1c f9                 djnz B,0x200053
+20005A  68 e4                    jr 0x200040
+20005C  07                       reti
+20005D  65 00                    jr MI,0x20005F
+20005F  20 00                    ld W,0
+200061  ff                       swi 7

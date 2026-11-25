@@ -1,0 +1,6 @@
+err-label-names.asm:3: error E208: illegal label '9bad'
+err-label-names.asm:4: error E208: illegal label 'bad-label'
+err-label-names.asm:5: error E208: 'small' is a reserved word
+err-label-names.asm:6: error E208: 'LD' is a reserved word
+err-label-names.asm:7: error E208: 'xwa' is a reserved word
+5 error(s); no output written

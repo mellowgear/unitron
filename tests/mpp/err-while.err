@@ -1,0 +1,1 @@
+err-while.asm:1: error: ?while is not supported (only ?macro/?endm)

@@ -1,0 +1,2 @@
+a.asm:4: error E230: address 0x300000 does not fit the symbol's medium displacement
+1 error(s); no output written

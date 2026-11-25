@@ -1,0 +1,2 @@
+	ORG	0FFEH
+	LD	HL,0

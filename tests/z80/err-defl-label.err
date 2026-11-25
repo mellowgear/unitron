@@ -1,0 +1,3 @@
+err-defl-label.z80:1: error E6: DEFL needs a label
+err-defl-label.z80:2: error E6: EQU needs a label
+2 error(s); no output written

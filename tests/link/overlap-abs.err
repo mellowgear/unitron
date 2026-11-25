@@ -1,0 +1,3 @@
+overlap-abs.asm:8: error E217: sections overlap at 0x200001: overlap-abs.asm:8 (e) runs into bytes from overlap-abs.asm:4 (c, 0x200000-0x200003)
+overlap-abs.asm:6: error E217: sections overlap at 0x200002: overlap-abs.asm:6 (d) runs into bytes from overlap-abs.asm:4 (c, 0x200000-0x200003)
+2 error(s); no output written

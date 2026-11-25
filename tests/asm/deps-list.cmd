@@ -1,0 +1,1 @@
+asm main.asm -M -

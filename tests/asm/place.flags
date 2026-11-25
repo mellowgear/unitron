@@ -1,0 +1,1 @@
+--place r=0x200100 --place d=0x5000 --sym out.sym

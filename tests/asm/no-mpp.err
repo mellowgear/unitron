@@ -1,0 +1,2 @@
+no-mpp.asm:3: error E208: illegal label '#define'
+1 error(s); no output written

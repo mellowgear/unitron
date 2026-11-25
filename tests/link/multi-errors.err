@@ -1,0 +1,3 @@
+b.asm:3: error E210: public 'missing' is not defined in module sub
+b.asm:4: error E203: public 'start' also defined at a.asm:7
+2 error(s); no output written

@@ -1,0 +1,4 @@
+err-size-suffix.asm:3: error E230: size suffix does not match the 8-bit operand
+err-size-suffix.asm:4: error E230: LD is byte/word only
+err-size-suffix.asm:5: error E230: register sizes differ
+3 error(s); no output written

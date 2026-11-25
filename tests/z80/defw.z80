@@ -1,0 +1,5 @@
+	DEFW	1234H
+	DEFW	-1
+	DEFW	Here
+Here:	DEFW	$
+	END

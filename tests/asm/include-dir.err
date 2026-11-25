@@ -1,0 +1,4 @@
+sub/deeper.asm:2: error E221: undefined symbol 'missing'
+    included from t.asm:6
+    included from sub/deep.asm:2
+1 error(s); no output written

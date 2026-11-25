@@ -1,0 +1,2 @@
+error: link.lcf:6: "code" enters unconfigured memory at 0x300000
+1 error(s); no output written

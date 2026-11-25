@@ -1,0 +1,4 @@
+$maximum
+c	section	code abs=0x200000
+	db	1	db	2	db	3	db	4
+	end

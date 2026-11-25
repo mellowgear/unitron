@@ -1,0 +1,2 @@
+err-org-backwards.asm:4: error E229: org 0x200001 is below the location counter 0x200003
+1 error(s); no output written

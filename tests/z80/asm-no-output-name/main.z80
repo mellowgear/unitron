@@ -1,0 +1,69 @@
+; Zilog syntax: labels in column one or ending in a colon, ; comments (ZM p.6)
+NOTES	EQU	10H		; ZM p.10 pseudo-ops
+PORT	EQU	0FFH
+COUNT	DEFL	3
+COUNT	DEFL	COUNT+1
+	ORG	0000H
+Reset:	DI
+	LD	SP,STACK
+	IM	1
+	JP	Init
+	ORG	0038H
+Int38:	EX	AF,AF'		; AF' is a keyword, not a string
+	INC	A
+	OUT	(PORT),A
+	EI
+	RETI
+	ORG	0066H
+Nmi:	PUSH	AF
+	LD	A,(8000H)
+	CPL
+	LD	(8000H),A
+	POP	AF
+	RETN
+Init:	ld	hl,Table	; lower case works too (ZM p.12)
+	ld	b,COUNT
+loop:	ld	a,(hl)
+	inc	hl
+	djnz	loop
+	LD	IX,Table
+	LD	A,(IX+2)
+	LD	(IY-1),A
+	LD	(IX),5
+	BIT	7,(IX+1)
+	SET	0,(IY+7FH)
+	RST	08H
+	JR	NZ,$+4
+	JR	Init
+	LD	BC,-1
+	LD	DE,1 .SHL. 4 .OR. 1
+	LD	A,10101B+17Q+12D+1FH-9
+	LD	HL,5 .GT. 3
+	LD	HL,7 .MOD. 3 * 2 ** 3
+	LD	A,.RES.(0FFFFH+2)
+	IN	A,(PORT)
+	OUT	(C),B
+	EX	(SP),IX
+	JP	(IY)
+	CP	NOTES
+	ADD	A,(HL)
+	SBC	HL,DE
+	HALT
+Table:	DEFB	1
+	DEFB	'A'
+	DEFB	''''
+	DEFB	-1
+	DEFW	Table
+	DEFM	'It''s ok'
+	DEFS	4
+	COND	COUNT .EQ. 4
+	DEFB	44H
+	ENDC
+	COND	0
+	DEFB	99H
+	ENDC
+*Include part.z80
+*List OFF
+STACK	EQU	00C0H
+	END
+	this line is ignored after END

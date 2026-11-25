@@ -1,0 +1,5 @@
+usage: unitron gfx [-h] {topng,frompng,palette} ...
+
+    topng               2bpp tiles -> indexed PNG
+    frompng             indexed PNG -> 2bpp tiles, or one byte per pixel (--indices)
+    palette             the PNG's palette -> 0x0BGR words

@@ -1,0 +1,4 @@
+sections {
+    code addr=addr(rodata) : { *(f_code) }
+    rodata addr=0x200100 : { *(f_const) }
+}

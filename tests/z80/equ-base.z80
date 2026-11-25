@@ -1,0 +1,20 @@
+PORT	EQU	0FFH		; EQU names are not addresses: not in --equ
+	ORG	0000H
+Reset:	DI
+	LD	SP,Stack
+	JR	Loop
+	ORG	0038H
+Int38:	EX	AF,AF'
+	INC	A
+	OUT	(PORT),A
+	EI
+	RETI
+	ORG	0066H
+Nmi:	LD	(Cmd),A
+	RETN
+Loop:	LD	A,(Cmd)
+	JR	Loop
+Cmd:	DEFB	0
+Tick_seen:	DEFB	0
+Stack:	DEFS	10H
+	END

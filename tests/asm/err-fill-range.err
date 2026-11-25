@@ -1,0 +1,1 @@
+error: --fill must be a byte (0..255), not 256

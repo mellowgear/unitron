@@ -1,0 +1,2 @@
+err-control-unknown.asm:3: error E218: unknown control instruction $frob
+1 error(s); no output written

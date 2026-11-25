@@ -1,0 +1,2 @@
+error: link.lcf:1: the location counter '.' can only be set in the section definition part (TR 8.1.4)
+1 error(s); no output written

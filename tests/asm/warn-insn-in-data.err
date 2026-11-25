@@ -1,0 +1,1 @@
+warn-insn-in-data.asm:3: warning W504: instruction in a data section

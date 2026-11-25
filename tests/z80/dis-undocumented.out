@@ -1,0 +1,54 @@
+Reset:
+0000  F3             DI
+0001  31 C0 00       LD SP,00C0H
+0004  C3 10 00       JP L0010
+0007  00             DEFB 00H
+0008  4B             DEFB 4BH
+0009  31             DEFB 31H
+000A  00             DEFB 00H
+000B  00             DEFB 00H
+000C  00             DEFB 00H
+000D  00             DEFB 00H
+000E  00             DEFB 00H
+000F  00             DEFB 00H
+L0010:
+0010  21 34 12       LD HL,1234H
+0013  32 17 00       LD (L0016+1),A
+L0016:
+0016  3E 05          LD A,05H
+0018  CD 20 00       CALL L0020
+001B  ED             DEFB 0EDH  ; LD HL,(1234H) (the ED 6B encoding; UM0080 p.45)
+001C  6B             DEFB 6BH
+001D  34             DEFB 34H
+001E  12             DEFB 12H
+001F  C9             RET
+L0020:
+0020  ED             DEFB 0EDH  ; not a documented Z80 instruction
+0021  70             DEFB 70H
+0022  00             DEFB 00H
+0023  00             DEFB 00H
+0024  00             DEFB 00H
+0025  00             DEFB 00H
+0026  00             DEFB 00H
+0027  00             DEFB 00H
+0028  41 42 43 44 .. DEFM 'ABCDEFGH'
+0030  00 00 00 00 .. DEFS 08H
+Int38:
+0038  CB             DEFB 0CBH  ; not a documented Z80 instruction
+0039  30             DEFB 30H
+003A  00 00 00 00 .. DEFS 16H
+0050  3E             DEFB 3EH
+0051  01             DEFB 01H
+0052  C9             DEFB 0C9H
+0053  00             DEFB 00H
+0054  AF             DEFB 0AFH
+0055  C9             DEFB 0C9H
+0056  00             DEFB 00H
+0057  00             DEFB 00H
+0058  18             DEFB 18H
+0059  FF             DEFB 0FFH
+005A  00 00 00 00 .. DEFS 0CH
+Nmi:
+0066  ED 45          RETN
+0068  00             DEFB 00H
+0069  00             DEFB 00H

@@ -1,0 +1,1 @@
+err-unknown-function.asm:1: error: ?foo is not supported (only ?macro/?endm)

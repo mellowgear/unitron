@@ -1,0 +1,2 @@
+err-label-colon.asm:3: error E200: syntax error: a line cannot start with ':'
+1 error(s); no output written

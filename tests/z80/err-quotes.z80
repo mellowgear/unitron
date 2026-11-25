@@ -1,0 +1,3 @@
+	DEFB	'a
+	DEFM	'abc
+	END

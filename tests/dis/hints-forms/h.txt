@@ -1,0 +1,5 @@
+# hints: comments start with # or ;
+; addresses are hex, with or without 0x
+code 0x20006D            ; no name: code_20006D
+code 200065 table_fn
+data 0x20005D 200065       ; the table

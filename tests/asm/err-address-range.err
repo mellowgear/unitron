@@ -1,0 +1,4 @@
+err-address-range.asm:3: error E230: address 0x1000000 out of range
+err-address-range.asm:4: error E230: displacement 32768 out of range -32768..32767
+err-address-range.asm:5: error E230: an absolute address is at most 24 bits, not 32
+3 error(s); no output written

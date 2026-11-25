@@ -1,0 +1,14 @@
+memory {
+    ram (RW) : org=0x4000, len=0x1000
+    rom (RX) : org=0x200000, len=0x1000
+}
+sections {
+    code addr=0x200000 : { *(f_code) }
+    rodata addr=0x200100 : { *(f_const) }
+    /* stored in ROM after rodata, run from RAM */
+    init org=0x200200 addr=0x4100 : { *(f_init) }
+    ram addr=0x4000 : { *(f_data) }
+    __InitROM = org(init);
+    __InitRAM = addr(init);
+    __InitLen = sizeof(init);
+}

@@ -1,0 +1,2 @@
+err-number-octal.asm:3: error E200: illegal numeric constant '09' (E202)
+1 error(s); no output written

@@ -1,0 +1,2 @@
+err-shift-negative.asm:3: error E200: negative shift count
+1 error(s); no output written

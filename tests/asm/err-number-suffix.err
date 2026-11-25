@@ -1,0 +1,2 @@
+err-number-suffix.asm:3: error E200: illegal numeric constant '12H': suffixed numbers need -H (E202)
+1 error(s); no output written

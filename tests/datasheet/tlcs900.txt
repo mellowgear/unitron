@@ -1,0 +1,214 @@
+# TLCS-900 encodings from Toshiba's documents: instruction text, the bytes the documents give,
+# and where. Checked by `unitron_tests datasheet` (tests/cpp/datasheet.cpp); PC = 0x200000.
+# The instruction text is unitron's (asm900) spelling; the bytes were computed by hand from:
+#   DS p.N l.L  the code template of the TLCS-900/L1 datasheet's instruction lists (Appendix B),
+#               PDF page N, line L of docs/third_party/ds_lists.txt;
+#   with the operand codes of Toshiba's TLCS-900 CPU manual: sizes zz/z and registers R/r
+#   (CPU900-49), memory modes (CPU900-50), conditions cc (CPU900-51), the 8-bit register codes
+#   (CPU900-53) and control registers (CPU900-54). The extract lacks the datasheet's own code page
+#   (PDF p.158); the CPU manual's tables were read from a transcription (../tlcs900/).
+#   TR p.N      the Assembler Reference (docs/third_party/tr.txt), printed page N.
+# Where the documents allow several encodings, the row gives the one docs/encoding.md picks and
+# says which rule. Format: TEXT <tab> BYTES <tab> SOURCE [<tab> differs: UNITRON'S BYTES].
+ld A,B	CA 89	DS p.159 l.47 LD R,r: the prefix holds the source (docs/encoding.md rule 3)
+ld B,A	C9 8A	DS p.159 l.47
+ld HL,BC	D9 8B	DS p.159 l.47
+ld XWA,XBC	E9 88	DS p.159 l.47
+ld A,RA3	C7 30 89	DS p.159 l.47 r as an extended register code (CPU900-49, -53)
+ld RA3,A	C7 30 99	DS p.159 l.48 LD r,R: the destination is not a current-bank register
+ld A,2:3	C9 AA	DS p.159 l.50 LD r,#3 when :3 is written (rule 4)
+ld WA,5	D8 AD	DS p.159 l.50 a word register takes LD r,#3 for 0..7 (rule 4)
+ld XDE,7	EA AF	DS p.159 l.50
+ld A,5	21 05	DS p.159 l.51 byte LD R,# is 20+R even for 0..7 (rule 4)
+ld BC,0x1234	31 34 12	DS p.159 l.51
+ld XHL,0x200000	43 00 00 20 00	DS p.159 l.51
+ld WA,5:16	30 05 00	DS p.159 l.51 LD R,# when :16 is written
+ld A,(XHL)	83 21	DS p.159 l.53
+ld A,(XIX+5)	8C 05 21	DS p.159 l.53
+ld A,(XIX-1)	8C FF 21	DS p.159 l.53
+ld A,(XHL+0)	8B 00 21	DS p.159 l.53 (r+0) keeps its zero byte (rule 7)
+ld A,(0x20)	C0 20 21	DS p.159 l.53 an address below 0x100 is 8-bit (rule 6)
+ld A,(0x6F82)	C1 82 6F 21	DS p.159 l.53
+ld A,(0x200000)	C2 00 00 20 21	DS p.159 l.53
+ld A,(0x62AA:24)	C2 AA 62 00 21	DS p.159 l.53 (#24) when :24 is written
+ld WA,(XIX+0x1234)	D3 F1 34 12 20	DS p.159 l.53
+ld C,(XHL+0xF:16)	C3 ED 0F 00 23	DS p.159 l.53 (r+d16) when :16 is written (rule 7)
+ld A,(XHL+A)	C3 03 EC E0 21	DS p.159 l.53
+ld A,(XIX+)	C5 F0 21	DS p.159 l.53 step = operand size (rule 8)
+ld XWA,(-XSP)	E4 FE 20	DS p.159 l.53
+ld WA,(-XHL:1)	D4 EC 20	DS p.159 l.53 a written step (rule 8)
+ld (XHL),A	B3 41	DS p.159 l.54
+ld (0x6FCC),XHL	F1 CC 6F 63	DS p.159 l.54
+ld (XIX+),DE	F5 F1 52	DS p.159 l.54
+ldb (0x10),5	08 10 05	DS p.159 l.55
+ldw (0x10),0x1234	0A 10 34 12	DS p.159 l.55
+ldb (XHL),5	B3 00 05	DS p.159 l.56
+ldw (0x1000),7	F1 00 10 02 07 00	DS p.159 l.56
+ldw (0x1000),(XHL)	93 19 00 10	DS p.159 l.57
+ldb (XHL),(0x1000)	B3 14 00 10	DS p.159 l.58
+push F	18	DS p.159 l.59
+push A	14	DS p.159 l.60
+push WA	28	DS p.159 l.61
+push XHL	3B	DS p.159 l.61
+push B	CA 04	DS p.159 l.62
+push RA3	C7 30 04	DS p.159 l.62
+push 5	09 05	DS p.159 l.63 no register: byte (docs/language.md)
+pushw 0x1234	0B 34 12	DS p.159 l.63
+pushw (XHL)	93 04	DS p.159 l.64
+pop F	19	DS p.159 l.65
+pop A	15	DS p.159 l.66
+pop BC	49	DS p.159 l.67
+pop XIX	5C	DS p.159 l.67
+pop C	CB 05	DS p.159 l.68
+popw (XHL)	B3 06	DS p.159 l.69
+lda XHL,XIX+4	BC 04 33	DS p.159 l.70
+lda HL,XHL+DE	F3 07 EC E8 23	DS p.159 l.70 (r+r16) mem form (CPU900-50)
+ldar XHL,0x200010	F3 13 0C 00 43	DS p.159 l.71 the template read literally; unitron (and its decoder) use 20+R word, 30+R long	differs: F3 13 0C 00 33
+ldar HL,0x200010	F3 13 0C 00 33	DS p.159 l.71	differs: F3 13 0C 00 23
+ex F,F'	16	DS p.159 l.76
+ex A,B	CA B9	DS p.159 l.77
+ex (XHL),WA	93 30	DS p.159 l.78
+mirr HL	DB 16	DS p.159 l.79
+ldi	83 10	DS p.160 l.89 operands omitted: (XDE+),(XHL+)
+ldi (XDE+),(XHL+)	83 10	DS p.160 l.89
+ldiw (XIX+),(XIY+)	95 10	DS p.160 l.91
+ldir	83 11	DS p.160 l.93
+ldirw (XDE+),(XHL+)	93 11	DS p.160 l.93
+ldd (XIX-),(XIY-)	85 12	DS p.160 l.104
+lddr (XDE-),(XHL-)	83 13	DS p.160 l.106
+cpi A,(XHL+)	83 14	DS p.160 l.114
+cpir WA,(XDE+)	92 15	DS p.160 l.116
+cpd A,(XIX-)	84 16	DS p.160 l.123
+cpdr	83 17	DS p.160 l.126 operands omitted: A,(XHL-)
+add A,B	CA 81	DS p.161 l.144
+add XWA,XBC	E9 80	DS p.161 l.144
+add WA,0x1234	D8 C8 34 12	DS p.161 l.145
+add XIX,1	EC C8 01 00 00 00	DS p.161 l.145
+add A,(XHL)	83 81	DS p.161 l.146
+add (XHL),A	83 89	DS p.161 l.147
+addw (XHL),5	93 38 05 00	DS p.161 l.148
+adc A,B	CA 91	DS p.161 l.149
+adc HL,1	DB C9 01 00	DS p.161 l.150
+sub A,1	C9 CA 01	DS p.161 l.155
+sub B,(XDE)	82 A2	DS p.161 l.156
+sbc A,(XIX+3)	8C 03 B1	DS p.161 l.161
+sbcb (0x80),1	C0 80 3B 01	DS p.161 l.163
+cp A,B	CA F1	DS p.161 l.164
+cp A,3	C9 DB	DS p.161 l.165 CP r,#3: the shortest form (rule 2)
+cp E,0:8	CD CF 00	DS p.161 l.167 CP r,# when :8 is written
+cp XHL,0	EB CF 00 00 00 00	DS p.161 l.167 CP r,#3 is byte/word only (rule 1)
+cp (XHL),A	83 F9	DS p.161 l.170
+cpw (XHL),0x100	93 3F 00 01	DS p.161 l.171
+inc 1,A	C9 61	DS p.161 l.172
+inc 8,A	C9 60	DS p.161 l.172 #3 = 0 means 8 (note 1)
+inc 2,XWA	E8 62	DS p.161 l.173
+incw 1,(XHL)	93 61	DS p.161 l.174
+dec 4,B	CA 6C	DS p.161 l.175
+decb 3,(0x6F00)	C1 00 6F 6B	DS p.161 l.177
+neg A	C9 07	DS p.161 l.178
+extz WA	D8 12	DS p.161 l.179
+exts XHL	EB 13	DS p.161 l.180
+daa A	C9 10	DS p.161 l.181
+paa XIX	EC 14	DS p.161 l.184
+mul WA,B	CA 40	DS p.162 l.196 RR is the double-size register (note), WA = 0; unitron writes the odd code 41 (both mean WA)	differs: CA 41
+mul XWA,BC	D9 40	DS p.162 l.196
+mul WA,5	C9 08 05	DS p.162 l.197 byte rr,#: the odd (low-byte) prefix code (rule 5)
+mul XBC,0x100	D9 08 00 01	DS p.162 l.197
+muls XBC,(XHL)	93 49	DS p.162 l.201
+div XWA,BC	D9 50	DS p.162 l.202
+divs WA,3	C9 0B 03	DS p.162 l.207 rule 5
+minc1 4,HL	DB 38 03 00	DS p.162 l.214
+mdec2 8,BC	D9 3D 06 00	DS p.162 l.234
+and A,B	CA C1	DS p.163 l.257
+and A,0x0F	C9 CC 0F	DS p.163 l.259
+andw (XDE),0x00FF	92 3C FF 00	DS p.163 l.262
+or W,A	C9 E0	DS p.163 l.263
+or (XIY+2),C	8D 02 EB	DS p.163 l.267
+xor (XHL),A	83 D9	DS p.163 l.272
+xor HL,0x8000	DB CD 00 80	DS p.163 l.270
+cpl A	C9 06	DS p.163 l.274
+ldcf 3,A	C9 23 03	DS p.164 l.284
+ldcf A,B	CA 2B	DS p.164 l.286
+ldcf 3,(XHL)	B3 9B	DS p.164 l.288
+stcf A,(XHL)	B3 2C	DS p.164 l.295
+andcf 1,(0x10)	F0 10 81	DS p.164 l.299
+orcf 7,WA	D8 21 07	DS p.164 l.301
+xorcf A,(XIX)	B4 2A	DS p.164 l.310
+rcf	10	DS p.164 l.311
+scf	11	DS p.164 l.312
+ccf	12	DS p.164 l.313
+zcf	13	DS p.164 l.314
+bit 7,A	C9 33 07	DS p.164 l.315
+bit 3,(XHL)	B3 CB	DS p.164 l.317
+bit 3,(0x8010)	F1 10 80 CB	DS p.164 l.317
+res 0,(0x6F82)	F1 82 6F B0	DS p.164 l.320
+set 15,WA	D8 31 0F	DS p.164 l.321
+set 2,(XHL+4)	BB 04 BA	DS p.164 l.323
+chg 1,B	CA 32 01	DS p.164 l.324
+tset 3,(XHL)	B3 AB	DS p.164 l.329
+bs1f A,WA	D8 0E	DS p.164 l.331
+bs1b A,BC	D9 0F	DS p.164 l.333
+nop	00	DS p.165 l.345
+ei 3	06 03	DS p.165 l.347
+ei	06 00	DS p.165 l.347 #3 omitted: 0 (note 1)
+di	06 07	DS p.165 l.351
+push SR	02	DS p.165 l.353
+pop SR	03	DS p.165 l.354
+swi 1	F9	DS p.165 l.356
+swi	FF	DS p.165 l.356 #3 omitted: 7 (note 2)
+halt	05	DS p.165 l.358
+ldc DMAS0,XWA	E8 2E 00	DS p.165 l.359 cr codes CPU900-54
+ldc DMAM0,A	C9 2E 22	DS p.165 l.359
+ldc WA,DMAC0	D8 2F 20	DS p.165 l.361
+ldx (0x10),5	F7 00 10 00 05 00	DS p.165 l.363
+link XIZ,-8	EE 0C F8 FF	DS p.165 l.365
+unlk XIZ	EE 0D	DS p.165 l.368
+ldf 1	17 01	DS p.165 l.370
+incf	0C	DS p.165 l.374
+decf	0D	DS p.165 l.377
+scc Z,A	C9 76	DS p.165 l.380
+scc NC,HL	DB 7F	DS p.165 l.380
+rlc 1,A	C9 E8 01	DS p.166 l.393
+rlc A,B	CA F8	DS p.166 l.395
+rlcw (XHL)	93 78	DS p.166 l.396
+rrc 4,XWA	E8 E9 04	DS p.166 l.397
+rl A,HL	DB FA	DS p.166 l.403
+rr 2,C	CB EB 02	DS p.166 l.405
+sla 3,WA	D8 EC 03	DS p.166 l.409
+sra A,XHL	EB FD	DS p.166 l.415
+sll 16,HL	DB EE 00	DS p.166 l.417 code 0 means 16 shifts (note 1)
+srl 1,A	C9 EF 01	DS p.166 l.421
+srlw (XDE)	92 7F	DS p.166 l.423
+rld (XHL)	83 06	DS p.166 l.424
+rrd A,(XIX+2)	8C 02 07	DS p.166 l.426
+jp 0x1234	1A 34 12	DS p.167 l.444 below 0x10000: #16 (rule 9)
+jp 0x200000	1B 00 00 20	DS p.167 l.446
+jp 0x1234:24	1B 34 12 00	DS p.167 l.446 #24 when :24 is written
+jr 0x200010	68 0E	DS p.167 l.447
+jr NZ,0x200000	6E FE	DS p.167 l.447
+jrl 0x201000	78 FD 0F	DS p.167 l.448
+jrl C,0x1F9000	77 FD 8F	DS p.167 l.448
+jp XHL	B3 D8	DS p.167 l.449
+jp C,XIX+2	BC 02 D7	DS p.167 l.449
+jp Z,0x200000	F2 00 00 20 D6	DS p.167 l.449 jp cc,label: B0+mem : D0+cc (rule 9)
+call 0x1234	1C 34 12	DS p.167 l.450
+call 0x300000	1D 00 00 30	DS p.167 l.452
+calr 0x200100	1E FD 00	DS p.167 l.453
+call XHL	B3 E8	DS p.167 l.454
+call NZ,0x6000	F1 00 60 EE	DS p.167 l.454
+djnz B,0x200010	CA 1C 0D	DS p.167 l.456
+djnz 0x200000	CA 1C FD	DS p.167 l.456 r omitted: B
+djnz WA,0x200010	D8 1C 0D	DS p.167 l.456
+ret	0E	DS p.167 l.459
+ret Z	B0 F6	DS p.167 l.460
+ret NC	B0 FF	DS p.167 l.460
+retd 4	0F 04 00	DS p.167 l.462
+reti	07	DS p.167 l.463
+j 0x200010	68 0E	TR p.16-17 (Table 3-6/3-7) the shortest: jr
+j Z,0x200010	66 0E	TR p.16-17 (Table 3-6/3-7) jr cc
+j 0x201000	78 FD 0F	TR p.16-17 (Table 3-6/3-7) out of jr range: jrl
+j 0x210000	1B 00 00 21	TR p.16-17 (Table 3-6/3-7) out of jrl range: jp
+j 0x1234	1A 34 12	TR p.16-17 (Table 3-6/3-7) jp #16
+cal 0x200100	1E FD 00	TR p.16-17 (Table 3-6/3-7) calr
+cal 0x300000	1D 00 00 30	TR p.16-17 (Table 3-6/3-7) out of calr range: call
+cal NZ,0x200100	F2 00 01 20 EE	TR p.16-17 (Table 3-6/3-7) calr has no condition: call cc

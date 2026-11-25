@@ -1,0 +1,12 @@
+usage: unitron bin2db [-h] [-o OUTPUT] [--per-line PER_LINE] input [label]
+
+binary file -> labeled asm900 db lines
+
+positional arguments:
+  input
+  label
+
+options:
+  -h, --help	show this help message and exit
+  -o, --output OUTPUT
+  --per-line PER_LINE

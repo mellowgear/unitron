@@ -1,0 +1,10 @@
+memory {
+    ram (RW) : org=0x4000, len=0x1000
+    rom (RX) : org=0x200000 len=0x1000
+    any : org=0x300000, len=0x100
+}
+sections {
+    code : { *(f_code) }
+    rodata : { *(f_const) }
+    ram : { *(f_data) }
+}

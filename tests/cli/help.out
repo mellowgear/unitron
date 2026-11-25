@@ -1,0 +1,17 @@
+usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80} ...
+
+NGPC (TLCS-900/H) toolchain
+
+positional arguments:
+  {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80}
+    asm                 assemble (and link) asm900 sources into a raw image
+    mac (preprocess)    run the macro preprocessor only
+    dis                 disassemble: a listing, or (-o DIR) rebuildable asm900 source
+    roundtrip           dis -> asm a ROM and compare the bytes
+    bin2db              binary file -> labeled asm900 db lines
+    text                text file + character map -> asm900 db lines
+    gfx                 2bpp tiles <-> indexed PNG (plain sheet or map layout); PNG palette -> words
+    z80                 the Z80 sound CPU: dis, asm, roundtrip (docs/z80.md)
+
+options:
+  -h, --help            show this help message and exit

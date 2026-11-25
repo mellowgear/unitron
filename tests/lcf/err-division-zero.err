@@ -1,0 +1,4 @@
+warning: link.lcf: section f_const is not named in the section definition part: linked as its own output section at 0x200006 (TR 8.3.6)
+warning: link.lcf: section f_data is not named in the section definition part: linked as its own output section at 0x200008 (TR 8.3.6)
+error: link.lcf:3: x: division by zero
+1 error(s); no output written

@@ -1,0 +1,1 @@
+err-endm-alone.asm:1: error: ?endm without ?macro

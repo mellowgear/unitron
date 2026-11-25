@@ -1,0 +1,19 @@
+; one of each kind of operand (UM tables 6-20)
+	LD	A,(IX+05H)
+	LD	(IY-01H),A
+	LD	(IX),7
+	EX	AF,AF'
+	EX	(SP),HL
+	IN	A,(0FEH)
+	OUT	(C),E
+	RST	38H
+	BIT	3,(HL)
+	SET	7,A
+	IM	2
+	DJNZ	$
+	LD	HL,(1234H)
+	LD	(1234H),HL
+	LD	BC,(1234H)
+	JP	(IX)
+	RETN
+	END

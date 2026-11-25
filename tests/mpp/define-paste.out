@@ -1,0 +1,4 @@
+; BUG: a ## b should paste the two tokens (12, lab_3); unitron writes a #"b" instead
+	db	1 #"2"
+lab_ #"3":	nop
+	jr	lab_ #"3"

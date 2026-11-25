@@ -1,0 +1,31 @@
+; out.bin: a Z80 program of 138 bytes, written by unitron z80 dis.
+; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+	ORG	0000H
+Reset:
+	DI
+	LD	SP,0080H
+	JP	L006B
+	DEFS	31H
+Int38:
+	EI
+	RETI
+	DEFS	2BH
+Nmi:
+	RETN
+	DEFB	4BH
+	DEFW	DriverEnd
+L006B:
+	LD	HL,(DriverEnd+2)
+	LD	DE,DriverEnd+6
+	LD	BC,0010H
+	LD	(L0080+1),A
+	LD	(4001H),A
+	CALL	L0080
+	JP	0099H
+L0080:
+	LD	A,00H
+	LD	HL,009AH
+	LD	IX,(DriverEnd)
+	RET
+DriverEnd:
+	END

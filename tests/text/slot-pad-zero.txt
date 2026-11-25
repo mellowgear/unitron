@@ -1,0 +1,5 @@
+slot 3 00
+	text "a"
+	done
+	text "ab"
+	done

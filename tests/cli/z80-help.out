@@ -1,0 +1,7 @@
+usage: unitron z80 [-h] {dis,asm,roundtrip} ...
+
+the NGPC's Z80 sound CPU, in Zilog syntax (docs/z80.md)
+
+    dis                 a listing, or (-o DIR) source that assembles back to the same bytes
+    asm                 assemble Zilog Z80 source into a raw image at Z80 0x0000
+    roundtrip           dis -> asm a Z80 image and compare the bytes

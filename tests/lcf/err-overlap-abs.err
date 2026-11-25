@@ -1,0 +1,3 @@
+error: link.lcf:6: section "code" overlap: 0x200000-0x200005 overlaps an absolute section at 0x200002-0x200002
+main.asm:11: error E217: sections overlap at 0x200002: main.asm:11 (h) runs into bytes from main.asm:4 (f_code, 0x200000-0x200004)
+2 error(s); no output written

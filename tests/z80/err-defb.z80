@@ -1,0 +1,4 @@
+	DEFB	'ab'
+	DEFB	1,2
+	DEFW	1,2
+	END

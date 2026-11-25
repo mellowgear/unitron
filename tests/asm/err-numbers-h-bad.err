@@ -1,0 +1,2 @@
+err-numbers-h-bad.asm:3: error E200: illegal numeric constant '0FGH' (E202)
+1 error(s); no output written

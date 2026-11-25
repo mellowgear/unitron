@@ -1,0 +1,3 @@
+warning: link.lcf: section f_data is not named in the section definition part: linked as its own output section at 0x4001 (TR 8.3.6)
+error: link.lcf:4: section f_zp at 0x4000 does not fit its small displacement
+1 error(s); no output written

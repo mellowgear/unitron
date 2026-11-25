@@ -1,0 +1,2 @@
+err-relative-range.asm:3: error E230: relative target out of range (+200 bytes, E227)
+1 error(s); no output written

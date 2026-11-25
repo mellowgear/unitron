@@ -1,0 +1,4 @@
+warning: link.lcf: section f_const is not named in the section definition part: linked as its own output section at 0x200006 (TR 8.3.6)
+warning: link.lcf: section f_data is not named in the section definition part: linked as its own output section at 0x200008 (TR 8.3.6)
+error: link.lcf:2: output section code: the allocation address (org) and the alignment can't both be given (TR 8.3.4)
+1 error(s); no output written

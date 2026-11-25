@@ -1,0 +1,75 @@
+wrote out.bin: 0xC7 bytes at Z80 0x0000
+Reset:
+0000  F3             DI
+0001  31 C0 00       LD SP,00C0H
+0004  ED 56          IM 1
+L0006:
+0006  C3 71 00       JP L0071
+0009  00 00 00 00 .. DEFS 2FH
+Int38:
+0038  08             EX AF,AF'
+0039  3C             INC A
+003A  D3 FF          OUT (0FFH),A
+003C  FB             EI
+003D  ED 4D          RETI
+003F  00 00 00 00 .. DEFS 27H
+Nmi:
+0066  F5             PUSH AF
+0067  3A 00 80       LD A,(8000H)
+006A  2F             CPL
+006B  32 00 80       LD (8000H),A
+006E  F1             POP AF
+006F  ED 45          RETN
+L0071:
+0071  21 B3 00       LD HL,00B3H
+0074  06 04          LD B,04H
+L0076:
+0076  7E             LD A,(HL)
+0077  23             INC HL
+0078  10 FC          DJNZ L0076
+007A  DD 21 B3 00    LD IX,00B3H
+007E  DD 7E 02       LD A,(IX+02H)
+0081  FD 77 FF       LD (IY-01H),A
+0084  DD 36 00 05    LD (IX+00H),05H
+0088  DD CB 01 7E    BIT 7,(IX+01H)
+008C  FD CB 7F C6    SET 0,(IY+7FH)
+0090  CF             RST 08H
+0091  20 02          JR NZ,L0095
+0093  18 DC          JR L0071
+L0095:
+0095  01 FF FF       LD BC,0FFFFH
+0098  11 11 00       LD DE,0011H
+009B  3E 46          LD A,46H
+009D  21 FF FF       LD HL,0FFFFH
+00A0  21 08 00       LD HL,0008H
+00A3  3E 01          LD A,01H
+00A5  DB FF          IN A,(0FFH)
+00A7  ED 41          OUT (C),B
+00A9  DD E3          EX (SP),IX
+00AB  FD E9          JP (IY)
+00AD  FE             DEFB 0FEH
+00AE  10             DEFB 10H
+00AF  86             DEFB 86H
+00B0  ED             DEFB 0EDH
+00B1  52             DEFB 52H
+00B2  76             DEFB 76H
+00B3  01             DEFB 01H
+00B4  41             DEFB 41H
+00B5  27             DEFB 27H
+00B6  FF             DEFB 0FFH
+00B7  B3             DEFB 0B3H
+00B8  00             DEFB 00H
+00B9  49             DEFB 49H
+00BA  74             DEFB 74H
+00BB  27             DEFB 27H
+00BC  73             DEFB 73H
+00BD  20             DEFB 20H
+00BE  6F             DEFB 6FH
+00BF  6B             DEFB 6BH
+00C0  00             DEFB 00H
+00C1  00             DEFB 00H
+00C2  00             DEFB 00H
+00C3  00             DEFB 00H
+00C4  44             DEFB 44H
+00C5  C5             DEFB 0C5H
+00C6  00             DEFB 00H

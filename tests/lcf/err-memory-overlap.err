@@ -1,0 +1,2 @@
+error: link.lcf:3: MEMORY segment overlap "ram" and "ram2"
+1 error(s); no output written

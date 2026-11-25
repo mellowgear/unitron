@@ -1,0 +1,1 @@
+warning: link.lcf:7: output memory rom of rodata is ignored: the section has an address (TR 8.3.8)

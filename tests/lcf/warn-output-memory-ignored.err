@@ -1,0 +1,1 @@
+warning: link.lcf:6: output memory ram of code is ignored: the section has an address (TR 8.3.8)

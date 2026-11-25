@@ -1,0 +1,2 @@
+usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] [-M FILE] [-MG] [-MP] [-MT TARGET] sources [sources ...]
+unitron asm: error: ambiguous option: --no could match --no-link, --no-mpp

@@ -1,0 +1,3 @@
+numbers-h-off.asm:3: error E200: illegal numeric constant '0FFH': suffixed numbers need -H (E202)
+numbers-h-off.asm:4: error E200: illegal numeric constant '12h': suffixed numbers need -H (E202)
+2 error(s); no output written

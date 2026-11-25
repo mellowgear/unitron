@@ -1,0 +1,58 @@
+; p.bin: a Z80 program of 106 bytes, written by unitron z80 dis.
+; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+	ORG	0000H
+Reset:
+	DI
+	LD	SP,00C0H
+	JP	L0010
+	DEFB	00H
+	DEFB	4BH
+	DEFB	31H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+L0010:
+	LD	HL,1234H
+	LD	(L0016+1),A
+L0016:
+	LD	A,05H
+	CALL	L0020
+	DEFB	0EDH	; LD HL,(1234H) (the ED 6B encoding; UM0080 p.45)
+	DEFB	6BH
+	DEFB	34H
+	DEFB	12H
+	RET
+L0020:
+	DEFB	0EDH	; not a documented Z80 instruction
+	DEFB	70H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFM	'ABCDEFGH'
+	DEFS	08H
+Int38:
+	DEFB	0CBH	; not a documented Z80 instruction
+	DEFB	30H
+	DEFS	16H
+Helper:
+	LD	A,01H
+	RET
+	DEFB	00H
+	XOR	A
+	RET
+	DEFB	00H
+	DEFB	00H
+L0058:
+	JR	L0058+1
+	DEFS	0CH
+Nmi:
+	RETN
+	DEFB	00H
+	DEFB	00H
+	END

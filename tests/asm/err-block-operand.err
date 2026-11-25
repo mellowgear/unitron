@@ -1,0 +1,2 @@
+err-block-operand.asm:3: error E230: block-transfer operand not allowed here
+1 error(s); no output written

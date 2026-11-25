@@ -1,0 +1,5 @@
+err-number.z80:1: error E4: invalid number '0AB'
+err-number.z80:2: error E4: invalid number '19Q'
+err-number.z80:3: error E4: invalid number '12B'
+err-number.z80:4: error E10: number '100000000H' is out of range
+4 error(s); no output written

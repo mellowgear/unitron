@@ -1,0 +1,5 @@
+; the C operators in #if, each true
+	db	1
+	db	2
+	db	3
+	db	4

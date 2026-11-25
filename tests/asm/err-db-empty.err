@@ -1,0 +1,3 @@
+err-db-empty.asm:3: error E231: db needs values
+err-db-empty.asm:4: error E206: empty value
+2 error(s); no output written

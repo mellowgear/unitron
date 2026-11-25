@@ -1,0 +1,4 @@
+err-command.z80:1: error E14: unknown assembler command '*Frob'
+err-command.z80:2: error E14: expected *Include filename
+err-command.z80:3: error E14: include file 'nosuch.z80' not found
+3 error(s); no output written

@@ -1,0 +1,7 @@
+err-range.z80:1: error E10: byte 256 is out of range
+err-range.z80:2: error E10: byte -129 is out of range
+err-range.z80:3: error E10: displacement (IX-129) (= -129) is out of range
+err-range.z80:4: error E10: word 10000H (= 65536) is out of range
+err-range.z80:5: error E10: negative exponent
+err-range.z80:6: error E10: division by zero
+6 error(s); no output written

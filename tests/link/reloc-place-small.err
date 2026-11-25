@@ -1,0 +1,4 @@
+reloc-place-small.asm:21: warning W517: section r already has a different attribute; continuing it
+reloc-place-small.asm:6: error E216: section s at 0x1000 does not fit its small displacement
+reloc-place-small.asm:11: error E230: address 0x1000 does not fit the 8-bit width of its symbol
+2 error(s); no output written

@@ -1,0 +1,2 @@
+err-width-range.asm:3: error E200: the width after ':' must be a constant 1..32
+1 error(s); no output written

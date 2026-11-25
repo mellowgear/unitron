@@ -1,0 +1,3 @@
+wrote out.bin: 0x23 bytes at Z80 0x0000
+wrote out/main.z80: 2 instructions (0 bytes as DEFB), 32 data bytes
+wrote out.back.bin: 0x23 bytes at Z80 0x0000

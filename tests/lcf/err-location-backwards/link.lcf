@@ -1,0 +1,6 @@
+sections {
+    . = 0x200100;
+    code : { *(f_code) }
+    . = 0x200000;
+    rodata : { *(f_const) }
+}

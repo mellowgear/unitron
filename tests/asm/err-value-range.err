@@ -1,0 +1,4 @@
+err-value-range.asm:3: error E230: value 256 out of range -128..255
+err-value-range.asm:4: error E230: value 65536 out of range -32768..65535
+err-value-range.asm:5: error E230: value -129 out of range -128..255
+3 error(s); no output written

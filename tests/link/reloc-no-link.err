@@ -1,0 +1,1 @@
+reloc-no-link.asm:21: warning W517: section r already has a different attribute; continuing it

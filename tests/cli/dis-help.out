@@ -1,0 +1,15 @@
+usage: unitron dis [-h] [-o OUTPUT] [--start START] [--count COUNT] [--executed EXECUTED] [--no-sweep] [--hints HINTS] rom
+
+disassemble: a listing, or (-o DIR) rebuildable asm900 source
+
+positional arguments:
+  rom
+
+options:
+  -h, --help	show this help message and exit
+  -o, --output OUTPUT	write DIR/main.asm that assembles back to the ROM
+  --start START
+  --count COUNT
+  --executed EXECUTED	file of hex code addresses (extra trace entry points)
+  --no-sweep	static trace only (no gap sweep)
+  --hints HINTS	code/data hints for the gap sweep (see docs/language.md)

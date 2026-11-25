@@ -1,0 +1,5 @@
+; a label on an ORG line gets the address before the ORG
+	NOP
+Here:	ORG	0008H
+	JP	Here
+	END

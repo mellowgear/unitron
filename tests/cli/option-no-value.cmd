@@ -1,0 +1,1 @@
+asm nosuch.asm -o

@@ -1,0 +1,4 @@
+	LD	(BC),B
+	LD	A,B+1
+	JP	(BC)
+	END

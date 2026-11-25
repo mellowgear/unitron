@@ -1,4 +1,4 @@
-// Helpers shared by the tests that run the unitron binary (golden.cpp, cart.cpp).
+// Helpers shared by the tests that run the unitron binary (cases.cpp, cart.cpp, rom.cpp); in testutil.cpp.
 #pragma once
 #include <filesystem>
 #include <string>

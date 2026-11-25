@@ -1,0 +1,5 @@
+slot 3 FF
+	text "ab"
+	done
+	text "aba"
+	done

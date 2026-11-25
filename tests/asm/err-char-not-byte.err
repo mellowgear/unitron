@@ -1,0 +1,2 @@
+err-char-not-byte.asm:3: error E200: character '€' is not a byte
+1 error(s); no output written

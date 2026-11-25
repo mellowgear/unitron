@@ -1,0 +1,2 @@
+err-past-ram-defs.z80:2: error: address 100FH is beyond the Z80's 4 KB of RAM (0000H-0FFFH)
+1 error(s); no output written

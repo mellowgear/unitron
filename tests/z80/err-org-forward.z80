@@ -1,0 +1,2 @@
+	ORG	later
+later	EQU	10H

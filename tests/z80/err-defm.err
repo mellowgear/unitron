@@ -1,0 +1,3 @@
+err-defm.z80:1: error E6: DEFM needs a string in single quotes
+err-defm.z80:2: error E6: DEFM string longer than 63 characters
+2 error(s); no output written

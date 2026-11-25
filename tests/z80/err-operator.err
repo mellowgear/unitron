@@ -1,0 +1,3 @@
+err-operator.z80:1: error E5: invalid operator '.FOO.'
+err-operator.z80:2: error E5: invalid operator '.AND'
+2 error(s); no output written

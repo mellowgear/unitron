@@ -1,0 +1,5 @@
+sections {
+    code addr=0x200000 : { *(f_code) }
+    rodata addr=0x200100 : { *(f_const) }
+    zp addr=0x4000 : { *(f_zp) }
+}

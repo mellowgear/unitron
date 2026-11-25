@@ -1,0 +1,2 @@
+# The test cases compare bytes exactly (tests/README.md): no line-ending conversion on checkout.
+* -text

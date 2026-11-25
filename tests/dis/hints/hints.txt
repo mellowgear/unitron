@@ -1,0 +1,3 @@
+# hints for the sweep
+code 200185 hidden_fn   ; reached through the pointer table
+data 20018C 200191

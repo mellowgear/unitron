@@ -1,0 +1,9 @@
+; lines starting with ; are comments
+Hello:
+	text "a b"
+	line "ba"
+	done
+Next.one:
+	text "é"
+	wait
+	done

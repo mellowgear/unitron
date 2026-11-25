@@ -1,0 +1,9 @@
+wrote out.ngp: 0x200 bytes at 0x200000
+200100  06 07                    di
+200102  47 00 6c 00 00           ld XSP,0x6C00
+200107  43 75 01 20 00           ld XHL,0x200175
+20010C  f1 cc 6f 63              ld (0x6FCC),XHL
+200110  40 76 01 20 00           ld XWA,0x200176
+200115  f1 d4 6f 60              ld (0x6FD4),XWA
+200119  c1 82 6f 21              ld A,(0x6F82)
+20011D  f2 aa 62 00 41           ld (0x62AA),A

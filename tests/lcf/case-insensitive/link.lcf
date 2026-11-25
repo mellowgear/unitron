@@ -1,0 +1,6 @@
+MEMORY { ram (RW) : ORG=0x4000, LEN=0x1000  rom (RX) : ORIGIN=0x200000, LENGTH=0x1000 }
+SECTIONS {
+    code ADDR=0x200000 : { *(f_code) }
+    rodata ADDR=0x200100 : { *(f_const) }
+    ram ADDR=0x4000 : { *(f_data) }
+}

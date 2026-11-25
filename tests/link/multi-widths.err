@@ -1,0 +1,4 @@
+b.asm:3: error E210: public 'missing' is not defined in module sub
+d.asm:2: error E216: extern 'counter' is declared small but its section d is medium
+d.asm:5: error E230: address 0x4000 does not fit the 8-bit width of its symbol
+3 error(s); no output written

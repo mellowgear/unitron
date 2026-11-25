@@ -1,0 +1,6 @@
+err-section-attrs.asm:2: error E200: `section` needs a name
+err-section-attrs.asm:3: error E212: section type must be code, data or romdata
+err-section-attrs.asm:4: error E216: only data sections can be small (TR p.19)
+err-section-attrs.asm:5: error E216: a section is either relocatable (small/medium/large) or abs=
+err-section-attrs.asm:6: error E216: bad section attribute 'fast'
+5 error(s); no output written

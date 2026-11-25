@@ -1,0 +1,2 @@
+b.asm:4: error E217: sections overlap at 0x200002: b.asm:4 (d) runs into bytes from a.asm:4 (c, 0x200000-0x200003)
+1 error(s); no output written

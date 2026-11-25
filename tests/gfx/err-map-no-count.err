@@ -1,0 +1,2 @@
+usage: unitron gfx frompng [-h] [--map MAP] [--map-format MAP_FORMAT] [--map-width MAP_WIDTH] [--base BASE] [--count COUNT] [--trim] [--indices] input output
+unitron gfx frompng: error: argument --map: needs --count

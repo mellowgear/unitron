@@ -1,0 +1,3 @@
+primes.asm:8: error E200: unexpected "'s'"
+primes.asm:6: error E230: operand type mismatch; legal forms: LD R,r | LD r,# | LD R,(mem) | LD (mem),R | LD<W> (mem),# | LD<W> (#16),(mem) | LD<W> (mem),(#16)
+2 error(s); no output written

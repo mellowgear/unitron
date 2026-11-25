@@ -1,0 +1,3 @@
+wrote out.ngp: 0x3 bytes at 0x200000
+200000  21 01                    ld A,1
+200002  0e                       ret

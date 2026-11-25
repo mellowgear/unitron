@@ -1,0 +1,6 @@
+$maximum
+#define loop 1
+c	section	code abs=0x200000
+Routine.loop:	nop
+	jr	Routine.loop
+	end

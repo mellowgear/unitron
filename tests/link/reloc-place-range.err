@@ -1,0 +1,2 @@
+reloc-place-range.asm:21: warning W517: section r already has a different attribute; continuing it
+warning: 2 code/romdata bytes lie outside the image 0x200000+0x60

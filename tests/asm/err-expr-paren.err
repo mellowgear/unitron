@@ -1,0 +1,2 @@
+err-expr-paren.asm:3: error E200: unbalanced parentheses
+1 error(s); no output written

@@ -1,0 +1,3 @@
+err-public-names.asm:3: error E208: illegal symbol name '9x'
+err-public-names.asm:4: error E208: illegal symbol name '9b'
+2 error(s); no output written

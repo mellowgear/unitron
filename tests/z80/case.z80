@@ -1,0 +1,4 @@
+	ld	a,b
+	LD	A,B
+	jp	(hl)
+	END

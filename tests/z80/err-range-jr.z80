@@ -1,0 +1,4 @@
+	JR	far
+	DEFS	200
+far:	NOP
+	END

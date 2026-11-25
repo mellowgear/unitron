@@ -1,0 +1,4 @@
+err-name.z80:1: error E2: name '1abc' contains invalid characters
+err-name.z80:2: error E2: 'HL' is a register or condition name
+err-name.z80:3: error E2: name 'ab$' contains invalid characters
+3 error(s); no output written

@@ -1,0 +1,3 @@
+sections {
+    code org=0x200000 align=4 : { *(f_code) }
+}

@@ -1,0 +1,3 @@
+image-size.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+image-size.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+warning: 1 code/romdata bytes lie outside the image 0x200000+0x4

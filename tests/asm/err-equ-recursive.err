@@ -1,0 +1,2 @@
+err-equ-recursive.asm:5: error E206: 'A1' is defined in terms of itself
+1 error(s); no output written

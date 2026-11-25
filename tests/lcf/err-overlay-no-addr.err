@@ -1,0 +1,2 @@
+error: link.lcf:7: OVERLAY section rodata must be given an address (TR 8.3.5)
+1 error(s); no output written

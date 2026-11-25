@@ -1,0 +1,6 @@
+	DEFB	1
+	DEFB	0FFH
+	DEFB	-1
+	DEFB	'A'
+	DEFB	''''
+	END

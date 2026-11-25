@@ -1,0 +1,4 @@
+err-ds-count.asm:3: error E200: unexpected ',2'
+err-ds-count.asm:4: error E231: dfb takes count,value
+err-ds-count.asm:5: error E231: dfb takes count,value
+3 error(s); no output written
