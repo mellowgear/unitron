@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+build/
+*.ngp
+*.ngc
+# third-party reference material is cited, never committed
+docs/third_party/
+*.egg-info/
