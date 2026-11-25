@@ -9,7 +9,7 @@ import pytest
 
 from unitron.cli_more import roundtrip
 
-DEFAULT = Path(__file__).resolve().parents[2] / "roms/rom1/rom1.ngp"
+DEFAULT = Path(__file__).resolve().parents[4] / "roms/rom1/rom1.ngp"
 ROM1_SHA1 = "ff74d5877bf58164419710888923e46b9cfb415e"
 ROM = Path(os.environ.get("UNITRON_ROM", DEFAULT))
 

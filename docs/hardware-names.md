@@ -1,8 +1,9 @@
 # NGPC hardware names
 
-`unitron/ngpc/hwnames.py` is the table. `tools/gen_hw_inc.py` writes `unitron/data/ngpc_hw.inc`
-from it (`--check` verifies the file is current). Every entry cites a Toshiba or SNK line. Homebrew
-headers and emulators are not used as sources.
+`data/hwnames.tsv` is the table, embedded into the binary at build time (cmake/embed.cmake).
+`data/ngpc_hw.inc` is generated from it: `build/unitron_tests hwinc data --write` rewrites it, and the
+`hwinc` test fails if it is stale. Every entry cites a Toshiba or SNK line. Homebrew headers and
+emulators are not used as sources.
 
 ## Sources per group
 
@@ -13,7 +14,7 @@ headers and emulators are not used as sources.
 | Interrupt vectors (`vector`) | 17 | SNK SysPro, interrupts available to the user program (l.211-230). The names are ours, taken from SNK's descriptions. Size 4. |
 | K2GE registers (`k2ge`) | 34 | SNK K2GEres "K1GE Resister Table" (abbreviations and addresses) and SNK K2GETechRef section 4. |
 | Memory areas (`mem`) | 14 | SNK K2GETechRef section 4-2, 4-3-3, 4-4-4/5, 4-15 Table 19, SNK K2GEpal, SNK SysLib l.39 (Z80 RAM). Size = area length. |
-| Bits (`BITS`) | 18 | SNK SysWork "Bit Equation" names and bit diagrams; K2GEres "D7" entries. Stored as bit numbers. |
+| Bits (`bit` records) | 18 | SNK SysWork "Bit Equation" names and bit diagrams; K2GEres "D7" entries. Stored as bit numbers. |
 
 SNK's 8Bit and MicroDMA manuals give the same addresses as IO900H.H for TREG0-3, TFFCR, T23MOD,
 TRDC (8Bit l.147, 218, 274, 299) and DMA0V-DMA3V (MicroDMA l.139-179).
@@ -21,12 +22,12 @@ TRDC (8Bit l.147, 218, 274, 299) and DMA0V-DMA3V (MicroDMA l.139-179).
 ## Naming rule (D5)
 
 - Official spelling, normalized: uppercase, `.` becomes `_` (`WBA.H` -> `WBA_H`, `Sys_Lever` ->
-  `SYS_LEVER`, `SPPLT.01` -> `SPPLT_01`). The official spelling is kept in the last tuple field and
+  `SYS_LEVER`, `SPPLT.01` -> `SPPLT_01`). The official spelling is kept in the last field (OFFICIAL) and
   in each `.inc` comment.
 - If SNK's abbreviation column names a bit rather than the register, the register is named from
   its SNK register name. A leading digit moves to the end: `2D Status` -> `STATUS_2D`,
   `2D Control` -> `CONTROL_2D`. 0x8030 uses its summary `Scroll Priority` -> `SCROLL_PRIORITY`.
-  The bit names go in `BITS` as `STATUS_2D_C_OVR`, `CONTROL_2D_NEG` and `SCROLL_PRIORITY_P_F`. A plain
+  The bit names are `bit` records: `STATUS_2D_C_OVR`, `CONTROL_2D_NEG` and `SCROLL_PRIORITY_P_F`. A plain
   `NEG` would clash with the TLCS-900 mnemonic.
 - Where SNK gives no identifier, the names are ours: vectors (`VEC_*`), memory areas
   (`SPRITE_VRAM`, `CHARACTER_RAM`, `SPRITE_PAL`, ...) and Sys_Lever bits (`SYS_LEVER_UP`, ...).

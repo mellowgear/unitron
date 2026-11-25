@@ -7,3 +7,4 @@ build/
 # third-party reference material is cited, never committed
 docs/third_party/
 *.egg-info/
+build_*/

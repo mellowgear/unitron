@@ -3,7 +3,8 @@
 Where the datasheet allows several encodings for one instruction text, unitron picks one. The
 rules follow asm900 as read statically from its tables (asm900-analysis/ASM900_STATIC.md, "STATIC";
 asm900 was never run, D9), the datasheet size columns ("DS"), and the the reference ROM ROM where it
-confirms them. `tests/test_opcode_roundtrip.py` checks every decodable opcode form against them.
+confirms them. The `opspace` test (tests/cpp/vectors.cpp, tests/vectors/opspace*) checks every
+decodable opcode form against them.
 
 1. **Legal forms only.** A form outside the datasheet size columns is never emitted, and the
    decoder flags it (`Insn.illegal`): `CP r,#3` and `CPL/NEG` are byte/word only, so `cp XHL,0`
@@ -26,9 +27,14 @@ confirms them. `tests/test_opcode_roundtrip.py` checks every decodable opcode fo
 7. **Displacements**: `(r+d)` is 8-bit signed when it fits and the base is XWA..XSP, else 16-bit;
    `(r+0)` keeps its zero byte; `(r)` has none; `(XHL+0xF:16)` forces 16 bits [STATIC 2.6].
 8. **Steps**: `(r+)`/`(-r)` step = operand size unless `:n` is written [STATIC 2.6].
-9. **Branches** are encoded as written; only `j`/`cal` choose (shortest of jr/jrl/jp, calr/call,
-   for absolute targets). `jp label` is `1A` below 0x10000, else `1B`; `jp cc,label` uses the
-   `B0+mem : D0+cc` form [STATIC 3.1].
+9. **Branches** are encoded as written; only `j`/`cal` choose [TR p.16-17, p.29]. `jp label` is
+   `1A` below 0x10000, else `1B`; `jp cc,label` uses the `B0+mem : D0+cc` form [STATIC 3.1].
+   - `-O1` (the default, asm900's `-O1`): the shortest of jr/jrl/jp and of calr/call, when the
+     distance is known before linking: an absolute target, or a label (± a constant) in the same
+     section as the instruction, even a relocatable one, since its distance does not depend on
+     where the section goes. Any other target (another relocatable section, an extern) takes
+     jp/call.
+   - `-O0`: always jp/call.
 10. **Sizes iterate** to a fixpoint, as asm900's pass 2 does [STATIC 0].
 
 Equal-length alternatives the opcode test accepts as policy, not error: the `LD r,R` form when
@@ -37,7 +43,7 @@ memory-to-memory LD forms, and `jp/call (#8)` vs `#16`.
 
 ## Writing source from bytes
 
-`unitron dis -o` (unitron/ngpc/writer.py) writes each traced instruction with the operand spelling
+`unitron dis -o` (src/writer.cpp) writes each traced instruction with the operand spelling
 above and checks that it assembles back to the same bytes. If not, it tries asm900's `:n` widths
 (`ld (0x62AA:24),A`, `ld BC,2:16`, `cp E,0:8`, `ld C,(XHL+0xF:16)`). An encoding with no asm900
 spelling at all, or an illegal form, is written as `db` with the instruction in the comment. For

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[4]  # fun-fun-fun (legacy/python/tests -> ...)
 DECOMP = ROOT / "decomp/decomp"
 ROM = ROOT / "roms/rom1/rom1.ngp"
 TOOL = Path(__file__).resolve().parents[1] / "tools/convert_decomp.py"

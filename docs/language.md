@@ -40,10 +40,10 @@ masked to n bits and encoded at least n bits wide [STATIC 3.7]. Values are 32-bi
 | `align expr` | rounds the location counter up |
 | `name equ expr` | absolute; no redefinition |
 | `public a,b` / `extern [small\|medium\|large] a,b` | inter-module names; the extern width fixes the address width |
-| `db dw dp dd dl` | 8/16/24/32/32-bit values; `db` also takes strings (no `\0` added) |
-| `dfb dfw dfp dfd dfl n,v` | n copies of v; n absolute, no forward reference |
+| `db dw dp dd dl` | 8/16/24/32/32-bit values; `db` also takes strings (no `\0` added). In a `data` section (RAM) they give a warning: the bytes are not in the image; use `ds*` to reserve RAM, a `romdata` section for constants, or an `.lcf` `org=` in ROM (docs/lcf.md) |
+| `dfb dfw dfp dfd dfl n,v` | n copies of v; n absolute, no forward reference; the same `data`-section warning as `db` |
 | `dsb dsw dsp dsd dsl n` | n units reserved (0xFF, or `--fill`, in the image) |
-| `$include "file"` | assembler-level include: source dir, `-I`, `$THOME900/include` |
+| `$include "file"` | assembler-level include: source dir, `-I`, `$THOME900/include`. asm900's limits, 8 levels deep and 99 per translation unit [TR p.24, 32], give a warning; with `--strict` they are error E234. Nesting deeper than 64 (a recursive include) is always E234 |
 | `$list $nolist $title $eject $save $restore` (+ short forms) | listing only; ignored |
 | `end` | ends the module; later text is ignored with a warning |
 
@@ -67,7 +67,7 @@ accepted. Operand spellings:
 | size suffix | `ldb (mem),n`, `ldw`, `cpb`, `addw`, `incb 1,(mem)`, `pushw n`, `ldirw`; a suffix must agree with any register operand; with no register the size is byte (`push 5` = `pushb 5`) |
 | counts | `inc 1,C` (count required), `sll 1,HL`, `sll A,HL`, memory shifts take no count: `sllw (mem)` |
 | conditions | `F LT LE ULE OV MI Z C T GE GT UGT NOV PL NZ NC`, also `EQ NE ULT UGE M P PE PO` |
-| pseudo | `j [cc,]addr`, `cal [cc,]addr` pick jr/jrl/jp and calr/call (asm900 `-O1`) [TR p.16-17] |
+| pseudo | `j [cc,]addr`, `cal [cc,]addr` [TR p.16-17, 29]: with `-O1` (the default) the shortest of jr/jrl/jp and calr/call, for an absolute target or a label (± a constant) in the same section; other relocatable or extern targets take jp/call. With `-O0` always jp/call. docs/encoding.md rule 9 |
 
 ## Macro preprocessor (`#include`, `?macro`) [TR p.57-76]
 
@@ -75,8 +75,9 @@ accepted. Operand spellings:
 
 - `#include "f"` / `<f>`, `#define` (object and function-like, `#` and `##`), `#undef`,
   `#if #ifdef #ifndef #elif #else #endif` (C operators, `defined`), `#error`, `#line` (ignored).
-  Identifiers for `#define` are `[A-Za-z_][A-Za-z0-9_]*`, so a `#define` of `loop` also changes the
-  `loop` in `Routine.loop` (documented tumpp grammar; see OPEN).
+  Identifiers for `#define` are `[A-Za-z_][A-Za-z0-9_]*`. A dotted name (`Routine.loop`, `.loop`)
+  is one asm900 identifier [STATIC 3.4] and is copied whole: a `#define` of `loop` does not change
+  it.
 - `;` comments are kept, `//` and `/* */` are removed, `\` at line end joins lines.
 - Macros:
 
@@ -93,7 +94,9 @@ accepted. Operand spellings:
   A call is the macro name in the mnemonic position (an optional `label:` before it), arguments
   separated by commas. `?param` and `?label` are replaced in the body; each `labels` name gets a
   3-digit count per expansion (`resume000`, `resume001`, ... at most 1000) [TR p.65-66].
-- Not supported (error): `?if ?repeat ?while ?variable ?eval ?exit` and the string functions.
+- Only `?macro`/`?endm` are implemented. Every other `?` function outside a macro body (`?if
+  ?repeat ?while ?variable ?eval ?exit`, the string functions, ...) is an error: `?repeat is not
+  supported (only ?macro/?endm)`.
 
 D3: hand-written sources join with `#include` (so macros work everywhere); generated data files
 (`bin2db` output) join with `$include`.
@@ -101,8 +104,28 @@ D3: hand-written sources join with `#include` (so macros work everywhere); gener
 ## Linking
 
 Every file on the command line is one module. Absolute sections stay at `abs=`; relocatable
-sections with the same name are joined in module order and placed by unitron (Toshiba's tulink
-and `.lcf` files are not implemented): `--place NAME=ADDR`, else first fit from `--data-base`
-(data, default 0x4000) or `--code-base` (code/romdata, default 0x200000), or from 0x100 if that
-would not fit the section's small/medium/large range. Overlapping sections are error E217, which
-names both source lines. `--no-link` checks one module with unresolved externs.
+sections with the same name are joined in module order and placed in one of two ways:
+
+- `--lcf FILE`: a Toshiba link command file, as for tulink (a subset; docs/lcf.md). It can also
+  store an initialized `data` section in ROM (`org=`) and run it from RAM (`addr=`).
+- Otherwise unitron places them: `--place NAME=ADDR`, else first fit from `--data-base` (data,
+  default 0x4000) or `--code-base` (code/romdata, default 0x200000), or from 0x100 if that would
+  not fit the section's small/medium/large range.
+
+Overlapping sections are error E217, which names both source lines. `--no-link` checks one module
+with unresolved externs.
+
+## Trace hints (`--hints FILE` on `dis`, `roundtrip`, `lift`)
+
+The trace follows code from the cartridge header's entry point, then from the `--executed`
+addresses (hex, separated by white space) and the hints' `code` lines; then a gap sweep decodes
+what is left. The sweep is a heuristic, so a hints file pins its result down:
+
+```
+# comments start with # or ;
+code 200185 hidden_fn     ; a trace entry point (name optional: code_200185)
+data 20018C 200191        ; no swept instruction touches [start, end)
+```
+
+Addresses are hex, with or without `0x`. A bad line is an error with its line number. Without
+`--hints` the output is unchanged.

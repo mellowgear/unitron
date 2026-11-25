@@ -6,7 +6,7 @@ import pytest
 
 from unitron.asm.assembler import Assembler, build_image
 
-SAMPLES = Path(__file__).resolve().parents[2] / "ngpc-project-template/ngpcbins/T900/SAMPLE/ASM900"
+SAMPLES = Path(__file__).resolve().parents[4] / "ngpc-project-template/ngpcbins/T900/SAMPLE/ASM900"
 needs = pytest.mark.skipif(not (SAMPLES / "SAMPLE1.ASM").is_file(), reason="Toshiba samples not present")
 
 

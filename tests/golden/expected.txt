@@ -1,0 +1,4690 @@
+=== cli_smoke
+$ asm a.asm -o a.bin
+exit 0
+stdout
+|wrote a.bin: 0x4 bytes at 0x200000
+stderr
+file a.bin
+#2107b341
+$ mac a.asm
+exit 0
+stdout
+|$maximum
+|c	section	code abs=0x200000
+|	ld	A,7
+|	ld	(XHL),A
+|	end
+stderr
+$ asm b.asm -o b.bin
+exit 1
+stdout
+stderr
+|b.asm:3: error E221: undefined symbol 'nowhere'
+|1 error(s); no output written
+$ preprocess a.asm -o a.mac
+exit 0
+stdout
+stderr
+file a.mac
+|$maximum
+|c	section	code abs=0x200000
+|	ld	A,7
+|	ld	(XHL),A
+|	end
+=== data_directives
+$ asm t.asm -o t.bin --origin 0x200000
+exit 1
+stdout
+stderr
+|t.asm:22: error E501: value 1111704645 does not fit in 2 byte(s)
+|1 error(s); no output written
+=== labels_expr
+$ asm t.asm -o t.bin --origin 0x200000 --sym t.sym
+exit 0
+stdout
+|wrote t.bin: 0x73 bytes at 0x200000
+stderr
+file t.bin
+#100009000700110003001000feffff001068fe60002000fdfffffffdffffffff
+#ffffff0100000000000000ffffffff000000f801000000ffffff7ffdffff7f05
+#00000005000000050000000201000078560000ff000000000000800000000000
+#0000000000000000000000ffffffff73000000
+file t.sym
+|200000 Start
+|200010 Later
+|200011 Routine.loop
+|200060 COUNT
+=== org_align
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x40 --fill 0
+exit 0
+stdout
+|wrote t.bin: 0x40 bytes at 0x200000
+stderr
+|t.asm:9: warning W508: align 3 is not a power of 2
+file t.bin
+#0100000002000000000000000000000003000004000000000000000000000000
+#0400000000000000000000000000000005000000000000000000000000000000
+$ asm t.asm -o u.bin --origin 0x200010 --size 0x8
+exit 0
+stdout
+|wrote u.bin: 0x8 bytes at 0x200010
+stderr
+|t.asm:9: warning W508: align 3 is not a power of 2
+|warning: 5 code/romdata bytes lie outside the image 0x200010+0x8
+file u.bin
+#03ffff04ffffffff
+=== instructions_symbols
+$ asm t.asm -o t.bin --sym t.sym
+exit 0
+stdout
+|wrote t.bin: 0x57 bytes at 0x200000
+stderr
+file t.bin
+#f1cc6f63f1826f00108e0821b3d8bc02e7f307ece833c2560020214056002000
+#68347831001b5600201d5600201e2600ca1c23d81c20681e661c1e1900f25600
+#20ee1a10001b0000301c3412f313060030f3130100230e
+file t.sym
+|000008 TASK
+|006F82 X
+|006FCC VEC
+|200056 fwd
+=== include
+$ asm t.asm -o t.bin -I inc
+exit 1
+stdout
+stderr
+|sub/deeper.asm:2: error E221: undefined symbol 'missing'
+|    included from t.asm:6
+|    included from sub/deep.asm:2
+|1 error(s); no output written
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:7: error E20: can't open 'data2.asm'
+|sub/deeper.asm:2: error E221: undefined symbol 'missing'
+|    included from t.asm:6
+|    included from sub/deep.asm:2
+|2 error(s); no output written
+=== include_errors
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|self.asm:2: warning: include nesting deeper than 8 (asm900's limit; --strict makes it an error)
+|    included from t.asm:5
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|t.asm:3: error E20: can't open 'nothere.asm'
+|t.asm:4: error E218: $include needs "file"
+|self.asm:2: error E234: include nesting too deep (recursive include?)
+|    included from t.asm:5
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|    included from self.asm:2
+|3 error(s); no output written
+$ asm deep.asm -o d.bin
+exit 0
+stdout
+|wrote d.bin: 0x1 bytes at 0x200000
+stderr
+|n8.asm:1: warning: include nesting deeper than 8 (asm900's limit; --strict makes it an error)
+|    included from deep.asm:3
+|    included from n1.asm:1
+|    included from n2.asm:1
+|    included from n3.asm:1
+|    included from n4.asm:1
+|    included from n5.asm:1
+|    included from n6.asm:1
+|    included from n7.asm:1
+file d.bin
+|	
+~
+$ asm deep.asm -o d.bin --strict
+exit 1
+stdout
+stderr
+|n8.asm:1: error E234: include nesting deeper than 8
+|    included from deep.asm:3
+|    included from n1.asm:1
+|    included from n2.asm:1
+|    included from n3.asm:1
+|    included from n4.asm:1
+|    included from n5.asm:1
+|    included from n6.asm:1
+|    included from n7.asm:1
+|1 error(s); no output written
+=== errors_misc
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:40: warning W508: align 3 is not a power of 2
+|t.asm:42: warning W508: align 0 is not a power of 2
+|t.asm:183: warning W507: text after `end` is ignored
+|t.asm:25: warning W501: ds count of 0 or less; 1 assumed
+|t.asm:26: warning W501: ds count of 0 or less; 1 assumed
+|t.asm:6: error E203: multi-defined symbol 'foo' (first defined at t.asm:5)
+|t.asm:9: error E501: value 256 does not fit in 1 byte(s)
+|t.asm:13: error E501: value -129 does not fit in 1 byte(s)
+|t.asm:14: error E501: value 65536 does not fit in 2 byte(s)
+|t.asm:15: error E501: value 16777216 does not fit in 3 byte(s)
+|t.asm:16: error E501: value 4294967296 does not fit in 4 byte(s)
+|t.asm:17: error E209: unterminated string
+|t.asm:18: error E209: strings are allowed in db/dfb only
+|t.asm:19: error E231: db needs values
+|t.asm:20: error E206: empty value
+|t.asm:21: error E231: dfb takes count,value
+|t.asm:27: error E200: `equ` needs a name
+|t.asm:28: error E208: illegal label '9bad'
+|t.asm:29: error E208: illegal label 'bad-label'
+|t.asm:30: error E208: 'small' is a reserved word
+|t.asm:31: error E208: 'LD' is a reserved word
+|t.asm:32: error E208: 'xwa' is a reserved word
+|t.asm:33: error E208: 'Xwa' is a reserved word
+|t.asm:34: error E200: `section` needs a name
+|t.asm:35: error E212: section type must be code, data or romdata
+|t.asm:36: error E216: only data sections can be small (TR p.19)
+|t.asm:37: error E216: a section is either relocatable (small/medium/large) or abs=
+|t.asm:38: error E216: bad section attribute 'foo'
+|t.asm:39: error E223: 'nosuch' must be defined before this point
+|t.asm:41: error E223: 'nosuch2' must be defined before this point
+|t.asm:44: error E208: illegal symbol name '9x'
+|t.asm:45: error E208: illegal symbol name '9b'
+|t.asm:46: error E200: `fdatas` is not supported (floating point / debug information)
+|t.asm:47: error E200: `file` is not supported (floating point / debug information)
+|t.asm:48: error E200: missing operand
+|t.asm:50: error E200: unknown mnemonic or directive 'frob'
+|t.asm:54: error E200: unexpected ')'
+|t.asm:55: error E200: step must be 1, 2 or 4, not '3'
+|t.asm:57: error E200: bad index register in 'XHL+XDE'
+|t.asm:58: error E200: bad index register in 'XHL-A'
+|t.asm:59: error E200: write XHL without parentheses (asm900 JP/CALL/LDA syntax)
+|t.asm:60: error E200: write 0x1234 without parentheses (asm900 JP/CALL/LDA syntax)
+|t.asm:61: error E200: illegal numeric constant '0b101': asm900 writes binary as 0y (0b is rejected, E202)
+|t.asm:62: error E200: illegal numeric constant '12H': suffixed numbers need -H (E202)
+|t.asm:63: error E200: illegal numeric constant '08' (E202)
+|t.asm:64: error E200: unexpected "'"
+|t.asm:65: error E200: empty character constant
+|t.asm:66: error E200: unexpected '"x"'
+|t.asm:67: error E200: the width after ':' must be a constant 1..32
+|t.asm:68: error E200: the width after ':' must be a constant 1..32
+|t.asm:69: error E200: the width after ':' must be a constant 1..32
+|t.asm:70: error E200: division by zero
+|t.asm:71: error E200: division by zero
+|t.asm:72: error E200: negative shift count
+|t.asm:74: error E200: sizeof() takes a section name
+|t.asm:75: error E200: unbalanced parentheses
+|t.asm:76: error E200: unexpected ')'
+|t.asm:77: error E200: unexpected '$'
+|t.asm:78: error E200: unknown escape \q
+|t.asm:79: error E200: \x needs hex digits
+|t.asm:80: error E200: octal escape \777 above 377
+|t.asm:81: error E200: unexpected '"\tdb\t"\\400"'
+|t.asm:125: error E200: 'A' is not a condition
+|t.asm:138: error E200: write XHL without parentheses (asm900 JP/CALL/LDA syntax)
+|t.asm:160: error E200: '1' is not a condition
+|t.asm:23: error E223: count uses 'x', not defined before this line
+|t.asm:24: error E223: count uses 'y', not defined before this line
+|t.asm:43: error E229: org 0x100 is below the location counter 0x2000DF
+|t.asm:4: error E221: undefined symbol 'nowhere'
+|t.asm:7: error E230: one side of a memory-to-memory LD must be a 16-bit address
+|t.asm:8: error E230: operand type mismatch; legal forms: ADD R,r | ADD r,# | ADD R,(mem) | ADD (mem),R | ADD<W> (mem),#
+|t.asm:10: error E230: relative target out of range (+200 bytes, E227)
+|t.asm:22: error: size changed from 1 to 0 bytes between passes (internal)
+|t.asm:49: error E230: operand type mismatch; legal forms: LD R,r | LD r,# | LD R,(mem) | LD (mem),R | LD<W> (mem),# | LD<W> (#16),(mem) | LD<W> (mem),(#16)
+|t.asm:51: error E230: NOP takes no operands
+|t.asm:52: error E230: NORMAL is undefined on the 900/H
+|t.asm:53: error E230: MAX is undefined on the 900/H
+|t.asm:56: error E230: memory base register BC must be 32-bit
+|t.asm:73: error E206: section 'nosect' does not exist (E232)
+|t.asm:83: error E230: value 256 out of range -128..255
+|t.asm:84: error E230: value 65536 out of range -32768..65535
+|t.asm:85: error E230: value -129 out of range -128..255
+|t.asm:86: error E230: address 0x1000000 out of range
+|t.asm:87: error E230: address 0xFFFFFFFF out of range
+|t.asm:88: error E230: displacement 32768 out of range -32768..32767
+|t.asm:89: error E230: a displacement is at most 16 bits, not 24
+|t.asm:92: error E230: an absolute address is at most 24 bits, not 32
+|t.asm:93: error E230: size suffix does not match the 8-bit operand
+|t.asm:94: error E230: LD is byte/word only
+|t.asm:95: error E230: register sizes differ
+|t.asm:96: error E230: one of the registers must be a current-bank register
+|t.asm:98: error E230: LDX address must be 8-bit
+|t.asm:99: error E230: LDX takes (#8),#
+|t.asm:100: error E230: register bank 8 out of range 0..7
+|t.asm:101: error E230: interrupt level 8 out of range 0..7
+|t.asm:102: error E230: SWI number 8 out of range 0..7
+|t.asm:103: error E230: value 65536 out of range -32768..65535
+|t.asm:104: error E230: LINK is long only
+|t.asm:105: error E230: value 65536 out of range -32768..65535
+|t.asm:106: error E230: UNLK is long only
+|t.asm:107: error E230: count 9 out of range 1..8
+|t.asm:108: error E230: count 0 out of range 1..8
+|t.asm:109: error E230: operand type mismatch; legal forms: INC #3,r | INC<W> #3,(mem)
+|t.asm:110: error E230: shift count 17 out of range 1..16
+|t.asm:111: error E230: shift count 0 out of range 1..16
+|t.asm:112: error E230: bit number 16 out of range 0..15
+|t.asm:113: error E230: bit number 8 out of range 0..7
+|t.asm:114: error E230: operand type mismatch; legal forms: BIT #4,r | BIT #3,(mem)
+|t.asm:116: error E230: MUL: the first operand is the double-size register (WA.. or XWA..)
+|t.asm:117: error E230: register sizes do not fit
+|t.asm:119: error E230: MUL RR,r: RR must be WA, BC, DE or HL
+|t.asm:120: error E230: MUL RR,r: RR must be WA, BC, DE or HL
+|t.asm:121: error E230: value 256 out of range -128..255
+|t.asm:122: error E230: MINC1 is word only
+|t.asm:123: error E230: MINC1 takes #,r
+|t.asm:124: error E230: SCC is byte/word only
+|t.asm:126: error E230: DMAS0 is 32-bit
+|t.asm:127: error E230: LDC takes cr,r or r,cr
+|t.asm:129: error E230: operand type mismatch; legal forms: EX F,F' | EX R,r | EX (mem),R
+|t.asm:130: error E230: register sizes differ
+|t.asm:131: error E230: one of the registers must be a current-bank register
+|t.asm:132: error E230: EX is byte/word only
+|t.asm:133: error E230: operand type mismatch; legal forms: PUSH F | PUSH A | PUSH SR | PUSH r | PUSH<W> # | PUSH<W> (mem)
+|t.asm:134: error E230: PUSH is byte/word only
+|t.asm:135: error E230: operand type mismatch; legal forms: POP F | POP A | POP SR | POP r | POP<W> (mem)
+|t.asm:136: error E230: operand type mismatch; legal forms: POP F | POP A | POP SR | POP r | POP<W> (mem)
+|t.asm:140: error E230: LDA is word/long only
+|t.asm:141: error E230: operand type mismatch; legal forms: LDAR R,label (R word or long)
+|t.asm:142: error E230: LDAR is word/long only
+|t.asm:143: error E230: LDI operands are (XDE+),(XHL+) or (XIX+),(XIY+)
+|t.asm:144: error E230: LDI operands are (XDE+),(XHL+) or (XIX+),(XIY+)
+|t.asm:145: error E230: LDDR operands are (XDE-),(XHL-) or (XIX-),(XIY-)
+|t.asm:146: error E230: CPI operands are A,(R+) or WA,(R+)
+|t.asm:147: error E230: CPI operands are A,(R+) or WA,(R+)
+|t.asm:148: error E230: CPI operands are A,(R+) or WA,(R+)
+|t.asm:152: error E230: operand type mismatch
+|t.asm:153: error E230: RLD takes [A,](mem)
+|t.asm:154: error E230: RLD takes [A,](mem)
+|t.asm:155: error E230: BS1F is word only
+|t.asm:156: error E230: BS1F takes A,r
+|t.asm:157: error E230: DAA is byte only
+|t.asm:158: error E230: NEG is byte/word only
+|t.asm:159: error E230: EXTZ is word/long only
+|t.asm:161: error E230: RET takes [cc]
+|t.asm:162: error E230: CALR takes [cc,]address
+|t.asm:163: error E230: DJNZ is byte/word only
+|t.asm:164: error E230: DJNZ takes [r,]label
+|t.asm:165: error E230: branch target must be an address
+|t.asm:166: error E221: undefined symbol 'Z'
+|t.asm:167: error E230: JP takes [cc,]address
+|t.asm:168: error E230: address 0x1000000 out of range
+|t.asm:170: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+|t.asm:171: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+|t.asm:172: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+|t.asm:173: error E230: register sizes differ
+|t.asm:174: error E230: memory base register SP must be 32-bit
+|t.asm:175: error E221: undefined symbol 'nosym3'
+|t.asm:176: error E230: address 0x20000 is not 16-bit
+|t.asm:177: error E230: one side of a memory-to-memory LD must be a 16-bit address
+|t.asm:178: error E221: undefined symbol 'nosym4'
+|155 error(s); no output written
+$ asm t.asm -o t.bin --no-mpp
+exit 1
+stdout
+stderr
+|t.asm:40: warning W508: align 3 is not a power of 2
+|t.asm:42: warning W508: align 0 is not a power of 2
+|t.asm:183: warning W507: text after `end` is ignored
+|t.asm:25: warning W501: ds count of 0 or less; 1 assumed
+|t.asm:26: warning W501: ds count of 0 or less; 1 assumed
+|t.asm:6: error E203: multi-defined symbol 'foo' (first defined at t.asm:5)
+|t.asm:9: error E501: value 256 does not fit in 1 byte(s)
+|t.asm:13: error E501: value -129 does not fit in 1 byte(s)
+|t.asm:14: error E501: value 65536 does not fit in 2 byte(s)
+|t.asm:15: error E501: value 16777216 does not fit in 3 byte(s)
+|t.asm:16: error E501: value 4294967296 does not fit in 4 byte(s)
+|t.asm:17: error E209: unterminated string
+|t.asm:18: error E209: strings are allowed in db/dfb only
+|t.asm:19: error E231: db needs values
+|t.asm:20: error E206: empty value
+|t.asm:21: error E231: dfb takes count,value
+|t.asm:27: error E200: `equ` needs a name
+|t.asm:28: error E208: illegal label '9bad'
+|t.asm:29: error E208: illegal label 'bad-label'
+|t.asm:30: error E208: 'small' is a reserved word
+|t.asm:31: error E208: 'LD' is a reserved word
+|t.asm:32: error E208: 'xwa' is a reserved word
+|t.asm:33: error E208: 'Xwa' is a reserved word
+|t.asm:34: error E200: `section` needs a name
+|t.asm:35: error E212: section type must be code, data or romdata
+|t.asm:36: error E216: only data sections can be small (TR p.19)
+|t.asm:37: error E216: a section is either relocatable (small/medium/large) or abs=
+|t.asm:38: error E216: bad section attribute 'foo'
+|t.asm:39: error E223: 'nosuch' must be defined before this point
+|t.asm:41: error E223: 'nosuch2' must be defined before this point
+|t.asm:44: error E208: illegal symbol name '9x'
+|t.asm:45: error E208: illegal symbol name '9b'
+|t.asm:46: error E200: `fdatas` is not supported (floating point / debug information)
+|t.asm:47: error E200: `file` is not supported (floating point / debug information)
+|t.asm:48: error E200: missing operand
+|t.asm:50: error E200: unknown mnemonic or directive 'frob'
+|t.asm:54: error E200: unexpected ')'
+|t.asm:55: error E200: step must be 1, 2 or 4, not '3'
+|t.asm:57: error E200: bad index register in 'XHL+XDE'
+|t.asm:58: error E200: bad index register in 'XHL-A'
+|t.asm:59: error E200: write XHL without parentheses (asm900 JP/CALL/LDA syntax)
+|t.asm:60: error E200: write 0x1234 without parentheses (asm900 JP/CALL/LDA syntax)
+|t.asm:61: error E200: illegal numeric constant '0b101': asm900 writes binary as 0y (0b is rejected, E202)
+|t.asm:62: error E200: illegal numeric constant '12H': suffixed numbers need -H (E202)
+|t.asm:63: error E200: illegal numeric constant '08' (E202)
+|t.asm:64: error E200: unexpected "'"
+|t.asm:65: error E200: empty character constant
+|t.asm:66: error E200: unexpected '"x"'
+|t.asm:67: error E200: the width after ':' must be a constant 1..32
+|t.asm:68: error E200: the width after ':' must be a constant 1..32
+|t.asm:69: error E200: the width after ':' must be a constant 1..32
+|t.asm:70: error E200: division by zero
+|t.asm:71: error E200: division by zero
+|t.asm:72: error E200: negative shift count
+|t.asm:74: error E200: sizeof() takes a section name
+|t.asm:75: error E200: unbalanced parentheses
+|t.asm:76: error E200: unexpected ')'
+|t.asm:77: error E200: unexpected '$'
+|t.asm:78: error E200: unknown escape \q
+|t.asm:79: error E200: \x needs hex digits
+|t.asm:80: error E200: octal escape \777 above 377
+|t.asm:81: error E200: unexpected '"\\'
+|t.asm:82: error E200: octal escape \400 above 377
+|t.asm:125: error E200: 'A' is not a condition
+|t.asm:138: error E200: write XHL without parentheses (asm900 JP/CALL/LDA syntax)
+|t.asm:160: error E200: '1' is not a condition
+|t.asm:23: error E223: count uses 'x', not defined before this line
+|t.asm:24: error E223: count uses 'y', not defined before this line
+|t.asm:43: error E229: org 0x100 is below the location counter 0x2000DF
+|t.asm:4: error E221: undefined symbol 'nowhere'
+|t.asm:7: error E230: one side of a memory-to-memory LD must be a 16-bit address
+|t.asm:8: error E230: operand type mismatch; legal forms: ADD R,r | ADD r,# | ADD R,(mem) | ADD (mem),R | ADD<W> (mem),#
+|t.asm:10: error E230: relative target out of range (+200 bytes, E227)
+|t.asm:22: error: size changed from 1 to 0 bytes between passes (internal)
+|t.asm:49: error E230: operand type mismatch; legal forms: LD R,r | LD r,# | LD R,(mem) | LD (mem),R | LD<W> (mem),# | LD<W> (#16),(mem) | LD<W> (mem),(#16)
+|t.asm:51: error E230: NOP takes no operands
+|t.asm:52: error E230: NORMAL is undefined on the 900/H
+|t.asm:53: error E230: MAX is undefined on the 900/H
+|t.asm:56: error E230: memory base register BC must be 32-bit
+|t.asm:73: error E206: section 'nosect' does not exist (E232)
+|t.asm:83: error E230: value 256 out of range -128..255
+|t.asm:84: error E230: value 65536 out of range -32768..65535
+|t.asm:85: error E230: value -129 out of range -128..255
+|t.asm:86: error E230: address 0x1000000 out of range
+|t.asm:87: error E230: address 0xFFFFFFFF out of range
+|t.asm:88: error E230: displacement 32768 out of range -32768..32767
+|t.asm:89: error E230: a displacement is at most 16 bits, not 24
+|t.asm:92: error E230: an absolute address is at most 24 bits, not 32
+|t.asm:93: error E230: size suffix does not match the 8-bit operand
+|t.asm:94: error E230: LD is byte/word only
+|t.asm:95: error E230: register sizes differ
+|t.asm:96: error E230: one of the registers must be a current-bank register
+|t.asm:98: error E230: LDX address must be 8-bit
+|t.asm:99: error E230: LDX takes (#8),#
+|t.asm:100: error E230: register bank 8 out of range 0..7
+|t.asm:101: error E230: interrupt level 8 out of range 0..7
+|t.asm:102: error E230: SWI number 8 out of range 0..7
+|t.asm:103: error E230: value 65536 out of range -32768..65535
+|t.asm:104: error E230: LINK is long only
+|t.asm:105: error E230: value 65536 out of range -32768..65535
+|t.asm:106: error E230: UNLK is long only
+|t.asm:107: error E230: count 9 out of range 1..8
+|t.asm:108: error E230: count 0 out of range 1..8
+|t.asm:109: error E230: operand type mismatch; legal forms: INC #3,r | INC<W> #3,(mem)
+|t.asm:110: error E230: shift count 17 out of range 1..16
+|t.asm:111: error E230: shift count 0 out of range 1..16
+|t.asm:112: error E230: bit number 16 out of range 0..15
+|t.asm:113: error E230: bit number 8 out of range 0..7
+|t.asm:114: error E230: operand type mismatch; legal forms: BIT #4,r | BIT #3,(mem)
+|t.asm:116: error E230: MUL: the first operand is the double-size register (WA.. or XWA..)
+|t.asm:117: error E230: register sizes do not fit
+|t.asm:119: error E230: MUL RR,r: RR must be WA, BC, DE or HL
+|t.asm:120: error E230: MUL RR,r: RR must be WA, BC, DE or HL
+|t.asm:121: error E230: value 256 out of range -128..255
+|t.asm:122: error E230: MINC1 is word only
+|t.asm:123: error E230: MINC1 takes #,r
+|t.asm:124: error E230: SCC is byte/word only
+|t.asm:126: error E230: DMAS0 is 32-bit
+|t.asm:127: error E230: LDC takes cr,r or r,cr
+|t.asm:129: error E230: operand type mismatch; legal forms: EX F,F' | EX R,r | EX (mem),R
+|t.asm:130: error E230: register sizes differ
+|t.asm:131: error E230: one of the registers must be a current-bank register
+|t.asm:132: error E230: EX is byte/word only
+|t.asm:133: error E230: operand type mismatch; legal forms: PUSH F | PUSH A | PUSH SR | PUSH r | PUSH<W> # | PUSH<W> (mem)
+|t.asm:134: error E230: PUSH is byte/word only
+|t.asm:135: error E230: operand type mismatch; legal forms: POP F | POP A | POP SR | POP r | POP<W> (mem)
+|t.asm:136: error E230: operand type mismatch; legal forms: POP F | POP A | POP SR | POP r | POP<W> (mem)
+|t.asm:140: error E230: LDA is word/long only
+|t.asm:141: error E230: operand type mismatch; legal forms: LDAR R,label (R word or long)
+|t.asm:142: error E230: LDAR is word/long only
+|t.asm:143: error E230: LDI operands are (XDE+),(XHL+) or (XIX+),(XIY+)
+|t.asm:144: error E230: LDI operands are (XDE+),(XHL+) or (XIX+),(XIY+)
+|t.asm:145: error E230: LDDR operands are (XDE-),(XHL-) or (XIX-),(XIY-)
+|t.asm:146: error E230: CPI operands are A,(R+) or WA,(R+)
+|t.asm:147: error E230: CPI operands are A,(R+) or WA,(R+)
+|t.asm:148: error E230: CPI operands are A,(R+) or WA,(R+)
+|t.asm:152: error E230: operand type mismatch
+|t.asm:153: error E230: RLD takes [A,](mem)
+|t.asm:154: error E230: RLD takes [A,](mem)
+|t.asm:155: error E230: BS1F is word only
+|t.asm:156: error E230: BS1F takes A,r
+|t.asm:157: error E230: DAA is byte only
+|t.asm:158: error E230: NEG is byte/word only
+|t.asm:159: error E230: EXTZ is word/long only
+|t.asm:161: error E230: RET takes [cc]
+|t.asm:162: error E230: CALR takes [cc,]address
+|t.asm:163: error E230: DJNZ is byte/word only
+|t.asm:164: error E230: DJNZ takes [r,]label
+|t.asm:165: error E230: branch target must be an address
+|t.asm:166: error E221: undefined symbol 'Z'
+|t.asm:167: error E230: JP takes [cc,]address
+|t.asm:168: error E230: address 0x1000000 out of range
+|t.asm:170: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+|t.asm:171: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+|t.asm:172: error E230: RA3 must be a current-bank register (W A B C D E H L / WA..SP / XWA..XSP) here
+|t.asm:173: error E230: register sizes differ
+|t.asm:174: error E230: memory base register SP must be 32-bit
+|t.asm:175: error E221: undefined symbol 'nosym3'
+|t.asm:176: error E230: address 0x20000 is not 16-bit
+|t.asm:177: error E230: one side of a memory-to-memory LD must be a 16-bit address
+|t.asm:178: error E221: undefined symbol 'nosym4'
+|156 error(s); no output written
+=== no_maximum
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:1: error E218: `$maximum` must be the first statement (TR p.25)
+|1 error(s); no output written
+$ asm u.asm -o u.bin
+exit 1
+stdout
+stderr
+|u.asm:2: warning W218: `$maximum` should be the first statement
+|u.asm:6: warning: $system only records a mode in asm900; ignored
+|u.asm:7: warning: $normal only records a mode in asm900; ignored
+|u.asm:21: warning W506: no `end` directive
+|u.asm:4: error E200: a control instruction cannot have a label
+|u.asm:5: error E218: $minimum is not supported (the 900/H has only maximum mode)
+|u.asm:20: error E218: unknown control instruction $frob
+|3 error(s); no output written
+$ asm v.asm -o v.bin
+exit 1
+stdout
+stderr
+|v.asm:1: error E218: `$maximum` must be the first statement (TR p.25)
+|v.asm:1: error E215: no section definition before this statement
+|2 error(s); no output written
+=== overlap
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:8: error E217: sections overlap at 0x200001: t.asm:8 (e) runs into bytes from t.asm:4 (c, 0x200000-0x200003)
+|t.asm:6: error E217: sections overlap at 0x200002: t.asm:6 (d) runs into bytes from t.asm:4 (c, 0x200000-0x200003)
+|2 error(s); no output written
+=== relocatable
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x60 --place m=0x40 --place l=0x80 --sym t.sym
+exit 0
+stdout
+|wrote t.bin: 0x60 bytes at 0x200000
+stderr
+|t.asm:21: warning W517: section r already has a different attribute; continuing it
+|warning: 2 code/romdata bytes lie outside the image 0x200000+0x60
+file t.bin
+#c1400021c280000021c00021404000000040800000001a00011c0101f10001d6
+#c241000021010080000200ff01ffffff02ffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+file t.sym
+|000000 vs
+|000040 v
+|000080 vl
+|000100 r1
+|000101 r2
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x60 --sym t2.sym
+exit 0
+stdout
+|wrote t.bin: 0x60 bytes at 0x200000
+stderr
+|t.asm:21: warning W517: section r already has a different attribute; continuing it
+|warning: 2 code/romdata bytes lie outside the image 0x200000+0x60
+file t.bin
+#c1004021c201400021c00021400040000040014000001a00011c0101f10001d6
+#c201400021010001400200ff01ffffff02ffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+file t2.sym
+|000000 vs
+|000100 r1
+|000101 r2
+|004000 v
+|004001 vl
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x60 --data-base 0x5000 --code-base 0x210000 --sym t3.sym
+exit 0
+stdout
+|wrote t.bin: 0x60 bytes at 0x200000
+stderr
+|t.asm:21: warning W517: section r already has a different attribute; continuing it
+|warning: 4 code/romdata bytes lie outside the image 0x200000+0x60
+file t.bin
+#c1005021c201500021c00021400050000040015000001a00011c0101f10001d6
+#c201500021010001500200ffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+file t3.sym
+|000000 vs
+|000100 r1
+|000101 r2
+|005000 v
+|005001 vl
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x60 --place m=0xFFFF
+exit 0
+stdout
+|wrote t.bin: 0x60 bytes at 0x200000
+stderr
+|t.asm:21: warning W517: section r already has a different attribute; continuing it
+|warning: 2 code/romdata bytes lie outside the image 0x200000+0x60
+file t.bin
+#c1ffff21c200400021c0002140ffff000040004000001a00011c0101f10001d6
+#c200000121010000400200ff01ffffff02ffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+$ asm t.asm --no-link
+exit 0
+stdout
+stderr
+|t.asm:21: warning W517: section r already has a different attribute; continuing it
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x60 --place s=0x1000
+exit 1
+stdout
+stderr
+|t.asm:21: warning W517: section r already has a different attribute; continuing it
+|t.asm:6: error E216: section s at 0x1000 does not fit its small displacement
+|t.asm:11: error E230: address 0x1000 does not fit the 8-bit width of its symbol
+|2 error(s); no output written
+=== multi_module
+$ asm a.asm b.asm -o ab.bin --sym ab.sym
+exit 1
+stdout
+stderr
+|b.asm:3: error E210: public 'missing' is not defined in module sub
+|b.asm:4: error E203: public 'start' also defined at a.asm:7
+|2 error(s); no output written
+$ asm a.asm --no-link
+exit 0
+stdout
+stderr
+$ asm a.asm -o a.bin
+exit 1
+stdout
+stderr
+|a.asm:10: error E221: undefined symbol 'sub1'
+|a.asm:11: error E221: undefined symbol 'counter'
+|a.asm:12: error E221: undefined symbol 'tiny'
+|a.asm:13: error E221: undefined symbol 'sub1'
+|a.asm:14: error E221: undefined symbol 'sub1'
+|a.asm:14: error E221: undefined symbol 'counter'
+|6 error(s); no output written
+$ asm a.asm b.asm c.asm -o abc.bin
+exit 1
+stdout
+stderr
+|b.asm:3: error E210: public 'missing' is not defined in module sub
+|b.asm:4: error E203: public 'start' also defined at a.asm:7
+|c.asm:2: error E203: public 'sub1' also defined at b.asm:3
+|3 error(s); no output written
+$ asm b.asm d.asm -o bd.bin
+exit 1
+stdout
+stderr
+|b.asm:3: error E210: public 'missing' is not defined in module sub
+|d.asm:2: error E216: extern 'counter' is declared small but its section d is medium
+|d.asm:5: error E230: address 0x4000 does not fit the 8-bit width of its symbol
+|3 error(s); no output written
+=== width_operator
+$ asm t.asm -o t.bin
+exit 0
+stdout
+|wrote t.bin: 0x3F bytes at 0x200000
+stderr
+file t.bin
+#c2aa620021c3ed0f0023310200cdcf00c9aa2105c3edfeff211b341200fff120
+#0041f120000001400500000009058b0021f2100000d61c1000c23e00202100
+=== numbers_h
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:3: error E200: illegal numeric constant '0FFH': suffixed numbers need -H (E202)
+|t.asm:4: error E200: illegal numeric constant '12h': suffixed numbers need -H (E202)
+|2 error(s); no output written
+$ asm t.asm -o t.bin -H
+exit 0
+stdout
+|wrote t.bin: 0x9 bytes at 0x200000
+stderr
+file t.bin
+#ff050f0f630c1212ff
+=== reserved_primes
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:8: error E200: unexpected "'s'"
+|t.asm:6: error E230: operand type mismatch; legal forms: LD R,r | LD r,# | LD R,(mem) | LD (mem),R | LD<W> (mem),# | LD<W> (#16),(mem) | LD<W> (mem),(#16)
+|2 error(s); no output written
+$ asm r.asm -o r.bin
+exit 1
+stdout
+stderr
+|r.asm:3: error E208: 'small' is a reserved word
+|r.asm:4: error E208: 'abs' is a reserved word
+|r.asm:5: error E208: 'LOC0' is a reserved word
+|r.asm:6: error E208: 'ldw' is a reserved word
+|r.asm:7: error E208: 'nz' is a reserved word
+|r.asm:8: error E208: 'Sizeof' is a reserved word
+|6 error(s); no output written
+=== long_names
+$ asm t.asm -o t.bin
+exit 0
+stdout
+|wrote t.bin: 0x3 bytes at 0x200000
+stderr
+|t.asm:4: warning: 'abcdefghijklmnopqrstuvwxyz0123456_two' and 'abcdefghijklmnopqrstuvwxyz0123456_one' agree in their first 32 characters (asm900 V2.2d keeps only 32)
+file t.bin
+#000000
+=== equ_chains
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:17: error E223: 'X1' must be defined before this point
+|error: instruction sizes did not settle
+|t.asm:9: error E206: 'S1' is defined in terms of itself
+|3 error(s); no output written
+=== image_options
+$ asm t.asm -o t.bin
+exit 0
+stdout
+|wrote t.bin: 0x11 bytes at 0x200000
+stderr
+|t.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|t.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+file t.bin
+#0102ffffffffffffffffffffffffffff03
+$ asm t.asm -o t.bin --origin 0x200008
+exit 0
+stdout
+|wrote t.bin: 0x9 bytes at 0x200008
+stderr
+|t.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|t.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|warning: 2 code/romdata bytes lie outside the image 0x200008+0x9
+file t.bin
+#ffffffffffffffff03
+$ asm t.asm -o t.bin --origin 0x200000 --size 4
+exit 0
+stdout
+|wrote t.bin: 0x4 bytes at 0x200000
+stderr
+|t.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|t.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|warning: 1 code/romdata bytes lie outside the image 0x200000+0x4
+file t.bin
+#0102ffff
+$ asm t.asm -o t.bin --origin 0x1FFFFF --size 0x20 --fill 0x5A
+exit 0
+stdout
+|wrote t.bin: 0x20 bytes at 0x1FFFFF
+stderr
+|t.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|t.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+file t.bin
+|ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+~
+$ asm t.asm
+exit 0
+stdout
+stderr
+|t.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|t.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+$ asm t.asm -o t.bin --sym t.sym --fill 0
+exit 0
+stdout
+|wrote t.bin: 0x11 bytes at 0x200000
+stderr
+|t.asm:7: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|t.asm:10: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+file t.bin
+#0102000000000000000000000000000003
+file t.sym
+=== mpp_basics
+$ mac t.asm
+exit 0
+stdout
+|$maximum
+|	db	((3)*2)
+|	db	1 
+|
+|	db	2 ; kept
+|	ex	F,F' ; it's fine
+|	db	"hello"
+|	db	1 #"2"
+|	db	1 +  2
+|	db	"ifdef"
+|	db	"elif"
+|	db	"elif2"
+|	db	N
+|	db	"builtin"
+|	db	"cexpr"
+|	db	9
+|	db	((2)*2)+1
+|	db	((3)*2)
+|	db	TWICE
+|	db	"TWICE(1)"
+|	db	'N'
+|	db	2N
+|	end
+stderr
+$ mac t.asm -D N=5 -D FLAG -o t.out
+exit 0
+stdout
+stderr
+file t.out
+|$maximum
+|	db	((3)*2)
+|	db	1 
+|
+|	db	2 ; kept
+|	ex	F,F' ; it's fine
+|	db	"hello"
+|	db	1 #"2"
+|	db	1 +  2
+|	db	"ifdef"
+|	db	"elif"
+|	db	"elif2"
+|	db	N
+|	db	"builtin"
+|	db	"cexpr"
+|	db	9
+|	db	((2)*2)+1
+|	db	((3)*2)
+|	db	TWICE
+|	db	"TWICE(1)"
+|	db	'N'
+|	db	2N
+|	end
+$ asm t.asm --no-link
+exit 1
+stdout
+stderr
+|t.asm:5: error E215: no section definition before this statement
+|t.asm:9: error E215: no section definition before this statement
+|t.asm:11: error E215: no section definition before this statement
+|t.asm:12: error E215: no section definition before this statement
+|t.asm:15: error E215: no section definition before this statement
+|t.asm:16: error E215: no section definition before this statement
+|t.asm:19: error E215: no section definition before this statement
+|t.asm:21: error E215: no section definition before this statement
+|t.asm:26: error E215: no section definition before this statement
+|t.asm:33: error E215: no section definition before this statement
+|t.asm:41: error E215: no section definition before this statement
+|t.asm:43: error E215: no section definition before this statement
+|t.asm:46: error E215: no section definition before this statement
+|t.asm:49: error E215: no section definition before this statement
+|t.asm:51: error E215: no section definition before this statement
+|t.asm:52: error E215: no section definition before this statement
+|t.asm:53: error E215: no section definition before this statement
+|t.asm:54: error E215: no section definition before this statement
+|t.asm:55: error E215: no section definition before this statement
+|t.asm:56: error E215: no section definition before this statement
+|20 error(s); no output written
+$ mac t.asm -D N
+exit 0
+stdout
+|$maximum
+|	db	((3)*2)
+|	db	1 
+|
+|	db	2 ; kept
+|	ex	F,F' ; it's fine
+|	db	"hello"
+|	db	1 #"2"
+|	db	1 +  2
+|	db	"ifdef"
+|	db	"elif"
+|	db	"elif2"
+|	db	N
+|	db	"builtin"
+|	db	"cexpr"
+|	db	9
+|	db	((2)*2)+1
+|	db	((3)*2)
+|	db	TWICE
+|	db	"TWICE(1)"
+|	db	'N'
+|	db	2N
+|	end
+stderr
+=== mpp_macros
+$ mac t.asm
+exit 0
+stdout
+|$maximum
+|c	section	code abs=0x200000
+|resume000:
+|	ld	XWA,resume000
+|	ld	(XIZ+8),XWA
+|	cpb	(XIZ+12),0
+|	ret	NZ
+|here:
+|resume001:
+|	ld	XWA,resume001
+|	ld	(XIZ+8),XWA
+|	cpb	(XIZ+12),0
+|	ret	NZ
+|	ld	A,5
+|	ld	(XHL),B
+|	ld	A,
+|	ld	C,1
+|	ld	C,2
+|	nop
+|put	nop
+|resume002:
+|	ld	XWA,resume002
+|	ld	(XIZ+8),XWA
+|	cpb	(XIZ+12),0
+|	ret	NZ
+|	end
+stderr
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:25: error E200: missing operand
+|1 error(s); no output written
+=== mpp_errors
+$ mac e1.asm
+exit 1
+stdout
+stderr
+|e1.asm:1: error: ?repeat is not supported (only ?macro/?endm)
+$ mac e2.asm
+exit 1
+stdout
+stderr
+|e2.asm:1: error: #if without #endif
+$ mac e3.asm
+exit 1
+stdout
+stderr
+|e3.asm:1: error: #endif without #if
+$ mac e4.asm
+exit 1
+stdout
+stderr
+|e4.asm:1: error: #error stop here
+$ mac e5.asm
+exit 1
+stdout
+stderr
+|e5.asm:1: error: unknown directive #frob
+$ mac e6.asm
+exit 1
+stdout
+stderr
+|e6.asm:1: error: #include needs "file" or <file>
+$ mac e7.asm
+exit 1
+stdout
+stderr
+|e7.asm:1: error: can't find include file 'nothing.inc'
+$ mac e8.asm
+exit 1
+stdout
+stderr
+|e8.asm:1: error: ?macro m has no ?endm
+$ mac e9.asm
+exit 1
+stdout
+stderr
+|e9.asm:1: error: ?endm without ?macro
+$ mac e10.asm
+exit 1
+stdout
+stderr
+|e10.asm:4: error: macro m defined twice
+$ mac e11.asm
+exit 1
+stdout
+stderr
+|e11.asm:4: error: m takes 1 arguments, got 2
+$ mac e12.asm
+exit 1
+stdout
+stderr
+|e12.asm:2: error: F takes 2 arguments
+$ mac e13.asm
+exit 1
+stdout
+stderr
+|e13.asm:2: error: unterminated macro call
+$ mac e14.asm
+exit 1
+stdout
+stderr
+|e14.asm:1: error: #if expression ends early
+$ mac e15.asm
+exit 1
+stdout
+stderr
+|e15.asm:1: error: unbalanced parentheses in #if
+$ mac e16.asm
+exit 1
+stdout
+stderr
+|e16.asm:1: error: bad #if expression '1 $ 2'
+$ mac e17.asm
+exit 1
+stdout
+stderr
+|e17.asm:1: error: bad #define
+$ mac e18.asm
+exit 1
+stdout
+stderr
+|e18.asm:1: error: bad ?macro line
+$ mac e19.asm
+exit 1
+stdout
+stderr
+|e19.asm:2: error: nested ?macro definition
+$ mac e20.asm
+exit 1
+stdout
+stderr
+|e20.asm:1: error: ?while is not supported (only ?macro/?endm)
+$ mac e21.asm
+exit 1
+stdout
+stderr
+|e21.asm:1: error: #else without #if
+$ mac e22.asm
+exit 1
+stdout
+stderr
+|e4.asm:1: error: #error stop here
+$ mac e23.asm
+exit 1
+stdout
+stderr
+|e23.asm:4: error: macro nesting deeper than 32
+$ mac e24.asm
+exit 1
+stdout
+stderr
+|e24.asm:3: error: bad directive #123
+$ mac e25.asm
+exit 1
+stdout
+stderr
+|e25.asm:1: error: ?if is not supported (only ?macro/?endm)
+$ mac missing.asm
+exit 1
+stdout
+stderr
+|error: can't open 'missing.asm'
+$ asm e4.asm
+exit 1
+stdout
+stderr
+|e4.asm:0: warning W506: no `end` directive
+|e4.asm:1: error: #error stop here
+|1 error(s); no output written
+$ asm e22.asm
+exit 1
+stdout
+stderr
+|e22.asm:0: warning W506: no `end` directive
+|e4.asm:1: error: #error stop here
+|    included from e22.asm:1
+|1 error(s); no output written
+=== mpp_define_local
+$ mac t.asm
+exit 0
+stdout
+|$maximum
+|c	section	code abs=0x200000
+|Routine.loop:	nop
+|	jr	Routine.loop
+|	end
+stderr
+$ asm t.asm -o t.bin
+exit 0
+stdout
+|wrote t.bin: 0x3 bytes at 0x200000
+stderr
+file t.bin
+#0068fd
+=== mpp_cr_lf
+$ asm t.asm -o t.bin
+exit 1
+stdout
+stderr
+|t.asm:4: error E200: unexpected 'db'
+|1 error(s); no output written
+$ asm t.asm -o u.bin --no-mpp
+exit 0
+stdout
+|wrote u.bin: 0x4 bytes at 0x200000
+stderr
+file u.bin
+|
+~
+$ mac t.asm
+exit 0
+stdout
+|$maximum
+|c	section	code abs=0x200000
+|	db	1
+|	db	2	db	3	db	4
+|	end
+stderr
+=== lz
+$ lz c raw.bin raw.lz
+exit 0
+stdout
+stderr
+file raw.lz
+#ff0001020304050607ff08090a0b0c0d0e0fff1011121314151617ff18191a1b
+#1c1d1e1f84ee3f000b412e0f3604dc3fe933ff0fff112233620f6e06
+$ lz c raw.bin raw2.lz --no-clamp
+exit 0
+stdout
+stderr
+file raw2.lz
+#ff0001020304050607ff08090a0b0c0d0e0fff1011121314151617ff18191a1b
+#1c1d1e1f84ee3f000b412e0f3604dc3fe933ff0fff112233620f6e06
+$ lz d raw.lz raw.out --length 146
+exit 0
+stdout
+stderr
+|60 input bytes -> 146 bytes
+file raw.out
+#000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+#000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+#4141414141414141414141414141414141414141414141414141000000000000
+#000000000000000000000000000000000000ffff112233112233112233112233
+#112233112233112233112233112233112233
+$ lz d raw2.lz raw2.out --length 146
+exit 0
+stdout
+stderr
+|60 input bytes -> 146 bytes
+file raw2.out
+#000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+#000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+#4141414141414141414141414141414141414141414141414141000000000000
+#000000000000000000000000000000000000ffff112233112233112233112233
+#112233112233112233112233112233112233
+$ lz d raw.lz part.out --length 10
+exit 0
+stdout
+stderr
+|12 input bytes -> 10 bytes
+file part.out
+#00010203040506070809
+$ lz c a4.bin a4.lz
+exit 0
+stdout
+stderr
+file a4.lz
+#0141ee30
+$ lz c empty.bin empty.lz
+exit 0
+stdout
+stderr
+file empty.lz
+$ lz d a4.lz a4.out --length 4 --offset 0
+exit 0
+stdout
+stderr
+|4 input bytes -> 4 bytes
+file a4.out
+|AAAA
+~
+=== bin2db_text
+$ bin2db raw.bin
+exit 0
+stdout
+|; generated by unitron bin2db from raw.bin: edit the source, not this file
+|	db	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F
+|	db	0x10,0x11,0x12,0x13,0xFF
+stderr
+$ bin2db raw.bin Blob -o raw.inc --per-line 8
+exit 0
+stdout
+stderr
+file raw.inc
+|; generated by unitron bin2db from raw.bin: edit the source, not this file
+|Blob:
+|	db	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07
+|	db	0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F
+|	db	0x10,0x11,0x12,0x13,0xFF
+$ text c.txt t.txt
+exit 1
+stdout
+stderr
+|error: t.txt:6: not a text command: text "a""a"
+$ text c.txt t.txt -o t.inc
+exit 1
+stdout
+stderr
+|error: t.txt:6: not a text command: text "a""a"
+$ text c.txt bad1.txt
+exit 1
+stdout
+stderr
+|error: bad1.txt:1: no character code for 'q'
+$ text c.txt bad2.txt
+exit 1
+stdout
+stderr
+|error: bad2.txt:1: `done` takes no string
+$ text c.txt bad3.txt
+exit 1
+stdout
+stderr
+|error: bad3.txt:1: `text` needs a string
+$ text c.txt bad4.txt
+exit 1
+stdout
+stderr
+|error: bad4.txt:1: not a text command: frob "a"
+$ text badmap.txt t.txt
+exit 1
+stdout
+stderr
+|error: badmap.txt:1: bad charmap line: char a 01
+=== gfx
+$ gfx topng sheet.bin plain.png
+exit 0
+stdout
+|wrote plain.png: 8 tiles
+stderr
+file plain.png
+|png 64x8 mode P
+|color 0 ffffff
+|color 1 aaaaaa
+|color 2 555555
+|color 3 000000
+|0000000003100102000033330101010100012000313033322121212100010000
+|3333333313201112333300000202020200021000212023221212121200020000
+|1111111123302122003333000303030300100200111013122121212100100000
+|2222222233003132330000331010101000200100010003021212121200200000
+|3000000101320033112222111111111101000020020300011111222201000000
+|0300000303300231221111221212121202000010121310111111222202000000
+|0030003011221023033030031313131310000002222320211111222210000000
+|0003030013201221300303302020202020000001323330311111222220000000
+$ gfx frompng plain.png plain.bin --count 7
+exit 0
+stdout
+|wrote plain.bin: 7 tiles
+stderr
+file plain.bin
+#0000ffff5555aaaa01c003300c0c3003123456789abcdef00f1e2d3c4b5a6978
+#ff0000fff00f0ff0a55a5aa5c33c3cc311112222333344445555666677778888
+#80014002200410080810042002400180fedcba98765432100123456789abcdef
+#9999666699996666aa55aa55aa55aa55
+$ gfx topng sheet.bin w2.png --width 2
+exit 0
+stdout
+|wrote w2.png: 8 tiles
+stderr
+file w2.png
+|png 16x32 mode P
+|color 0 ffffff
+|color 1 aaaaaa
+|color 2 555555
+|color 3 000000
+|0000000003100102
+|3333333313201112
+|1111111123302122
+|2222222233003132
+|3000000101320033
+|0300000303300231
+|0030003011221023
+|0003030013201221
+|0000333301010101
+|3333000002020202
+|0033330003030303
+|3300003310101010
+|1122221111111111
+|2211112212121212
+|0330300313131313
+|3003033020202020
+|0001200031303332
+|0002100021202322
+|0010020011101312
+|0020010001000302
+|0100002002030001
+|0200001012131011
+|1000000222232021
+|2000000132333031
+|2121212100010000
+|1212121200020000
+|2121212100100000
+|1212121200200000
+|1111222201000000
+|1111222202000000
+|1111222210000000
+|1111222220000000
+$ gfx frompng w2.png w2.bin --count 7
+exit 0
+stdout
+|wrote w2.bin: 7 tiles
+stderr
+file w2.bin
+#0000ffff5555aaaa01c003300c0c3003123456789abcdef00f1e2d3c4b5a6978
+#ff0000fff00f0ff0a55a5aa5c33c3cc311112222333344445555666677778888
+#80014002200410080810042002400180fedcba98765432100123456789abcdef
+#9999666699996666aa55aa55aa55aa55
+$ gfx topng sheet.bin pal.png --palette pal.bin --pal 1 --width 3
+exit 0
+stdout
+|wrote pal.png: 8 tiles
+stderr
+file pal.png
+|png 24x24 mode P
+|color 0 000000
+|color 4 ffffff
+|color 5 00ffff
+|color 6 ff00ff
+|color 7 888888
+|444444444754454644447777
+|777777775764555677774444
+|555555556774656644777744
+|666666667744757677444477
+|744444454576447755666655
+|474444474774467566555566
+|447444745566546747747447
+|444747445764566574474774
+|454545454445644475747776
+|464646464446544465646766
+|474747474454464455545756
+|545454544464454445444746
+|555555554544446446474445
+|565656564644445456575455
+|575757575444444666676465
+|646464646444444576777475
+|656565654445444400000000
+|565656564446444400000000
+|656565654454444400000000
+|565656564464444400000000
+|555566664544444400000000
+|555566664644444400000000
+|555566665444444400000000
+|555566666444444400000000
+$ gfx topng sheet.bin map.png --map map.bin --palette pal.bin
+exit 0
+stdout
+|wrote map.png: 8 tiles
+stderr
+file map.png
+|png 32x32 mode P
+|color 0 000000
+|color 1 ff0000
+|color 2 00ff00
+|color 3 0000ff
+|color 4 ffffff
+|color 5 00ffff
+|color 6 ff00ff
+|color 7 888888
+|color 8 332211
+|color 9 554422
+|color 10 776633
+|text unitron-layout {"w":4,"rows":4,"pos":[[0,0],[1,0],[3,0],[1,1],[0,2],[0,3],[1,3],[2,3]]}
+|00000000031001020000000044447777
+|33333333132011120000000077774444
+|11111111233021220000000044777744
+|22222222330031320000000077444477
+|30000001013200330000000055666655
+|03000003033002310000000066555566
+|00300030112210230000000047747447
+|00030300132012210000000074474774
+|00000000010101010000000000000000
+|00000000020202020000000000000000
+|00000000030303030000000000000000
+|00000000101010100000000000000000
+|00000000111111110000000000000000
+|00000000121212120000000000000000
+|00000000131313130000000000000000
+|00000000202020200000000000000000
+|8889a888000000000000000000000000
+|888a9888000000000000000000000000
+|88988a88000000000000000000000000
+|88a88988000000000000000000000000
+|898888a8000000000000000000000000
+|8a888898000000000000000000000000
+|9888888a000000000000000000000000
+|a8888889000000000000000000000000
+|31303332212121210001000000000000
+|21202322121212120002000000000000
+|11101312212121210010000000000000
+|01000302121212120020000000000000
+|02030001111122220100000000000000
+|12131011111122220200000000000000
+|22232021111122221000000000000000
+|32333031111122222000000000000000
+$ gfx frompng map.png map1.bin --count 7 --map map.bin
+exit 0
+stdout
+|wrote map1.bin: 7 tiles
+stderr
+file map1.bin
+#0000ffff5555aaaa01c003300c0c3003123456789abcdef00f1e2d3c4b5a6978
+#ff0000fff00f0ff0a55a5aa5c33c3cc311112222333344445555666677778888
+#80014002200410080810042002400180fedcba98765432100123456789abcdef
+#9999666699996666aa55aa55aa55aa55
+$ gfx frompng map.png map2.bin --count 7
+exit 0
+stdout
+|wrote map2.bin: 7 tiles
+stderr
+file map2.bin
+#0000ffff5555aaaa01c003300c0c3003123456789abcdef00f1e2d3c4b5a6978
+#ff0000fff00f0ff0a55a5aa5c33c3cc311112222333344445555666677778888
+#80014002200410080810042002400180fedcba98765432100123456789abcdef
+#9999666699996666aa55aa55aa55aa55
+$ gfx topng sheet.bin raw.png --map rawmap.bin --map-format raw --map-width 4
+exit 0
+stdout
+|wrote raw.png: 8 tiles
+stderr
+file raw.png
+|png 32x24 mode P
+|color 0 ffffff
+|color 1 aaaaaa
+|color 2 555555
+|color 3 000000
+|text unitron-layout {"w":4,"rows":3,"pos":[[0,0],[1,0],[2,0],[3,0],[0,1],[1,1],[2,1],[0,2]]}
+|00000000031001020000333301010101
+|33333333132011123333000002020202
+|11111111233021220033330003030303
+|22222222330031323300003310101010
+|30000001013200331122221111111111
+|03000003033002312211112212121212
+|00300030112210230330300313131313
+|00030300132012213003033020202020
+|00012000313033322121212100000000
+|00021000212023221212121200000000
+|00100200111013122121212100000000
+|00200100010003021212121200000000
+|01000020020300011111222200000000
+|02000010121310111111222200000000
+|10000002222320211111222200000000
+|20000001323330311111222200000000
+|00010000000000000000000000000000
+|00020000000000000000000000000000
+|00100000000000000000000000000000
+|00200000000000000000000000000000
+|01000000000000000000000000000000
+|02000000000000000000000000000000
+|10000000000000000000000000000000
+|20000000000000000000000000000000
+$ gfx frompng raw.png raw.bin --count 7 --map rawmap.bin --map-format raw --map-width 4
+exit 0
+stdout
+|wrote raw.bin: 7 tiles
+stderr
+file raw.bin
+#0000ffff5555aaaa01c003300c0c3003123456789abcdef00f1e2d3c4b5a6978
+#ff0000fff00f0ff0a55a5aa5c33c3cc311112222333344445555666677778888
+#80014002200410080810042002400180fedcba98765432100123456789abcdef
+#9999666699996666aa55aa55aa55aa55
+$ gfx topng sheet.bin base.png --map rawmap.bin --map-format raw --map-width 2 --base 2
+exit 0
+stdout
+|wrote base.png: 8 tiles
+stderr
+file base.png
+|png 16x48 mode P
+|color 0 ffffff
+|color 1 aaaaaa
+|color 2 555555
+|color 3 000000
+|text unitron-layout {"w":2,"rows":6,"pos":[[0,1],[1,1],[0,2],[1,2],[0,3],[0,4],[1,4],[0,5]]}
+|0000000000000000
+|0000000000000000
+|0000000000000000
+|0000000000000000
+|0000000000000000
+|0000000000000000
+|0000000000000000
+|0000000000000000
+|0000000003100102
+|3333333313201112
+|1111111123302122
+|2222222233003132
+|3000000101320033
+|0300000303300231
+|0030003011221023
+|0003030013201221
+|0000333301010101
+|3333000002020202
+|0033330003030303
+|3300003310101010
+|1122221111111111
+|2211112212121212
+|0330300313131313
+|3003033020202020
+|0001200000000000
+|0002100000000000
+|0010020000000000
+|0020010000000000
+|0100002000000000
+|0200001000000000
+|1000000200000000
+|2000000100000000
+|3130333221212121
+|2120232212121212
+|1110131221212121
+|0100030212121212
+|0203000111112222
+|1213101111112222
+|2223202111112222
+|3233303111112222
+|0001000000000000
+|0002000000000000
+|0010000000000000
+|0020000000000000
+|0100000000000000
+|0200000000000000
+|1000000000000000
+|2000000000000000
+$ gfx frompng base.png base.bin --count 7
+exit 0
+stdout
+|wrote base.bin: 7 tiles
+stderr
+file base.bin
+#0000ffff5555aaaa01c003300c0c3003123456789abcdef00f1e2d3c4b5a6978
+#ff0000fff00f0ff0a55a5aa5c33c3cc311112222333344445555666677778888
+#80014002200410080810042002400180fedcba98765432100123456789abcdef
+#9999666699996666aa55aa55aa55aa55
+$ gfx topng sheet.bin nopal.png --map map.bin
+exit 0
+stdout
+|wrote nopal.png: 8 tiles
+stderr
+file nopal.png
+|png 32x32 mode P
+|color 0 ffffff
+|color 1 aaaaaa
+|color 2 555555
+|color 3 000000
+|text unitron-layout {"w":4,"rows":4,"pos":[[0,0],[1,0],[3,0],[1,1],[0,2],[0,3],[1,3],[2,3]]}
+|00000000031001020000000000003333
+|33333333132011120000000033330000
+|11111111233021220000000000333300
+|22222222330031320000000033000033
+|30000001013200330000000011222211
+|03000003033002310000000022111122
+|00300030112210230000000003303003
+|00030300132012210000000030030330
+|00000000010101010000000000000000
+|00000000020202020000000000000000
+|00000000030303030000000000000000
+|00000000101010100000000000000000
+|00000000111111110000000000000000
+|00000000121212120000000000000000
+|00000000131313130000000000000000
+|00000000202020200000000000000000
+|00012000000000000000000000000000
+|00021000000000000000000000000000
+|00100200000000000000000000000000
+|00200100000000000000000000000000
+|01000020000000000000000000000000
+|02000010000000000000000000000000
+|10000002000000000000000000000000
+|20000001000000000000000000000000
+|31303332212121210001000000000000
+|21202322121212120002000000000000
+|11101312212121210010000000000000
+|01000302121212120020000000000000
+|02030001111122220100000000000000
+|12131011111122220200000000000000
+|22232021111122221000000000000000
+|32333031111122222000000000000000
+=== tiny_rom
+$ asm tiny.asm -o tiny.ngp --origin 0x200000 --size 0x200 --no-mpp
+exit 0
+stdout
+|wrote tiny.ngp: 0x200 bytes at 0x200000
+stderr
+file tiny.ngp
+#204c4943454e53454420425920534e4b20434f52504f524154494f4e00012000
+#0000001054494e59202020202020202000000000000000000000000000000000
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#060747006c00004375012000f1cc6f634076012000f1d46f60c1826f21f2aa62
+#0041310200c3ed0f0023cdcf00d988c90805ebcf00000000f5f152d4ec20f307
+#ece8331e2c001d720120bc02d7c7310312f9f9f1028041f313210035c303ece0
+#21f1008041f1e28741f11080cbca1cfd68fb28480e072101b0f668fa01020385
+#012000ffff21021d8e01200e556622030e50511fffffff00000000ffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+$ dis tiny.ngp
+exit 0
+stdout
+|200100  06 07                    di
+|200102  47 00 6c 00 00           ld XSP,0x6C00
+|200107  43 75 01 20 00           ld XHL,0x200175
+|20010C  f1 cc 6f 63              ld (0x6FCC),XHL
+|200110  40 76 01 20 00           ld XWA,0x200176
+|200115  f1 d4 6f 60              ld (0x6FD4),XWA
+|200119  c1 82 6f 21              ld A,(0x6F82)
+|20011D  f2 aa 62 00 41           ld (0x62AA),A
+|200122  31 02 00                 ld BC,2
+|200125  c3 ed 0f 00 23           ld C,(XHL+0xF)
+|20012A  cd cf 00                 cp E,0
+|20012D  d9 88                    ld WA,BC
+|20012F  c9 08 05                 mul WA,5
+|200132  eb cf 00 00 00 00        cp XHL,0
+|200138  f5 f1 52                 ld (XIX+),DE
+|20013B  d4 ec 20                 ld WA,(-XHL:1)
+|20013E  f3 07 ec e8 33           lda XHL,XHL+DE
+|200143  1e 2c 00                 calr 0x200172
+|200146  1d 72 01 20              call 0x200172
+|20014A  bc 02 d7                 jp C,XIX+2
+|20014D  c7 31 03 12              ld RW3,0x12
+|200151  f9                       swi 1
+|200152  f9                       swi 1
+|200153  f1 02 80 41              ld (0x8002),A
+|200157  f3 13 21 00 35           ldar XIY,0x20017C
+|20015C  c3 03 ec e0 21           ld A,(XHL+A)
+|200161  f1 00 80 41              ld (0x8000),A
+|200165  f1 e2 87 41              ld (0x87E2),A
+|200169  f1 10 80 cb              bit 3,(0x8010)
+|20016D  ca 1c fd                 djnz B,0x20016D
+|200170  68 fb                    jr 0x20016D
+|200172  28                       push WA
+|200173  48                       pop WA
+|200174  0e                       ret
+|200175  07                       reti
+|200176  21 01                    ld A,1
+|200178  b0 f6                    ret Z
+|20017A  68 fa                    jr 0x200176
+|20017C  01                       normal  ; 900 minimum/maximum mode switch; undefined on 900/H
+|20017D  02                       push SR
+|20017E  03                       pop SR
+|20017F  85                       db 0x85
+|200180  01                       normal  ; 900 minimum/maximum mode switch; undefined on 900/H
+|200181  20 00                    ld W,0
+|200183  ff                       swi 7
+|200184  ff                       swi 7
+|200185  21 02                    ld A,2
+|200187  1d 8e 01 20              call 0x20018E
+|20018B  0e                       ret
+|20018C  55                       db 0x55
+|20018D  66 22                    jr Z,0x2001B1
+|20018F  03                       pop SR
+|200190  0e                       ret
+|200191  50                       db 0x50
+|200192  51                       db 0x51
+|200193  1f                       db 0x1F
+|200194  ff                       swi 7
+|200195  ff                       swi 7
+|200196  ff                       swi 7
+|200197  00                       nop
+|200198  00                       nop
+|200199  00                       nop
+|20019A  00                       nop
+|20019B  ff                       swi 7
+stderr
+$ dis tiny.ngp --start 0x200100 --count 8
+exit 0
+stdout
+|200100  06 07                    di
+|200102  47 00 6c 00 00           ld XSP,0x6C00
+|200107  43 75 01 20 00           ld XHL,0x200175
+|20010C  f1 cc 6f 63              ld (0x6FCC),XHL
+|200110  40 76 01 20 00           ld XWA,0x200176
+|200115  f1 d4 6f 60              ld (0x6FD4),XWA
+|200119  c1 82 6f 21              ld A,(0x6F82)
+|20011D  f2 aa 62 00 41           ld (0x62AA),A
+stderr
+$ dis tiny.ngp -o src
+exit 0
+stdout
+|wrote src/main.asm: 38 instructions (0 as db), 388 data bytes, 3 sections
+stderr
+file src/hw.inc
+|; hw.inc: the NGPC hardware names this source uses (from unitron/data/ngpc_hw.inc).
+|SYS_LEVER	equ	0x6F82	; SNK SysPro l.200; SysWork l.28 (Sys_Lever)
+|VEC_VBLANK	equ	0x6FCC	; SNK SysPro l.218 (Vertical Blanking Interrupt)
+|VEC_TIMER0	equ	0x6FD4	; SNK SysPro l.220 (Timer Interrupt (8 bit timer 0))
+|WBA_H	equ	0x8002	; SNK K2GETechRef §4-5 l.408; K2GEres l.7 (WBA.H)
+|STATUS_2D	equ	0x8010	; SNK K2GEres l.14; K2GETechRef §4-10 (2D Status)
+file src/main.asm
+|; 'TINY': asm900 source written by `unitron dis` from the ROM.
+|; Build: unitron asm main.asm -o out.ngp --origin 0x200000 --size 0x200
+|$maximum
+|	module	game
+|$include "hw.inc"
+|
+|
+|d_200000	section	romdata abs=0x200000
+|	db	0x20,0x4C,0x49,0x43,0x45,0x4E,0x53,0x45,0x44,0x20,0x42,0x59,0x20,0x53,0x4E,0x4B
+|	db	0x20,0x43,0x4F,0x52,0x50,0x4F,0x52,0x41,0x54,0x49,0x4F,0x4E,0x00,0x01,0x20,0x00
+|	db	0x00,0x00,0x00,0x10,0x54,0x49,0x4E,0x59,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|
+|c_200100	section	code abs=0x200100
+|start:
+|	di
+|	ld	XSP,0x6C00
+|	ld	XHL,0x200175
+|	ld	(VEC_VBLANK),XHL
+|	ld	XWA,0x200176
+|	ld	(VEC_TIMER0),XWA
+|	ld	A,(SYS_LEVER)
+|	ld	(0x62AA:24),A
+|	ld	BC,2:16
+|	ld	C,(XHL+0xF:16)
+|	cp	E,0:8
+|	ld	WA,BC
+|	mul	WA,5
+|	cp	XHL,0
+|	ld	(XIX+),DE
+|	ld	WA,(-XHL:1)
+|	lda	XHL,XHL+DE
+|	calr	sub_200172
+|	call	sub_200172
+|	jp	C,XIX+2
+|	ld	RW3,0x12
+|	swi	1	; BIOS call 0x12
+|	swi	1	; BIOS call 0x12
+|	ld	(WBA_H),A
+|	ldar	XIY,0x20017C
+|	ld	A,(XHL+A)
+|	ld	(0x8000),A
+|	ld	(0x87E2),A
+|	bit	3,(STATUS_2D)
+|loc_20016D:
+|	djnz	B,loc_20016D
+|	jr	loc_20016D
+|sub_200172:
+|	push	WA
+|	pop	WA
+|	ret
+|irq_vblank:
+|	reti
+|irq_timer0:
+|	ld	A,1
+|	ret	Z
+|	jr	irq_timer0
+|
+|d_20017C	section	romdata abs=0x20017C
+|	db	0x01,0x02,0x03,0x85,0x01,0x20,0x00,0xFF,0xFF,0x21,0x02,0x1D,0x8E,0x01,0x20,0x0E
+|	db	0x55,0x66,0x22,0x03,0x0E,0x50,0x51,0x1F,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF
+|
+|	end
+$ asm src/main.asm -o back.ngp --origin 0x200000 --size 0x200
+exit 0
+stdout
+|wrote back.ngp: 0x200 bytes at 0x200000
+stderr
+file back.ngp
+#204c4943454e53454420425920534e4b20434f52504f524154494f4e00012000
+#0000001054494e59202020202020202000000000000000000000000000000000
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#060747006c00004375012000f1cc6f634076012000f1d46f60c1826f21f2aa62
+#0041310200c3ed0f0023cdcf00d988c90805ebcf00000000f5f152d4ec20f307
+#ece8331e2c001d720120bc02d7c7310312f9f9f1028041f313210035c303ece0
+#21f1008041f1e28741f11080cbca1cfd68fb28480e072101b0f668fa01020385
+#012000ffff21021d8e01200e556622030e50511fffffff00000000ffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+$ dis tiny.ngp -o src2 --no-sweep
+exit 0
+stdout
+|wrote src2/main.asm: 38 instructions (0 as db), 388 data bytes, 3 sections
+stderr
+file src2/hw.inc
+|; hw.inc: the NGPC hardware names this source uses (from unitron/data/ngpc_hw.inc).
+|SYS_LEVER	equ	0x6F82	; SNK SysPro l.200; SysWork l.28 (Sys_Lever)
+|VEC_VBLANK	equ	0x6FCC	; SNK SysPro l.218 (Vertical Blanking Interrupt)
+|VEC_TIMER0	equ	0x6FD4	; SNK SysPro l.220 (Timer Interrupt (8 bit timer 0))
+|WBA_H	equ	0x8002	; SNK K2GETechRef §4-5 l.408; K2GEres l.7 (WBA.H)
+|STATUS_2D	equ	0x8010	; SNK K2GEres l.14; K2GETechRef §4-10 (2D Status)
+file src2/main.asm
+|; 'TINY': asm900 source written by `unitron dis` from the ROM.
+|; Build: unitron asm main.asm -o out.ngp --origin 0x200000 --size 0x200
+|$maximum
+|	module	game
+|$include "hw.inc"
+|
+|
+|d_200000	section	romdata abs=0x200000
+|	db	0x20,0x4C,0x49,0x43,0x45,0x4E,0x53,0x45,0x44,0x20,0x42,0x59,0x20,0x53,0x4E,0x4B
+|	db	0x20,0x43,0x4F,0x52,0x50,0x4F,0x52,0x41,0x54,0x49,0x4F,0x4E,0x00,0x01,0x20,0x00
+|	db	0x00,0x00,0x00,0x10,0x54,0x49,0x4E,0x59,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|
+|c_200100	section	code abs=0x200100
+|start:
+|	di
+|	ld	XSP,0x6C00
+|	ld	XHL,0x200175
+|	ld	(VEC_VBLANK),XHL
+|	ld	XWA,0x200176
+|	ld	(VEC_TIMER0),XWA
+|	ld	A,(SYS_LEVER)
+|	ld	(0x62AA:24),A
+|	ld	BC,2:16
+|	ld	C,(XHL+0xF:16)
+|	cp	E,0:8
+|	ld	WA,BC
+|	mul	WA,5
+|	cp	XHL,0
+|	ld	(XIX+),DE
+|	ld	WA,(-XHL:1)
+|	lda	XHL,XHL+DE
+|	calr	sub_200172
+|	call	sub_200172
+|	jp	C,XIX+2
+|	ld	RW3,0x12
+|	swi	1	; BIOS call 0x12
+|	swi	1	; BIOS call 0x12
+|	ld	(WBA_H),A
+|	ldar	XIY,0x20017C
+|	ld	A,(XHL+A)
+|	ld	(0x8000),A
+|	ld	(0x87E2),A
+|	bit	3,(STATUS_2D)
+|loc_20016D:
+|	djnz	B,loc_20016D
+|	jr	loc_20016D
+|sub_200172:
+|	push	WA
+|	pop	WA
+|	ret
+|irq_vblank:
+|	reti
+|irq_timer0:
+|	ld	A,1
+|	ret	Z
+|	jr	irq_timer0
+|
+|d_20017C	section	romdata abs=0x20017C
+|	db	0x01,0x02,0x03,0x85,0x01,0x20,0x00,0xFF,0xFF,0x21,0x02,0x1D,0x8E,0x01,0x20,0x0E
+|	db	0x55,0x66,0x22,0x03,0x0E,0x50,0x51,0x1F,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF
+|
+|	end
+$ dis tiny.ngp -o src3 --executed ex.txt
+exit 0
+stdout
+|wrote src3/main.asm: 143 instructions (1 as db), 277 data bytes, 8 sections
+stderr
+file src3/hw.inc
+|; hw.inc: the NGPC hardware names this source uses (from unitron/data/ngpc_hw.inc).
+|SYS_LEVER	equ	0x6F82	; SNK SysPro l.200; SysWork l.28 (Sys_Lever)
+|VEC_VBLANK	equ	0x6FCC	; SNK SysPro l.218 (Vertical Blanking Interrupt)
+|VEC_TIMER0	equ	0x6FD4	; SNK SysPro l.220 (Timer Interrupt (8 bit timer 0))
+|WBA_H	equ	0x8002	; SNK K2GETechRef §4-5 l.408; K2GEres l.7 (WBA.H)
+|STATUS_2D	equ	0x8010	; SNK K2GEres l.14; K2GETechRef §4-10 (2D Status)
+file src3/main.asm
+|; 'TINY': asm900 source written by `unitron dis` from the ROM.
+|; Build: unitron asm main.asm -o out.ngp --origin 0x200000 --size 0x200
+|$maximum
+|	module	game
+|$include "hw.inc"
+|
+|
+|d_200000	section	romdata abs=0x200000
+|	db	0x20,0x4C,0x49,0x43,0x45,0x4E,0x53,0x45,0x44,0x20,0x42,0x59,0x20,0x53,0x4E,0x4B
+|	db	0x20,0x43,0x4F,0x52,0x50,0x4F,0x52,0x41,0x54,0x49,0x4F,0x4E,0x00,0x01,0x20,0x00
+|	db	0x00,0x00,0x00,0x10,0x54,0x49,0x4E,0x59,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|
+|c_200100	section	code abs=0x200100
+|start:
+|	di
+|	ld	XSP,0x6C00
+|	ld	XHL,0x200175
+|	ld	(VEC_VBLANK),XHL
+|	ld	XWA,0x200176
+|	ld	(VEC_TIMER0),XWA
+|	ld	A,(SYS_LEVER)
+|	ld	(0x62AA:24),A
+|	ld	BC,2:16
+|	ld	C,(XHL+0xF:16)
+|	cp	E,0:8
+|	ld	WA,BC
+|	mul	WA,5
+|	cp	XHL,0
+|	ld	(XIX+),DE
+|	ld	WA,(-XHL:1)
+|	lda	XHL,XHL+DE
+|	calr	sub_200172
+|	call	sub_200172
+|	jp	C,XIX+2
+|	ld	RW3,0x12
+|	swi	1	; BIOS call 0x12
+|	swi	1	; BIOS call 0x12
+|	ld	(WBA_H),A
+|	ldar	XIY,0x20017C
+|	ld	A,(XHL+A)
+|	ld	(0x8000),A
+|	ld	(0x87E2),A
+|	bit	3,(STATUS_2D)
+|loc_20016D:
+|	djnz	B,loc_20016D
+|	jr	loc_20016D
+|sub_200172:
+|	push	WA
+|	pop	WA
+|	ret
+|irq_vblank:
+|	reti
+|irq_timer0:
+|	ld	A,1
+|	ret	Z
+|	jr	irq_timer0
+|
+|d_20017C	section	romdata abs=0x20017C
+|	db	0x01,0x02,0x03,0x85
+|
+|c_200180	section	code abs=0x200180
+|dyn_200180:
+|	db	0x01	; normal (900 minimum/maximum mode switch; undefined on 900/H)
+|	ld	W,0
+|	swi	7
+|	swi	7
+|	ld	A,2
+|	call	sub_20018E
+|	ret
+|
+|d_20018C	section	romdata abs=0x20018C
+|	db	0x55,0x66
+|
+|c_20018E	section	code abs=0x20018E
+|sub_20018E:
+|	ld	B,3
+|	ret
+|
+|d_200191	section	romdata abs=0x200191
+|	db	0x50,0x51,0x1F,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF
+|
+|c_2001A0	section	code abs=0x2001A0
+|dyn_2001A0:
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|	swi	7
+|
+|	end
+$ roundtrip tiny.ngp
+exit 0
+stdout
+|OK: 38 instructions (0 as db), 388 data bytes; sha1 0ba4106f88e4b1d4e23d1d0100b7e024f97007a3
+stderr
+$ roundtrip tiny.ngp --workdir rt
+exit 0
+stdout
+|OK: 38 instructions (0 as db), 388 data bytes; sha1 0ba4106f88e4b1d4e23d1d0100b7e024f97007a3
+stderr
+file rt/hw.inc
+|; hw.inc: the NGPC hardware names this source uses (from unitron/data/ngpc_hw.inc).
+|SYS_LEVER	equ	0x6F82	; SNK SysPro l.200; SysWork l.28 (Sys_Lever)
+|VEC_VBLANK	equ	0x6FCC	; SNK SysPro l.218 (Vertical Blanking Interrupt)
+|VEC_TIMER0	equ	0x6FD4	; SNK SysPro l.220 (Timer Interrupt (8 bit timer 0))
+|WBA_H	equ	0x8002	; SNK K2GETechRef §4-5 l.408; K2GEres l.7 (WBA.H)
+|STATUS_2D	equ	0x8010	; SNK K2GEres l.14; K2GETechRef §4-10 (2D Status)
+file rt/main.asm
+|; 'TINY': asm900 source written by `unitron dis` from the ROM.
+|; Build: unitron asm main.asm -o out.ngp --origin 0x200000 --size 0x200
+|$maximum
+|	module	game
+|$include "hw.inc"
+|
+|
+|d_200000	section	romdata abs=0x200000
+|	db	0x20,0x4C,0x49,0x43,0x45,0x4E,0x53,0x45,0x44,0x20,0x42,0x59,0x20,0x53,0x4E,0x4B
+|	db	0x20,0x43,0x4F,0x52,0x50,0x4F,0x52,0x41,0x54,0x49,0x4F,0x4E,0x00,0x01,0x20,0x00
+|	db	0x00,0x00,0x00,0x10,0x54,0x49,0x4E,0x59,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|
+|c_200100	section	code abs=0x200100
+|start:
+|	di
+|	ld	XSP,0x6C00
+|	ld	XHL,0x200175
+|	ld	(VEC_VBLANK),XHL
+|	ld	XWA,0x200176
+|	ld	(VEC_TIMER0),XWA
+|	ld	A,(SYS_LEVER)
+|	ld	(0x62AA:24),A
+|	ld	BC,2:16
+|	ld	C,(XHL+0xF:16)
+|	cp	E,0:8
+|	ld	WA,BC
+|	mul	WA,5
+|	cp	XHL,0
+|	ld	(XIX+),DE
+|	ld	WA,(-XHL:1)
+|	lda	XHL,XHL+DE
+|	calr	sub_200172
+|	call	sub_200172
+|	jp	C,XIX+2
+|	ld	RW3,0x12
+|	swi	1	; BIOS call 0x12
+|	swi	1	; BIOS call 0x12
+|	ld	(WBA_H),A
+|	ldar	XIY,0x20017C
+|	ld	A,(XHL+A)
+|	ld	(0x8000),A
+|	ld	(0x87E2),A
+|	bit	3,(STATUS_2D)
+|loc_20016D:
+|	djnz	B,loc_20016D
+|	jr	loc_20016D
+|sub_200172:
+|	push	WA
+|	pop	WA
+|	ret
+|irq_vblank:
+|	reti
+|irq_timer0:
+|	ld	A,1
+|	ret	Z
+|	jr	irq_timer0
+|
+|d_20017C	section	romdata abs=0x20017C
+|	db	0x01,0x02,0x03,0x85,0x01,0x20,0x00,0xFF,0xFF,0x21,0x02,0x1D,0x8E,0x01,0x20,0x0E
+|	db	0x55,0x66,0x22,0x03,0x0E,0x50,0x51,0x1F,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF
+|
+|	end
+$ lift tiny.ngp -o lifted
+exit 0
+stdout
+|functions=4 instructions=38 unimplemented=0
+stderr
+file lifted/game.c
+|/* TINY -- lifted from the ROM by unitron lift. Do not edit by hand;
+| * regenerate instead. One C function per discovered TLCS-900/H function. */
+|#include "ngpc_rt.h"
+|
+|void start(void);
+|void sub_200172(void);
+|void irq_vblank(void);
+|void irq_timer0(void);
+|
+|void start(void)
+|{
+|    cpu.iff = 7;                                                 /* 200100 di */
+|    XSP = 0x6C00;                                                /* 200102 ld	XSP,0x6C00 */
+|    XHL = 0x200175;                                              /* 200107 ld	XHL,0x200175 */
+|    wr32(VEC_VBLANK, XHL);                                       /* 20010C ld	(0x6FCC),XHL */
+|    XWA = 0x200176;                                              /* 200110 ld	XWA,0x200176 */
+|    wr32(VEC_TIMER0, XWA);                                       /* 200115 ld	(0x6FD4),XWA */
+|    A = rd8(SYS_LEVER);                                          /* 200119 ld	A,(0x6F82) */
+|    wr8(0x62AA, A);                                              /* 20011D ld	(0x62AA),A */
+|    BC = 2;                                                      /* 200122 ld	BC,2 */
+|    C = rd8(XHL + 0xF);                                          /* 200125 ld	C,(XHL+0xF) */
+|    /* CP: flags unused */                                       /* 20012A cp	E,0 */
+|    WA = BC;                                                     /* 20012D ld	WA,BC */
+|    WA = mulu8(WA, 5);                                           /* 20012F mul	WA,5 */
+|    /* CP: flags unused */                                       /* 200132 cp	XHL,0 */
+|    wr16(XIX, DE); XIX += 2;                                     /* 200138 ld	(XIX+),DE */
+|    XHL -= 1; WA = rd16(XHL);                                    /* 20013B ld	WA,(-XHL:1) */
+|    XHL = (uint32_t)(XHL + (int16_t)DE);                         /* 20013E lda	XHL,XHL+DE */
+|    push32(0x200146); sub_200172();                              /* 200143 calr	0x200172 */
+|    push32(0x20014A); sub_200172();                              /* 200146 call	0x200172 */
+|    if (cpu.fc) { jump_ind(XIX + 2); return; }                   /* 20014A jp	C,XIX+2 */
+|    RW3 = 0x12;                                                  /* 20014D ld	RW3,0x12 */
+|    bios_call();  /* BIOS call 0x12 */                           /* 200151 swi	1 */
+|    bios_call();  /* BIOS call 0x12 */                           /* 200152 swi	1 */
+|    wr8(WBA_H, A);                                               /* 200153 ld	(0x8002),A */
+|    XIY = (uint32_t)(0x20017C);                                  /* 200157 ldar	XIY,0x20017C */
+|    A = rd8(XHL + (int8_t)A);                                    /* 20015C ld	A,(XHL+A) */
+|    wr8(0x8000, A);                                              /* 200161 ld	(0x8000),A */
+|    wr8(0x87E2, A);                                              /* 200165 ld	(0x87E2),A */
+|    cpu.fz = !((rd8(STATUS_2D) >> 3) & 1); cpu.fh = 1; cpu.fn = 0; /* 200169 bit	3,(0x8010) */
+|L_20016D:
+|    if (--B != 0) goto L_20016D;                                 /* 20016D djnz	B,0x20016D */
+|    goto L_20016D;                                               /* 200170 jr	0x20016D */
+|}
+|
+|void sub_200172(void)
+|{
+|    push16(WA);                                                  /* 200172 push	WA */
+|    WA = pop16();                                                /* 200173 pop	WA */
+|    XSP += 4; return;                                            /* 200174 ret */
+|}
+|
+|void irq_vblank(void)
+|{
+|    reti(); return;                                              /* 200175 reti */
+|}
+|
+|void irq_timer0(void)
+|{
+|L_200176:
+|    A = 1;                                                       /* 200176 ld	A,1 */
+|    if (cpu.fz) { XSP += 4; return; }                            /* 200178 ret	Z */
+|    goto L_200176;                                               /* 20017A jr	0x200176 */
+|}
+|
+|void call_ind(uint32_t a)
+|{
+|    switch (a & 0xFFFFFF) {
+|    case 0x200100: start(); return;
+|    case 0x200172: sub_200172(); return;
+|    case 0x200175: irq_vblank(); return;
+|    case 0x200176: irq_timer0(); return;
+|    default: unknown_code(a); return;
+|    }
+|}
+|
+|void jump_ind(uint32_t a) { call_ind(a); }
+|
+file lifted/ngpc_regs.h
+|/* generated by unitron lift: register names as in the disassembly */
+|#ifndef NGPC_REGS_H
+|#define NGPC_REGS_H
+|#define A (R8(cpu.b[cpu.rfp][0],0))
+|#define A_P (R8(cpu.b[(cpu.rfp-1)&3][0],0))
+|#define B (R8(cpu.b[cpu.rfp][1],1))
+|#define BC (R16(cpu.b[cpu.rfp][1],0))
+|#define BC_P (R16(cpu.b[(cpu.rfp-1)&3][1],0))
+|#define B_P (R8(cpu.b[(cpu.rfp-1)&3][1],1))
+|#define C (R8(cpu.b[cpu.rfp][1],0))
+|#define C_P (R8(cpu.b[(cpu.rfp-1)&3][1],0))
+|#define D (R8(cpu.b[cpu.rfp][2],1))
+|#define DE (R16(cpu.b[cpu.rfp][2],0))
+|#define DE_P (R16(cpu.b[(cpu.rfp-1)&3][2],0))
+|#define D_P (R8(cpu.b[(cpu.rfp-1)&3][2],1))
+|#define E (R8(cpu.b[cpu.rfp][2],0))
+|#define E_P (R8(cpu.b[(cpu.rfp-1)&3][2],0))
+|#define H (R8(cpu.b[cpu.rfp][3],1))
+|#define HL (R16(cpu.b[cpu.rfp][3],0))
+|#define HL_P (R16(cpu.b[(cpu.rfp-1)&3][3],0))
+|#define H_P (R8(cpu.b[(cpu.rfp-1)&3][3],1))
+|#define IX (R16(cpu.x[0],0))
+|#define IXH (R8(cpu.x[0],1))
+|#define IXL (R8(cpu.x[0],0))
+|#define IY (R16(cpu.x[1],0))
+|#define IYH (R8(cpu.x[1],1))
+|#define IYL (R8(cpu.x[1],0))
+|#define IZ (R16(cpu.x[2],0))
+|#define IZH (R8(cpu.x[2],1))
+|#define IZL (R8(cpu.x[2],0))
+|#define L (R8(cpu.b[cpu.rfp][3],0))
+|#define L_P (R8(cpu.b[(cpu.rfp-1)&3][3],0))
+|#define QA (R8(cpu.b[cpu.rfp][0],2))
+|#define QA0 (R8(cpu.b[0][0],2))
+|#define QA1 (R8(cpu.b[1][0],2))
+|#define QA2 (R8(cpu.b[2][0],2))
+|#define QA3 (R8(cpu.b[3][0],2))
+|#define QA_P (R8(cpu.b[(cpu.rfp-1)&3][0],2))
+|#define QB (R8(cpu.b[cpu.rfp][1],3))
+|#define QB0 (R8(cpu.b[0][1],3))
+|#define QB1 (R8(cpu.b[1][1],3))
+|#define QB2 (R8(cpu.b[2][1],3))
+|#define QB3 (R8(cpu.b[3][1],3))
+|#define QBC (R16(cpu.b[cpu.rfp][1],1))
+|#define QBC0 (R16(cpu.b[0][1],1))
+|#define QBC1 (R16(cpu.b[1][1],1))
+|#define QBC2 (R16(cpu.b[2][1],1))
+|#define QBC3 (R16(cpu.b[3][1],1))
+|#define QBC_P (R16(cpu.b[(cpu.rfp-1)&3][1],1))
+|#define QB_P (R8(cpu.b[(cpu.rfp-1)&3][1],3))
+|#define QC (R8(cpu.b[cpu.rfp][1],2))
+|#define QC0 (R8(cpu.b[0][1],2))
+|#define QC1 (R8(cpu.b[1][1],2))
+|#define QC2 (R8(cpu.b[2][1],2))
+|#define QC3 (R8(cpu.b[3][1],2))
+|#define QC_P (R8(cpu.b[(cpu.rfp-1)&3][1],2))
+|#define QD (R8(cpu.b[cpu.rfp][2],3))
+|#define QD0 (R8(cpu.b[0][2],3))
+|#define QD1 (R8(cpu.b[1][2],3))
+|#define QD2 (R8(cpu.b[2][2],3))
+|#define QD3 (R8(cpu.b[3][2],3))
+|#define QDE (R16(cpu.b[cpu.rfp][2],1))
+|#define QDE0 (R16(cpu.b[0][2],1))
+|#define QDE1 (R16(cpu.b[1][2],1))
+|#define QDE2 (R16(cpu.b[2][2],1))
+|#define QDE3 (R16(cpu.b[3][2],1))
+|#define QDE_P (R16(cpu.b[(cpu.rfp-1)&3][2],1))
+|#define QD_P (R8(cpu.b[(cpu.rfp-1)&3][2],3))
+|#define QE (R8(cpu.b[cpu.rfp][2],2))
+|#define QE0 (R8(cpu.b[0][2],2))
+|#define QE1 (R8(cpu.b[1][2],2))
+|#define QE2 (R8(cpu.b[2][2],2))
+|#define QE3 (R8(cpu.b[3][2],2))
+|#define QE_P (R8(cpu.b[(cpu.rfp-1)&3][2],2))
+|#define QH (R8(cpu.b[cpu.rfp][3],3))
+|#define QH0 (R8(cpu.b[0][3],3))
+|#define QH1 (R8(cpu.b[1][3],3))
+|#define QH2 (R8(cpu.b[2][3],3))
+|#define QH3 (R8(cpu.b[3][3],3))
+|#define QHL (R16(cpu.b[cpu.rfp][3],1))
+|#define QHL0 (R16(cpu.b[0][3],1))
+|#define QHL1 (R16(cpu.b[1][3],1))
+|#define QHL2 (R16(cpu.b[2][3],1))
+|#define QHL3 (R16(cpu.b[3][3],1))
+|#define QHL_P (R16(cpu.b[(cpu.rfp-1)&3][3],1))
+|#define QH_P (R8(cpu.b[(cpu.rfp-1)&3][3],3))
+|#define QIX (R16(cpu.x[0],1))
+|#define QIXH (R8(cpu.x[0],3))
+|#define QIXL (R8(cpu.x[0],2))
+|#define QIY (R16(cpu.x[1],1))
+|#define QIYH (R8(cpu.x[1],3))
+|#define QIYL (R8(cpu.x[1],2))
+|#define QIZ (R16(cpu.x[2],1))
+|#define QIZH (R8(cpu.x[2],3))
+|#define QIZL (R8(cpu.x[2],2))
+|#define QL (R8(cpu.b[cpu.rfp][3],2))
+|#define QL0 (R8(cpu.b[0][3],2))
+|#define QL1 (R8(cpu.b[1][3],2))
+|#define QL2 (R8(cpu.b[2][3],2))
+|#define QL3 (R8(cpu.b[3][3],2))
+|#define QL_P (R8(cpu.b[(cpu.rfp-1)&3][3],2))
+|#define QSP (R16(cpu.x[3],1))
+|#define QSPH (R8(cpu.x[3],3))
+|#define QSPL (R8(cpu.x[3],2))
+|#define QW (R8(cpu.b[cpu.rfp][0],3))
+|#define QW0 (R8(cpu.b[0][0],3))
+|#define QW1 (R8(cpu.b[1][0],3))
+|#define QW2 (R8(cpu.b[2][0],3))
+|#define QW3 (R8(cpu.b[3][0],3))
+|#define QWA (R16(cpu.b[cpu.rfp][0],1))
+|#define QWA0 (R16(cpu.b[0][0],1))
+|#define QWA1 (R16(cpu.b[1][0],1))
+|#define QWA2 (R16(cpu.b[2][0],1))
+|#define QWA3 (R16(cpu.b[3][0],1))
+|#define QWA_P (R16(cpu.b[(cpu.rfp-1)&3][0],1))
+|#define QW_P (R8(cpu.b[(cpu.rfp-1)&3][0],3))
+|#define RA0 (R8(cpu.b[0][0],0))
+|#define RA1 (R8(cpu.b[1][0],0))
+|#define RA2 (R8(cpu.b[2][0],0))
+|#define RA3 (R8(cpu.b[3][0],0))
+|#define RB0 (R8(cpu.b[0][1],1))
+|#define RB1 (R8(cpu.b[1][1],1))
+|#define RB2 (R8(cpu.b[2][1],1))
+|#define RB3 (R8(cpu.b[3][1],1))
+|#define RBC0 (R16(cpu.b[0][1],0))
+|#define RBC1 (R16(cpu.b[1][1],0))
+|#define RBC2 (R16(cpu.b[2][1],0))
+|#define RBC3 (R16(cpu.b[3][1],0))
+|#define RC0 (R8(cpu.b[0][1],0))
+|#define RC1 (R8(cpu.b[1][1],0))
+|#define RC2 (R8(cpu.b[2][1],0))
+|#define RC3 (R8(cpu.b[3][1],0))
+|#define RD0 (R8(cpu.b[0][2],1))
+|#define RD1 (R8(cpu.b[1][2],1))
+|#define RD2 (R8(cpu.b[2][2],1))
+|#define RD3 (R8(cpu.b[3][2],1))
+|#define RDE0 (R16(cpu.b[0][2],0))
+|#define RDE1 (R16(cpu.b[1][2],0))
+|#define RDE2 (R16(cpu.b[2][2],0))
+|#define RDE3 (R16(cpu.b[3][2],0))
+|#define RE0 (R8(cpu.b[0][2],0))
+|#define RE1 (R8(cpu.b[1][2],0))
+|#define RE2 (R8(cpu.b[2][2],0))
+|#define RE3 (R8(cpu.b[3][2],0))
+|#define RH0 (R8(cpu.b[0][3],1))
+|#define RH1 (R8(cpu.b[1][3],1))
+|#define RH2 (R8(cpu.b[2][3],1))
+|#define RH3 (R8(cpu.b[3][3],1))
+|#define RHL0 (R16(cpu.b[0][3],0))
+|#define RHL1 (R16(cpu.b[1][3],0))
+|#define RHL2 (R16(cpu.b[2][3],0))
+|#define RHL3 (R16(cpu.b[3][3],0))
+|#define RL0 (R8(cpu.b[0][3],0))
+|#define RL1 (R8(cpu.b[1][3],0))
+|#define RL2 (R8(cpu.b[2][3],0))
+|#define RL3 (R8(cpu.b[3][3],0))
+|#define RW0 (R8(cpu.b[0][0],1))
+|#define RW1 (R8(cpu.b[1][0],1))
+|#define RW2 (R8(cpu.b[2][0],1))
+|#define RW3 (R8(cpu.b[3][0],1))
+|#define RWA0 (R16(cpu.b[0][0],0))
+|#define RWA1 (R16(cpu.b[1][0],0))
+|#define RWA2 (R16(cpu.b[2][0],0))
+|#define RWA3 (R16(cpu.b[3][0],0))
+|#define SP (R16(cpu.x[3],0))
+|#define SPH (R8(cpu.x[3],1))
+|#define SPL (R8(cpu.x[3],0))
+|#define W (R8(cpu.b[cpu.rfp][0],1))
+|#define WA (R16(cpu.b[cpu.rfp][0],0))
+|#define WA_P (R16(cpu.b[(cpu.rfp-1)&3][0],0))
+|#define W_P (R8(cpu.b[(cpu.rfp-1)&3][0],1))
+|#define XBC (cpu.b[cpu.rfp][1])
+|#define XBC0 (cpu.b[0][1])
+|#define XBC1 (cpu.b[1][1])
+|#define XBC2 (cpu.b[2][1])
+|#define XBC3 (cpu.b[3][1])
+|#define XBC_P (cpu.b[(cpu.rfp-1)&3][1])
+|#define XDE (cpu.b[cpu.rfp][2])
+|#define XDE0 (cpu.b[0][2])
+|#define XDE1 (cpu.b[1][2])
+|#define XDE2 (cpu.b[2][2])
+|#define XDE3 (cpu.b[3][2])
+|#define XDE_P (cpu.b[(cpu.rfp-1)&3][2])
+|#define XHL (cpu.b[cpu.rfp][3])
+|#define XHL0 (cpu.b[0][3])
+|#define XHL1 (cpu.b[1][3])
+|#define XHL2 (cpu.b[2][3])
+|#define XHL3 (cpu.b[3][3])
+|#define XHL_P (cpu.b[(cpu.rfp-1)&3][3])
+|#define XIX (cpu.x[0])
+|#define XIY (cpu.x[1])
+|#define XIZ (cpu.x[2])
+|#define XSP (cpu.x[3])
+|#define XWA (cpu.b[cpu.rfp][0])
+|#define XWA0 (cpu.b[0][0])
+|#define XWA1 (cpu.b[1][0])
+|#define XWA2 (cpu.b[2][0])
+|#define XWA3 (cpu.b[3][0])
+|#define XWA_P (cpu.b[(cpu.rfp-1)&3][0])
+|
+|/* hardware addresses (unitron/ngpc/hwnames.py) */
+|#define IOP1 0x1
+|#define P1CR 0x4
+|#define P1FC 0x5
+|#define IOP2 0x6
+|#define P2FC 0x9
+|#define IOP5 0xD
+|#define P5CR 0x10
+|#define P5FC 0x11
+|#define IOP6 0x12
+|#define IOP7 0x13
+|#define P6FC 0x15
+|#define P7CR 0x16
+|#define P7FC 0x17
+|#define IOP8 0x18
+|#define IOP9 0x19
+|#define P8CR 0x1A
+|#define P8FC 0x1B
+|#define IOPA 0x1E
+|#define IOPB 0x1F
+|#define TRUN 0x20
+|#define TREG0 0x22
+|#define TREG1 0x23
+|#define T01MOD 0x24
+|#define TFFCR 0x25
+|#define TREG2 0x26
+|#define TREG3 0x27
+|#define T23MOD 0x28
+|#define TRDC 0x29
+|#define PACR 0x2C
+|#define PAFC 0x2D
+|#define PBCR 0x2E
+|#define PBFC 0x2F
+|#define TREG4 0x30
+|#define TREG5 0x32
+|#define CAP1 0x34
+|#define CAP2 0x36
+|#define T4MOD 0x38
+|#define T4FFCR 0x39
+|#define T45CR 0x3A
+|#define MSAR0 0x3C
+|#define MAMR0 0x3D
+|#define MSAR1 0x3E
+|#define MAMR1 0x3F
+|#define TREG6 0x40
+|#define TREG7 0x42
+|#define CAP3 0x44
+|#define CAP4 0x46
+|#define T5MOD 0x48
+|#define T5FFCR 0x49
+|#define PG0REG 0x4C
+|#define PG1REG 0x4D
+|#define PG01CR 0x4E
+|#define SC0BUF 0x50
+|#define SC0CR 0x51
+|#define SC0MOD 0x52
+|#define BR0CR 0x53
+|#define SC1BUF 0x54
+|#define SC1CR 0x55
+|#define SC1MOD 0x56
+|#define BR1CR 0x57
+|#define ODE 0x58
+|#define DREFCR 0x5A
+|#define DMEMCR 0x5B
+|#define MSAR2 0x5C
+|#define MAMR2 0x5D
+|#define MSAR3 0x5E
+|#define MAMR3 0x5F
+|#define ADREG0 0x60
+|#define ADREG1 0x62
+|#define ADREG2 0x64
+|#define ADREG3 0x66
+|#define B0CS 0x68
+|#define B1CS 0x69
+|#define B2CS 0x6A
+|#define B3CS 0x6B
+|#define BEXCS 0x6C
+|#define ADMOD 0x6D
+|#define WDMOD 0x6E
+|#define WDCR 0x6F
+|#define INTE0AD 0x70
+|#define INTE45 0x71
+|#define INTE67 0x72
+|#define INTET01 0x73
+|#define INTET23 0x74
+|#define INTET45 0x75
+|#define INTET67 0x76
+|#define INTES0 0x77
+|#define INTES1 0x78
+|#define INTETC01 0x79
+|#define INTETC23 0x7A
+|#define IIMC 0x7B
+|#define DMA0V 0x7C
+|#define DMA1V 0x7D
+|#define DMA2V 0x7E
+|#define DMA3V 0x7F
+|#define BATTERY_VOLTAGE 0x6F80
+|#define SYS_LEVER 0x6F82
+|#define USER_BOOT 0x6F84
+|#define USER_SHUTDOWN 0x6F85
+|#define USER_ANSWER 0x6F86
+|#define LANGUAGE 0x6F87
+|#define OS_VERSION 0x6F91
+|#define VEC_SWI3 0x6FB8
+|#define VEC_SWI4 0x6FBC
+|#define VEC_SWI5 0x6FC0
+|#define VEC_SWI6 0x6FC4
+|#define VEC_RTC_ALARM 0x6FC8
+|#define VEC_VBLANK 0x6FCC
+|#define VEC_Z80 0x6FD0
+|#define VEC_TIMER0 0x6FD4
+|#define VEC_TIMER1 0x6FD8
+|#define VEC_TIMER2 0x6FDC
+|#define VEC_TIMER3 0x6FE0
+|#define VEC_SERIAL_TX 0x6FE4
+|#define VEC_SERIAL_RX 0x6FE8
+|#define VEC_DMA0_END 0x6FF0
+|#define VEC_DMA1_END 0x6FF4
+|#define VEC_DMA2_END 0x6FF8
+|#define VEC_DMA3_END 0x6FFC
+|#define Z80_RAM 0x7000
+|#define WBA_H 0x8002
+|#define WBA_V 0x8003
+|#define WSI_H 0x8004
+|#define WSI_V 0x8005
+|#define RAS_H 0x8008
+|#define RAS_V 0x8009
+|#define STATUS_2D 0x8010
+|#define CONTROL_2D 0x8012
+|#define PO_H 0x8020
+|#define PO_V 0x8021
+|#define SCROLL_PRIORITY 0x8030
+|#define S1SO_H 0x8032
+|#define S1SO_V 0x8033
+|#define S2SO_H 0x8034
+|#define S2SO_V 0x8035
+|#define SPPLT_01 0x8101
+|#define SPPLT_02 0x8102
+|#define SPPLT_03 0x8103
+|#define SPPLT_11 0x8105
+|#define SPPLT_12 0x8106
+|#define SPPLT_13 0x8107
+|#define SC1PLT_01 0x8109
+|#define SC1PLT_02 0x810A
+|#define SC1PLT_03 0x810B
+|#define SC1PLT_11 0x810D
+|#define SC1PLT_12 0x810E
+|#define SC1PLT_13 0x810F
+|#define SC2PLT_01 0x8111
+|#define SC2PLT_02 0x8112
+|#define SC2PLT_03 0x8113
+|#define SC2PLT_11 0x8115
+|#define SC2PLT_12 0x8116
+|#define SC2PLT_13 0x8117
+|#define BG 0x8118
+|#define SPRITE_PAL 0x8200
+|#define SCROLL1_PAL 0x8280
+|#define SCROLL2_PAL 0x8300
+|#define K1_SPRITE_PAL 0x8380
+|#define K1_SCROLL1_PAL 0x83A0
+|#define K1_SCROLL2_PAL 0x83C0
+|#define BG_PAL 0x83E0
+|#define WINDOW_PAL 0x83F0
+|#define SPRITE_VRAM 0x8800
+|#define SPRITE_PAL_CODE 0x8C00
+|#define SCROLL1_VRAM 0x9000
+|#define SCROLL2_VRAM 0x9800
+|#define CHARACTER_RAM 0xA000
+|#endif
+file lifted/ngpc_rt.h
+|/* Runtime for C lifted from TLCS-900/H code (unitron lift).
+| *
+| * The CPU state is one global struct. Registers are named exactly as in the
+| * disassembly (XWA, WA, A, W, QA, RA3, XIX, ...) through macros generated in
+| * ngpc_regs.h. Memory and I/O go through rd8/rd16/rd32 and wr8/wr16/wr32,
+| * which the host program provides.
+| */
+|#ifndef NGPC_RT_H
+|#define NGPC_RT_H
+|#include <stdint.h>
+|
+|typedef struct {
+|    uint32_t b[4][4];   /* banked XWA XBC XDE XHL, banks 0..3 */
+|    uint32_t x[4];      /* XIX XIY XIZ XSP */
+|    unsigned rfp;       /* current register bank */
+|    unsigned iff;       /* interrupt mask level */
+|    uint8_t fs, fz, fh, fv, fn, fc;          /* flags */
+|    uint8_t fs_, fz_, fh_, fv_, fn_, fc_;    /* F' */
+|    uint32_t cr[0x40];  /* control registers (LDC) */
+|} Cpu;
+|extern Cpu cpu;
+|
+|/* Little-endian sub-register access: R8(v,i) = byte i, R16(v,i) = halfword i. */
+|#define R8(v, i)  (((uint8_t  *)&(v))[i])
+|#define R16(v, i) (((uint16_t *)&(v))[i])
+|
+|#include "ngpc_regs.h"
+|
+|/* ---- host-provided machine interface */
+|uint8_t  rd8(uint32_t a);
+|uint16_t rd16(uint32_t a);
+|uint32_t rd32(uint32_t a);
+|void wr8(uint32_t a, uint8_t v);
+|void wr16(uint32_t a, uint16_t v);
+|void wr32(uint32_t a, uint32_t v);
+|void bios_call(void);          /* SWI 1: function number in RW3 */
+|void swi(int n);
+|void halt(void);
+|void unknown_code(uint32_t a); /* indirect transfer to an address we never lifted */
+|void fallthrough_unknown(uint32_t a);
+|void UNIMPLEMENTED(const char *what);
+|uint32_t ldc_read(const char *cr);
+|void ldc_write(const char *cr, uint32_t v);
+|
+|void call_ind(uint32_t a);
+|void jump_ind(uint32_t a);
+|
+|/* ---- stack */
+|static inline void push8(uint8_t v)   { XSP -= 1; wr8(XSP, v); }
+|static inline void push16(uint16_t v) { XSP -= 2; wr16(XSP, v); }
+|static inline void push32(uint32_t v) { XSP -= 4; wr32(XSP, v); }
+|static inline uint8_t  pop8(void)  { uint8_t  v = rd8(XSP);  XSP += 1; return v; }
+|static inline uint16_t pop16(void) { uint16_t v = rd16(XSP); XSP += 2; return v; }
+|static inline uint32_t pop32(void) { uint32_t v = rd32(XSP); XSP += 4; return v; }
+|
+|/* ---- flags */
+|static inline uint8_t get_f(void) {
+|    return (uint8_t)(cpu.fs << 7 | cpu.fz << 6 | cpu.fh << 4 | cpu.fv << 2 | cpu.fn << 1 | cpu.fc);
+|}
+|static inline void set_f(uint8_t f) {
+|    cpu.fs = f >> 7 & 1; cpu.fz = f >> 6 & 1; cpu.fh = f >> 4 & 1;
+|    cpu.fv = f >> 2 & 1; cpu.fn = f >> 1 & 1; cpu.fc = f & 1;
+|}
+|static inline uint16_t get_sr(void) {
+|    return (uint16_t)(0x8800 | (cpu.iff & 7) << 12 | (cpu.rfp & 3) << 8 | get_f());
+|}
+|static inline void set_sr(uint16_t v) { cpu.iff = v >> 12 & 7; cpu.rfp = v >> 8 & 3; set_f((uint8_t)v); }
+|static inline void reti(void) { uint16_t sr = pop16(); XSP += 4; set_sr(sr); }
+|static inline void ex_f(void) {
+|    uint8_t t;
+|#define SWP(a, b) t = cpu.a; cpu.a = cpu.b; cpu.b = t
+|    SWP(fs, fs_); SWP(fz, fz_); SWP(fh, fh_); SWP(fv, fv_); SWP(fn, fn_); SWP(fc, fc_);
+|#undef SWP
+|}
+|
+|static inline uint32_t mask_of(int bits) { return bits == 32 ? 0xFFFFFFFFu : (1u << bits) - 1; }
+|static inline int parity(uint32_t v) { v ^= v >> 16; v ^= v >> 8; v ^= v >> 4; v ^= v >> 2; v ^= v >> 1; return !(v & 1); }
+|static inline void szflags(uint32_t r, int bits) {
+|    r &= mask_of(bits); cpu.fz = r == 0; cpu.fs = (r >> (bits - 1)) & 1;
+|}
+|
+|static inline uint32_t alu_addc(uint32_t a, uint32_t b, int c, int bits) {
+|    uint32_t m = mask_of(bits); a &= m; b &= m;
+|    uint64_t r = (uint64_t)a + b + c;
+|    uint32_t res = (uint32_t)r & m;
+|    szflags(res, bits);
+|    cpu.fc = (r >> bits) & 1;
+|    cpu.fv = ((~(a ^ b) & (a ^ res)) >> (bits - 1)) & 1;
+|    cpu.fh = ((a ^ b ^ res) >> 4) & 1;
+|    cpu.fn = 0;
+|    return res;
+|}
+|static inline uint32_t alu_subc(uint32_t a, uint32_t b, int c, int bits) {
+|    uint32_t m = mask_of(bits); a &= m; b &= m;
+|    uint64_t r = (uint64_t)a - b - c;
+|    uint32_t res = (uint32_t)r & m;
+|    szflags(res, bits);
+|    cpu.fc = (uint64_t)a < (uint64_t)b + c;
+|    cpu.fv = (((a ^ b) & (a ^ res)) >> (bits - 1)) & 1;
+|    cpu.fh = ((a ^ b ^ res) >> 4) & 1;
+|    cpu.fn = 1;
+|    return res;
+|}
+|#define alu_add(a, b, bits) alu_addc((a), (b), 0, (bits))
+|#define alu_adc(a, b, bits) alu_addc((a), (b), cpu.fc, (bits))
+|#define alu_sub(a, b, bits) alu_subc((a), (b), 0, (bits))
+|#define alu_sbc(a, b, bits) alu_subc((a), (b), cpu.fc, (bits))
+|#define alu_cp(a, b, bits)  ((void)alu_subc((a), (b), 0, (bits)))
+|static inline uint32_t alu_logic(uint32_t r, int bits, int h) {
+|    r &= mask_of(bits); szflags(r, bits);
+|    cpu.fh = h; cpu.fn = 0; cpu.fc = 0; cpu.fv = parity(r);
+|    return r;
+|}
+|#define alu_and(a, b, bits) alu_logic((a) & (b), (bits), 1)
+|#define alu_or(a, b, bits)  alu_logic((a) | (b), (bits), 0)
+|#define alu_xor(a, b, bits) alu_logic((a) ^ (b), (bits), 0)
+|
+|/* INC/DEC with flags (byte register or memory operand): C unchanged. */
+|static inline uint32_t alu_inc(uint32_t a, uint32_t n, int bits) {
+|    uint8_t c = cpu.fc; uint32_t r = alu_addc(a, n, 0, bits); cpu.fc = c; return r;
+|}
+|static inline uint32_t alu_dec(uint32_t a, uint32_t n, int bits) {
+|    uint8_t c = cpu.fc; uint32_t r = alu_subc(a, n, 0, bits); cpu.fc = c; return r;
+|}
+|
+|/* Shifts and rotates: count 1..16, C = last bit out, V = parity. */
+|static inline uint32_t shift_op(int kind, uint32_t v, int n, int bits) {
+|    uint32_t m = mask_of(bits), top = 1u << (bits - 1);
+|    v &= m;
+|    for (int i = 0; i < n; i++) {
+|        uint32_t out;
+|        switch (kind) {
+|        case 0: out = (v & top) != 0; v = ((v << 1) | out) & m; break;                 /* RLC */
+|        case 1: out = v & 1; v = (v >> 1) | (out ? top : 0); break;                     /* RRC */
+|        case 2: out = (v & top) != 0; v = ((v << 1) | cpu.fc) & m; break;               /* RL  */
+|        case 3: out = v & 1; v = (v >> 1) | (cpu.fc ? top : 0); break;                  /* RR  */
+|        case 4: case 6: out = (v & top) != 0; v = (v << 1) & m; break;                  /* SLA/SLL */
+|        case 5: out = v & 1; v = (v >> 1) | (v & top); break;                           /* SRA */
+|        default: out = v & 1; v >>= 1; break;                                           /* SRL */
+|        }
+|        cpu.fc = (uint8_t)out;
+|    }
+|    szflags(v, bits); cpu.fh = 0; cpu.fn = 0; cpu.fv = parity(v);
+|    return v;
+|}
+|#define shift_rlc(v, n, b) shift_op(0, (v), (n), (b))
+|#define shift_rrc(v, n, b) shift_op(1, (v), (n), (b))
+|#define shift_rl(v, n, b)  shift_op(2, (v), (n), (b))
+|#define shift_rr(v, n, b)  shift_op(3, (v), (n), (b))
+|#define shift_sla(v, n, b) shift_op(4, (v), (n), (b))
+|#define shift_sra(v, n, b) shift_op(5, (v), (n), (b))
+|#define shift_sll(v, n, b) shift_op(6, (v), (n), (b))
+|#define shift_srl(v, n, b) shift_op(7, (v), (n), (b))
+|
+|static inline uint32_t tset(uint32_t v, int b) {
+|    cpu.fz = !((v >> b) & 1); cpu.fh = 1; cpu.fn = 0; return v | (1u << b);
+|}
+|
+|/* MUL/DIV. RR is the double-size register; its low half is the multiplicand,
+| * and for DIV the quotient goes to the low half, the remainder to the high. */
+|static inline uint16_t mulu8(uint16_t rr, uint8_t s)  { return (uint16_t)((uint8_t)rr * s); }
+|static inline uint16_t muls8(uint16_t rr, uint8_t s)  { return (uint16_t)((int8_t)rr * (int8_t)s); }
+|static inline uint32_t mulu16(uint32_t rr, uint16_t s) { return (uint32_t)(uint16_t)rr * s; }
+|static inline uint32_t muls16(uint32_t rr, uint16_t s) { return (uint32_t)((int32_t)(int16_t)rr * (int16_t)s); }
+|static inline uint16_t divu8(uint16_t rr, uint8_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    uint32_t q = rr / s, r = rr % s; cpu.fv = q > 0xFF;
+|    return (uint16_t)((r << 8) | (q & 0xFF));
+|}
+|static inline uint16_t divs8(uint16_t rr, uint8_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    int32_t q = (int16_t)rr / (int8_t)s, r = (int16_t)rr % (int8_t)s; cpu.fv = q < -128 || q > 127;
+|    return (uint16_t)(((uint8_t)r << 8) | (uint8_t)q);
+|}
+|static inline uint32_t divu16(uint32_t rr, uint16_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    uint32_t q = rr / s, r = rr % s; cpu.fv = q > 0xFFFF;
+|    return (r << 16) | (q & 0xFFFF);
+|}
+|static inline uint32_t divs16(uint32_t rr, uint16_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    int64_t q = (int64_t)(int32_t)rr / (int16_t)s, r = (int64_t)(int32_t)rr % (int16_t)s;
+|    cpu.fv = q < -32768 || q > 32767;
+|    return ((uint32_t)(uint16_t)r << 16) | (uint16_t)q;
+|}
+|
+|static inline uint16_t mirr16(uint16_t v) {
+|    uint16_t r = 0; for (int i = 0; i < 16; i++) r |= ((v >> i) & 1) << (15 - i); return r;
+|}
+|static inline uint8_t daa(uint8_t a) {
+|    uint8_t adj = 0, c = cpu.fc;
+|    if (cpu.fh || (a & 15) > 9) adj |= 0x06;
+|    if (c || a > 0x99) { adj |= 0x60; c = 1; }
+|    uint8_t r = cpu.fn ? (uint8_t)(a - adj) : (uint8_t)(a + adj);
+|    cpu.fh = ((a ^ r) >> 4) & 1;
+|    szflags(r, 8); cpu.fv = parity(r); cpu.fc = c;
+|    return r;
+|}
+|static inline uint8_t bs1f(uint16_t v) {
+|    for (int i = 0; i < 16; i++) if (v >> i & 1) { cpu.fv = 0; return (uint8_t)i; }
+|    cpu.fv = 1; return 0;
+|}
+|static inline uint8_t bs1b(uint16_t v) {
+|    for (int i = 15; i >= 0; i--) if (v >> i & 1) { cpu.fv = 0; return (uint8_t)i; }
+|    cpu.fv = 1; return 0;
+|}
+|
+|#endif
+$ lift tiny.ngp -o lifted2 --executed ex.txt
+exit 0
+stdout
+|functions=7 instructions=143 unimplemented=1
+stderr
+file lifted2/game.c
+|/* TINY -- lifted from the ROM by unitron lift. Do not edit by hand;
+| * regenerate instead. One C function per discovered TLCS-900/H function. */
+|#include "ngpc_rt.h"
+|
+|void start(void);
+|void sub_200172(void);
+|void irq_vblank(void);
+|void irq_timer0(void);
+|void fn_200180(void);
+|void sub_20018E(void);
+|void fn_2001A0(void);
+|
+|void start(void)
+|{
+|    cpu.iff = 7;                                                 /* 200100 di */
+|    XSP = 0x6C00;                                                /* 200102 ld	XSP,0x6C00 */
+|    XHL = 0x200175;                                              /* 200107 ld	XHL,0x200175 */
+|    wr32(VEC_VBLANK, XHL);                                       /* 20010C ld	(0x6FCC),XHL */
+|    XWA = 0x200176;                                              /* 200110 ld	XWA,0x200176 */
+|    wr32(VEC_TIMER0, XWA);                                       /* 200115 ld	(0x6FD4),XWA */
+|    A = rd8(SYS_LEVER);                                          /* 200119 ld	A,(0x6F82) */
+|    wr8(0x62AA, A);                                              /* 20011D ld	(0x62AA),A */
+|    BC = 2;                                                      /* 200122 ld	BC,2 */
+|    C = rd8(XHL + 0xF);                                          /* 200125 ld	C,(XHL+0xF) */
+|    /* CP: flags unused */                                       /* 20012A cp	E,0 */
+|    WA = BC;                                                     /* 20012D ld	WA,BC */
+|    WA = mulu8(WA, 5);                                           /* 20012F mul	WA,5 */
+|    /* CP: flags unused */                                       /* 200132 cp	XHL,0 */
+|    wr16(XIX, DE); XIX += 2;                                     /* 200138 ld	(XIX+),DE */
+|    XHL -= 1; WA = rd16(XHL);                                    /* 20013B ld	WA,(-XHL:1) */
+|    XHL = (uint32_t)(XHL + (int16_t)DE);                         /* 20013E lda	XHL,XHL+DE */
+|    push32(0x200146); sub_200172();                              /* 200143 calr	0x200172 */
+|    push32(0x20014A); sub_200172();                              /* 200146 call	0x200172 */
+|    if (cpu.fc) { jump_ind(XIX + 2); return; }                   /* 20014A jp	C,XIX+2 */
+|    RW3 = 0x12;                                                  /* 20014D ld	RW3,0x12 */
+|    bios_call();  /* BIOS call 0x12 */                           /* 200151 swi	1 */
+|    bios_call();  /* BIOS call 0x12 */                           /* 200152 swi	1 */
+|    wr8(WBA_H, A);                                               /* 200153 ld	(0x8002),A */
+|    XIY = (uint32_t)(0x20017C);                                  /* 200157 ldar	XIY,0x20017C */
+|    A = rd8(XHL + (int8_t)A);                                    /* 20015C ld	A,(XHL+A) */
+|    wr8(0x8000, A);                                              /* 200161 ld	(0x8000),A */
+|    wr8(0x87E2, A);                                              /* 200165 ld	(0x87E2),A */
+|    cpu.fz = !((rd8(STATUS_2D) >> 3) & 1); cpu.fh = 1; cpu.fn = 0; /* 200169 bit	3,(0x8010) */
+|L_20016D:
+|    if (--B != 0) goto L_20016D;                                 /* 20016D djnz	B,0x20016D */
+|    goto L_20016D;                                               /* 200170 jr	0x20016D */
+|}
+|
+|void sub_200172(void)
+|{
+|    push16(WA);                                                  /* 200172 push	WA */
+|    WA = pop16();                                                /* 200173 pop	WA */
+|    XSP += 4; return;                                            /* 200174 ret */
+|}
+|
+|void irq_vblank(void)
+|{
+|    reti(); return;                                              /* 200175 reti */
+|}
+|
+|void irq_timer0(void)
+|{
+|L_200176:
+|    A = 1;                                                       /* 200176 ld	A,1 */
+|    if (cpu.fz) { XSP += 4; return; }                            /* 200178 ret	Z */
+|    goto L_200176;                                               /* 20017A jr	0x200176 */
+|}
+|
+|void fn_200180(void)
+|{
+|    UNIMPLEMENTED("normal");  /* NotImplementedError: NORMAL */  /* 200180 normal */
+|    W = 0;                                                       /* 200181 ld	W,0 */
+|    swi(7);                                                      /* 200183 swi	7 */
+|    swi(7);                                                      /* 200184 swi	7 */
+|    A = 2;                                                       /* 200185 ld	A,2 */
+|    push32(0x20018B); sub_20018E();                              /* 200187 call	0x20018E */
+|    XSP += 4; return;                                            /* 20018B ret */
+|}
+|
+|void sub_20018E(void)
+|{
+|    B = 3;                                                       /* 20018E ld	B,3 */
+|    XSP += 4; return;                                            /* 200190 ret */
+|}
+|
+|void fn_2001A0(void)
+|{
+|    swi(7);                                                      /* 2001A0 swi	7 */
+|    swi(7);                                                      /* 2001A1 swi	7 */
+|    swi(7);                                                      /* 2001A2 swi	7 */
+|    swi(7);                                                      /* 2001A3 swi	7 */
+|    swi(7);                                                      /* 2001A4 swi	7 */
+|    swi(7);                                                      /* 2001A5 swi	7 */
+|    swi(7);                                                      /* 2001A6 swi	7 */
+|    swi(7);                                                      /* 2001A7 swi	7 */
+|    swi(7);                                                      /* 2001A8 swi	7 */
+|    swi(7);                                                      /* 2001A9 swi	7 */
+|    swi(7);                                                      /* 2001AA swi	7 */
+|    swi(7);                                                      /* 2001AB swi	7 */
+|    swi(7);                                                      /* 2001AC swi	7 */
+|    swi(7);                                                      /* 2001AD swi	7 */
+|    swi(7);                                                      /* 2001AE swi	7 */
+|    swi(7);                                                      /* 2001AF swi	7 */
+|    swi(7);                                                      /* 2001B0 swi	7 */
+|    swi(7);                                                      /* 2001B1 swi	7 */
+|    swi(7);                                                      /* 2001B2 swi	7 */
+|    swi(7);                                                      /* 2001B3 swi	7 */
+|    swi(7);                                                      /* 2001B4 swi	7 */
+|    swi(7);                                                      /* 2001B5 swi	7 */
+|    swi(7);                                                      /* 2001B6 swi	7 */
+|    swi(7);                                                      /* 2001B7 swi	7 */
+|    swi(7);                                                      /* 2001B8 swi	7 */
+|    swi(7);                                                      /* 2001B9 swi	7 */
+|    swi(7);                                                      /* 2001BA swi	7 */
+|    swi(7);                                                      /* 2001BB swi	7 */
+|    swi(7);                                                      /* 2001BC swi	7 */
+|    swi(7);                                                      /* 2001BD swi	7 */
+|    swi(7);                                                      /* 2001BE swi	7 */
+|    swi(7);                                                      /* 2001BF swi	7 */
+|    swi(7);                                                      /* 2001C0 swi	7 */
+|    swi(7);                                                      /* 2001C1 swi	7 */
+|    swi(7);                                                      /* 2001C2 swi	7 */
+|    swi(7);                                                      /* 2001C3 swi	7 */
+|    swi(7);                                                      /* 2001C4 swi	7 */
+|    swi(7);                                                      /* 2001C5 swi	7 */
+|    swi(7);                                                      /* 2001C6 swi	7 */
+|    swi(7);                                                      /* 2001C7 swi	7 */
+|    swi(7);                                                      /* 2001C8 swi	7 */
+|    swi(7);                                                      /* 2001C9 swi	7 */
+|    swi(7);                                                      /* 2001CA swi	7 */
+|    swi(7);                                                      /* 2001CB swi	7 */
+|    swi(7);                                                      /* 2001CC swi	7 */
+|    swi(7);                                                      /* 2001CD swi	7 */
+|    swi(7);                                                      /* 2001CE swi	7 */
+|    swi(7);                                                      /* 2001CF swi	7 */
+|    swi(7);                                                      /* 2001D0 swi	7 */
+|    swi(7);                                                      /* 2001D1 swi	7 */
+|    swi(7);                                                      /* 2001D2 swi	7 */
+|    swi(7);                                                      /* 2001D3 swi	7 */
+|    swi(7);                                                      /* 2001D4 swi	7 */
+|    swi(7);                                                      /* 2001D5 swi	7 */
+|    swi(7);                                                      /* 2001D6 swi	7 */
+|    swi(7);                                                      /* 2001D7 swi	7 */
+|    swi(7);                                                      /* 2001D8 swi	7 */
+|    swi(7);                                                      /* 2001D9 swi	7 */
+|    swi(7);                                                      /* 2001DA swi	7 */
+|    swi(7);                                                      /* 2001DB swi	7 */
+|    swi(7);                                                      /* 2001DC swi	7 */
+|    swi(7);                                                      /* 2001DD swi	7 */
+|    swi(7);                                                      /* 2001DE swi	7 */
+|    swi(7);                                                      /* 2001DF swi	7 */
+|    swi(7);                                                      /* 2001E0 swi	7 */
+|    swi(7);                                                      /* 2001E1 swi	7 */
+|    swi(7);                                                      /* 2001E2 swi	7 */
+|    swi(7);                                                      /* 2001E3 swi	7 */
+|    swi(7);                                                      /* 2001E4 swi	7 */
+|    swi(7);                                                      /* 2001E5 swi	7 */
+|    swi(7);                                                      /* 2001E6 swi	7 */
+|    swi(7);                                                      /* 2001E7 swi	7 */
+|    swi(7);                                                      /* 2001E8 swi	7 */
+|    swi(7);                                                      /* 2001E9 swi	7 */
+|    swi(7);                                                      /* 2001EA swi	7 */
+|    swi(7);                                                      /* 2001EB swi	7 */
+|    swi(7);                                                      /* 2001EC swi	7 */
+|    swi(7);                                                      /* 2001ED swi	7 */
+|    swi(7);                                                      /* 2001EE swi	7 */
+|    swi(7);                                                      /* 2001EF swi	7 */
+|    swi(7);                                                      /* 2001F0 swi	7 */
+|    swi(7);                                                      /* 2001F1 swi	7 */
+|    swi(7);                                                      /* 2001F2 swi	7 */
+|    swi(7);                                                      /* 2001F3 swi	7 */
+|    swi(7);                                                      /* 2001F4 swi	7 */
+|    swi(7);                                                      /* 2001F5 swi	7 */
+|    swi(7);                                                      /* 2001F6 swi	7 */
+|    swi(7);                                                      /* 2001F7 swi	7 */
+|    swi(7);                                                      /* 2001F8 swi	7 */
+|    swi(7);                                                      /* 2001F9 swi	7 */
+|    swi(7);                                                      /* 2001FA swi	7 */
+|    swi(7);                                                      /* 2001FB swi	7 */
+|    swi(7);                                                      /* 2001FC swi	7 */
+|    swi(7);                                                      /* 2001FD swi	7 */
+|    swi(7);                                                      /* 2001FE swi	7 */
+|    swi(7);                                                      /* 2001FF swi	7 */
+|    fallthrough_unknown(0x200200); return;
+|}
+|
+|void call_ind(uint32_t a)
+|{
+|    switch (a & 0xFFFFFF) {
+|    case 0x200100: start(); return;
+|    case 0x200172: sub_200172(); return;
+|    case 0x200175: irq_vblank(); return;
+|    case 0x200176: irq_timer0(); return;
+|    case 0x200180: fn_200180(); return;
+|    case 0x20018E: sub_20018E(); return;
+|    case 0x2001A0: fn_2001A0(); return;
+|    default: unknown_code(a); return;
+|    }
+|}
+|
+|void jump_ind(uint32_t a) { call_ind(a); }
+|
+file lifted2/ngpc_regs.h
+|/* generated by unitron lift: register names as in the disassembly */
+|#ifndef NGPC_REGS_H
+|#define NGPC_REGS_H
+|#define A (R8(cpu.b[cpu.rfp][0],0))
+|#define A_P (R8(cpu.b[(cpu.rfp-1)&3][0],0))
+|#define B (R8(cpu.b[cpu.rfp][1],1))
+|#define BC (R16(cpu.b[cpu.rfp][1],0))
+|#define BC_P (R16(cpu.b[(cpu.rfp-1)&3][1],0))
+|#define B_P (R8(cpu.b[(cpu.rfp-1)&3][1],1))
+|#define C (R8(cpu.b[cpu.rfp][1],0))
+|#define C_P (R8(cpu.b[(cpu.rfp-1)&3][1],0))
+|#define D (R8(cpu.b[cpu.rfp][2],1))
+|#define DE (R16(cpu.b[cpu.rfp][2],0))
+|#define DE_P (R16(cpu.b[(cpu.rfp-1)&3][2],0))
+|#define D_P (R8(cpu.b[(cpu.rfp-1)&3][2],1))
+|#define E (R8(cpu.b[cpu.rfp][2],0))
+|#define E_P (R8(cpu.b[(cpu.rfp-1)&3][2],0))
+|#define H (R8(cpu.b[cpu.rfp][3],1))
+|#define HL (R16(cpu.b[cpu.rfp][3],0))
+|#define HL_P (R16(cpu.b[(cpu.rfp-1)&3][3],0))
+|#define H_P (R8(cpu.b[(cpu.rfp-1)&3][3],1))
+|#define IX (R16(cpu.x[0],0))
+|#define IXH (R8(cpu.x[0],1))
+|#define IXL (R8(cpu.x[0],0))
+|#define IY (R16(cpu.x[1],0))
+|#define IYH (R8(cpu.x[1],1))
+|#define IYL (R8(cpu.x[1],0))
+|#define IZ (R16(cpu.x[2],0))
+|#define IZH (R8(cpu.x[2],1))
+|#define IZL (R8(cpu.x[2],0))
+|#define L (R8(cpu.b[cpu.rfp][3],0))
+|#define L_P (R8(cpu.b[(cpu.rfp-1)&3][3],0))
+|#define QA (R8(cpu.b[cpu.rfp][0],2))
+|#define QA0 (R8(cpu.b[0][0],2))
+|#define QA1 (R8(cpu.b[1][0],2))
+|#define QA2 (R8(cpu.b[2][0],2))
+|#define QA3 (R8(cpu.b[3][0],2))
+|#define QA_P (R8(cpu.b[(cpu.rfp-1)&3][0],2))
+|#define QB (R8(cpu.b[cpu.rfp][1],3))
+|#define QB0 (R8(cpu.b[0][1],3))
+|#define QB1 (R8(cpu.b[1][1],3))
+|#define QB2 (R8(cpu.b[2][1],3))
+|#define QB3 (R8(cpu.b[3][1],3))
+|#define QBC (R16(cpu.b[cpu.rfp][1],1))
+|#define QBC0 (R16(cpu.b[0][1],1))
+|#define QBC1 (R16(cpu.b[1][1],1))
+|#define QBC2 (R16(cpu.b[2][1],1))
+|#define QBC3 (R16(cpu.b[3][1],1))
+|#define QBC_P (R16(cpu.b[(cpu.rfp-1)&3][1],1))
+|#define QB_P (R8(cpu.b[(cpu.rfp-1)&3][1],3))
+|#define QC (R8(cpu.b[cpu.rfp][1],2))
+|#define QC0 (R8(cpu.b[0][1],2))
+|#define QC1 (R8(cpu.b[1][1],2))
+|#define QC2 (R8(cpu.b[2][1],2))
+|#define QC3 (R8(cpu.b[3][1],2))
+|#define QC_P (R8(cpu.b[(cpu.rfp-1)&3][1],2))
+|#define QD (R8(cpu.b[cpu.rfp][2],3))
+|#define QD0 (R8(cpu.b[0][2],3))
+|#define QD1 (R8(cpu.b[1][2],3))
+|#define QD2 (R8(cpu.b[2][2],3))
+|#define QD3 (R8(cpu.b[3][2],3))
+|#define QDE (R16(cpu.b[cpu.rfp][2],1))
+|#define QDE0 (R16(cpu.b[0][2],1))
+|#define QDE1 (R16(cpu.b[1][2],1))
+|#define QDE2 (R16(cpu.b[2][2],1))
+|#define QDE3 (R16(cpu.b[3][2],1))
+|#define QDE_P (R16(cpu.b[(cpu.rfp-1)&3][2],1))
+|#define QD_P (R8(cpu.b[(cpu.rfp-1)&3][2],3))
+|#define QE (R8(cpu.b[cpu.rfp][2],2))
+|#define QE0 (R8(cpu.b[0][2],2))
+|#define QE1 (R8(cpu.b[1][2],2))
+|#define QE2 (R8(cpu.b[2][2],2))
+|#define QE3 (R8(cpu.b[3][2],2))
+|#define QE_P (R8(cpu.b[(cpu.rfp-1)&3][2],2))
+|#define QH (R8(cpu.b[cpu.rfp][3],3))
+|#define QH0 (R8(cpu.b[0][3],3))
+|#define QH1 (R8(cpu.b[1][3],3))
+|#define QH2 (R8(cpu.b[2][3],3))
+|#define QH3 (R8(cpu.b[3][3],3))
+|#define QHL (R16(cpu.b[cpu.rfp][3],1))
+|#define QHL0 (R16(cpu.b[0][3],1))
+|#define QHL1 (R16(cpu.b[1][3],1))
+|#define QHL2 (R16(cpu.b[2][3],1))
+|#define QHL3 (R16(cpu.b[3][3],1))
+|#define QHL_P (R16(cpu.b[(cpu.rfp-1)&3][3],1))
+|#define QH_P (R8(cpu.b[(cpu.rfp-1)&3][3],3))
+|#define QIX (R16(cpu.x[0],1))
+|#define QIXH (R8(cpu.x[0],3))
+|#define QIXL (R8(cpu.x[0],2))
+|#define QIY (R16(cpu.x[1],1))
+|#define QIYH (R8(cpu.x[1],3))
+|#define QIYL (R8(cpu.x[1],2))
+|#define QIZ (R16(cpu.x[2],1))
+|#define QIZH (R8(cpu.x[2],3))
+|#define QIZL (R8(cpu.x[2],2))
+|#define QL (R8(cpu.b[cpu.rfp][3],2))
+|#define QL0 (R8(cpu.b[0][3],2))
+|#define QL1 (R8(cpu.b[1][3],2))
+|#define QL2 (R8(cpu.b[2][3],2))
+|#define QL3 (R8(cpu.b[3][3],2))
+|#define QL_P (R8(cpu.b[(cpu.rfp-1)&3][3],2))
+|#define QSP (R16(cpu.x[3],1))
+|#define QSPH (R8(cpu.x[3],3))
+|#define QSPL (R8(cpu.x[3],2))
+|#define QW (R8(cpu.b[cpu.rfp][0],3))
+|#define QW0 (R8(cpu.b[0][0],3))
+|#define QW1 (R8(cpu.b[1][0],3))
+|#define QW2 (R8(cpu.b[2][0],3))
+|#define QW3 (R8(cpu.b[3][0],3))
+|#define QWA (R16(cpu.b[cpu.rfp][0],1))
+|#define QWA0 (R16(cpu.b[0][0],1))
+|#define QWA1 (R16(cpu.b[1][0],1))
+|#define QWA2 (R16(cpu.b[2][0],1))
+|#define QWA3 (R16(cpu.b[3][0],1))
+|#define QWA_P (R16(cpu.b[(cpu.rfp-1)&3][0],1))
+|#define QW_P (R8(cpu.b[(cpu.rfp-1)&3][0],3))
+|#define RA0 (R8(cpu.b[0][0],0))
+|#define RA1 (R8(cpu.b[1][0],0))
+|#define RA2 (R8(cpu.b[2][0],0))
+|#define RA3 (R8(cpu.b[3][0],0))
+|#define RB0 (R8(cpu.b[0][1],1))
+|#define RB1 (R8(cpu.b[1][1],1))
+|#define RB2 (R8(cpu.b[2][1],1))
+|#define RB3 (R8(cpu.b[3][1],1))
+|#define RBC0 (R16(cpu.b[0][1],0))
+|#define RBC1 (R16(cpu.b[1][1],0))
+|#define RBC2 (R16(cpu.b[2][1],0))
+|#define RBC3 (R16(cpu.b[3][1],0))
+|#define RC0 (R8(cpu.b[0][1],0))
+|#define RC1 (R8(cpu.b[1][1],0))
+|#define RC2 (R8(cpu.b[2][1],0))
+|#define RC3 (R8(cpu.b[3][1],0))
+|#define RD0 (R8(cpu.b[0][2],1))
+|#define RD1 (R8(cpu.b[1][2],1))
+|#define RD2 (R8(cpu.b[2][2],1))
+|#define RD3 (R8(cpu.b[3][2],1))
+|#define RDE0 (R16(cpu.b[0][2],0))
+|#define RDE1 (R16(cpu.b[1][2],0))
+|#define RDE2 (R16(cpu.b[2][2],0))
+|#define RDE3 (R16(cpu.b[3][2],0))
+|#define RE0 (R8(cpu.b[0][2],0))
+|#define RE1 (R8(cpu.b[1][2],0))
+|#define RE2 (R8(cpu.b[2][2],0))
+|#define RE3 (R8(cpu.b[3][2],0))
+|#define RH0 (R8(cpu.b[0][3],1))
+|#define RH1 (R8(cpu.b[1][3],1))
+|#define RH2 (R8(cpu.b[2][3],1))
+|#define RH3 (R8(cpu.b[3][3],1))
+|#define RHL0 (R16(cpu.b[0][3],0))
+|#define RHL1 (R16(cpu.b[1][3],0))
+|#define RHL2 (R16(cpu.b[2][3],0))
+|#define RHL3 (R16(cpu.b[3][3],0))
+|#define RL0 (R8(cpu.b[0][3],0))
+|#define RL1 (R8(cpu.b[1][3],0))
+|#define RL2 (R8(cpu.b[2][3],0))
+|#define RL3 (R8(cpu.b[3][3],0))
+|#define RW0 (R8(cpu.b[0][0],1))
+|#define RW1 (R8(cpu.b[1][0],1))
+|#define RW2 (R8(cpu.b[2][0],1))
+|#define RW3 (R8(cpu.b[3][0],1))
+|#define RWA0 (R16(cpu.b[0][0],0))
+|#define RWA1 (R16(cpu.b[1][0],0))
+|#define RWA2 (R16(cpu.b[2][0],0))
+|#define RWA3 (R16(cpu.b[3][0],0))
+|#define SP (R16(cpu.x[3],0))
+|#define SPH (R8(cpu.x[3],1))
+|#define SPL (R8(cpu.x[3],0))
+|#define W (R8(cpu.b[cpu.rfp][0],1))
+|#define WA (R16(cpu.b[cpu.rfp][0],0))
+|#define WA_P (R16(cpu.b[(cpu.rfp-1)&3][0],0))
+|#define W_P (R8(cpu.b[(cpu.rfp-1)&3][0],1))
+|#define XBC (cpu.b[cpu.rfp][1])
+|#define XBC0 (cpu.b[0][1])
+|#define XBC1 (cpu.b[1][1])
+|#define XBC2 (cpu.b[2][1])
+|#define XBC3 (cpu.b[3][1])
+|#define XBC_P (cpu.b[(cpu.rfp-1)&3][1])
+|#define XDE (cpu.b[cpu.rfp][2])
+|#define XDE0 (cpu.b[0][2])
+|#define XDE1 (cpu.b[1][2])
+|#define XDE2 (cpu.b[2][2])
+|#define XDE3 (cpu.b[3][2])
+|#define XDE_P (cpu.b[(cpu.rfp-1)&3][2])
+|#define XHL (cpu.b[cpu.rfp][3])
+|#define XHL0 (cpu.b[0][3])
+|#define XHL1 (cpu.b[1][3])
+|#define XHL2 (cpu.b[2][3])
+|#define XHL3 (cpu.b[3][3])
+|#define XHL_P (cpu.b[(cpu.rfp-1)&3][3])
+|#define XIX (cpu.x[0])
+|#define XIY (cpu.x[1])
+|#define XIZ (cpu.x[2])
+|#define XSP (cpu.x[3])
+|#define XWA (cpu.b[cpu.rfp][0])
+|#define XWA0 (cpu.b[0][0])
+|#define XWA1 (cpu.b[1][0])
+|#define XWA2 (cpu.b[2][0])
+|#define XWA3 (cpu.b[3][0])
+|#define XWA_P (cpu.b[(cpu.rfp-1)&3][0])
+|
+|/* hardware addresses (unitron/ngpc/hwnames.py) */
+|#define IOP1 0x1
+|#define P1CR 0x4
+|#define P1FC 0x5
+|#define IOP2 0x6
+|#define P2FC 0x9
+|#define IOP5 0xD
+|#define P5CR 0x10
+|#define P5FC 0x11
+|#define IOP6 0x12
+|#define IOP7 0x13
+|#define P6FC 0x15
+|#define P7CR 0x16
+|#define P7FC 0x17
+|#define IOP8 0x18
+|#define IOP9 0x19
+|#define P8CR 0x1A
+|#define P8FC 0x1B
+|#define IOPA 0x1E
+|#define IOPB 0x1F
+|#define TRUN 0x20
+|#define TREG0 0x22
+|#define TREG1 0x23
+|#define T01MOD 0x24
+|#define TFFCR 0x25
+|#define TREG2 0x26
+|#define TREG3 0x27
+|#define T23MOD 0x28
+|#define TRDC 0x29
+|#define PACR 0x2C
+|#define PAFC 0x2D
+|#define PBCR 0x2E
+|#define PBFC 0x2F
+|#define TREG4 0x30
+|#define TREG5 0x32
+|#define CAP1 0x34
+|#define CAP2 0x36
+|#define T4MOD 0x38
+|#define T4FFCR 0x39
+|#define T45CR 0x3A
+|#define MSAR0 0x3C
+|#define MAMR0 0x3D
+|#define MSAR1 0x3E
+|#define MAMR1 0x3F
+|#define TREG6 0x40
+|#define TREG7 0x42
+|#define CAP3 0x44
+|#define CAP4 0x46
+|#define T5MOD 0x48
+|#define T5FFCR 0x49
+|#define PG0REG 0x4C
+|#define PG1REG 0x4D
+|#define PG01CR 0x4E
+|#define SC0BUF 0x50
+|#define SC0CR 0x51
+|#define SC0MOD 0x52
+|#define BR0CR 0x53
+|#define SC1BUF 0x54
+|#define SC1CR 0x55
+|#define SC1MOD 0x56
+|#define BR1CR 0x57
+|#define ODE 0x58
+|#define DREFCR 0x5A
+|#define DMEMCR 0x5B
+|#define MSAR2 0x5C
+|#define MAMR2 0x5D
+|#define MSAR3 0x5E
+|#define MAMR3 0x5F
+|#define ADREG0 0x60
+|#define ADREG1 0x62
+|#define ADREG2 0x64
+|#define ADREG3 0x66
+|#define B0CS 0x68
+|#define B1CS 0x69
+|#define B2CS 0x6A
+|#define B3CS 0x6B
+|#define BEXCS 0x6C
+|#define ADMOD 0x6D
+|#define WDMOD 0x6E
+|#define WDCR 0x6F
+|#define INTE0AD 0x70
+|#define INTE45 0x71
+|#define INTE67 0x72
+|#define INTET01 0x73
+|#define INTET23 0x74
+|#define INTET45 0x75
+|#define INTET67 0x76
+|#define INTES0 0x77
+|#define INTES1 0x78
+|#define INTETC01 0x79
+|#define INTETC23 0x7A
+|#define IIMC 0x7B
+|#define DMA0V 0x7C
+|#define DMA1V 0x7D
+|#define DMA2V 0x7E
+|#define DMA3V 0x7F
+|#define BATTERY_VOLTAGE 0x6F80
+|#define SYS_LEVER 0x6F82
+|#define USER_BOOT 0x6F84
+|#define USER_SHUTDOWN 0x6F85
+|#define USER_ANSWER 0x6F86
+|#define LANGUAGE 0x6F87
+|#define OS_VERSION 0x6F91
+|#define VEC_SWI3 0x6FB8
+|#define VEC_SWI4 0x6FBC
+|#define VEC_SWI5 0x6FC0
+|#define VEC_SWI6 0x6FC4
+|#define VEC_RTC_ALARM 0x6FC8
+|#define VEC_VBLANK 0x6FCC
+|#define VEC_Z80 0x6FD0
+|#define VEC_TIMER0 0x6FD4
+|#define VEC_TIMER1 0x6FD8
+|#define VEC_TIMER2 0x6FDC
+|#define VEC_TIMER3 0x6FE0
+|#define VEC_SERIAL_TX 0x6FE4
+|#define VEC_SERIAL_RX 0x6FE8
+|#define VEC_DMA0_END 0x6FF0
+|#define VEC_DMA1_END 0x6FF4
+|#define VEC_DMA2_END 0x6FF8
+|#define VEC_DMA3_END 0x6FFC
+|#define Z80_RAM 0x7000
+|#define WBA_H 0x8002
+|#define WBA_V 0x8003
+|#define WSI_H 0x8004
+|#define WSI_V 0x8005
+|#define RAS_H 0x8008
+|#define RAS_V 0x8009
+|#define STATUS_2D 0x8010
+|#define CONTROL_2D 0x8012
+|#define PO_H 0x8020
+|#define PO_V 0x8021
+|#define SCROLL_PRIORITY 0x8030
+|#define S1SO_H 0x8032
+|#define S1SO_V 0x8033
+|#define S2SO_H 0x8034
+|#define S2SO_V 0x8035
+|#define SPPLT_01 0x8101
+|#define SPPLT_02 0x8102
+|#define SPPLT_03 0x8103
+|#define SPPLT_11 0x8105
+|#define SPPLT_12 0x8106
+|#define SPPLT_13 0x8107
+|#define SC1PLT_01 0x8109
+|#define SC1PLT_02 0x810A
+|#define SC1PLT_03 0x810B
+|#define SC1PLT_11 0x810D
+|#define SC1PLT_12 0x810E
+|#define SC1PLT_13 0x810F
+|#define SC2PLT_01 0x8111
+|#define SC2PLT_02 0x8112
+|#define SC2PLT_03 0x8113
+|#define SC2PLT_11 0x8115
+|#define SC2PLT_12 0x8116
+|#define SC2PLT_13 0x8117
+|#define BG 0x8118
+|#define SPRITE_PAL 0x8200
+|#define SCROLL1_PAL 0x8280
+|#define SCROLL2_PAL 0x8300
+|#define K1_SPRITE_PAL 0x8380
+|#define K1_SCROLL1_PAL 0x83A0
+|#define K1_SCROLL2_PAL 0x83C0
+|#define BG_PAL 0x83E0
+|#define WINDOW_PAL 0x83F0
+|#define SPRITE_VRAM 0x8800
+|#define SPRITE_PAL_CODE 0x8C00
+|#define SCROLL1_VRAM 0x9000
+|#define SCROLL2_VRAM 0x9800
+|#define CHARACTER_RAM 0xA000
+|#endif
+file lifted2/ngpc_rt.h
+|/* Runtime for C lifted from TLCS-900/H code (unitron lift).
+| *
+| * The CPU state is one global struct. Registers are named exactly as in the
+| * disassembly (XWA, WA, A, W, QA, RA3, XIX, ...) through macros generated in
+| * ngpc_regs.h. Memory and I/O go through rd8/rd16/rd32 and wr8/wr16/wr32,
+| * which the host program provides.
+| */
+|#ifndef NGPC_RT_H
+|#define NGPC_RT_H
+|#include <stdint.h>
+|
+|typedef struct {
+|    uint32_t b[4][4];   /* banked XWA XBC XDE XHL, banks 0..3 */
+|    uint32_t x[4];      /* XIX XIY XIZ XSP */
+|    unsigned rfp;       /* current register bank */
+|    unsigned iff;       /* interrupt mask level */
+|    uint8_t fs, fz, fh, fv, fn, fc;          /* flags */
+|    uint8_t fs_, fz_, fh_, fv_, fn_, fc_;    /* F' */
+|    uint32_t cr[0x40];  /* control registers (LDC) */
+|} Cpu;
+|extern Cpu cpu;
+|
+|/* Little-endian sub-register access: R8(v,i) = byte i, R16(v,i) = halfword i. */
+|#define R8(v, i)  (((uint8_t  *)&(v))[i])
+|#define R16(v, i) (((uint16_t *)&(v))[i])
+|
+|#include "ngpc_regs.h"
+|
+|/* ---- host-provided machine interface */
+|uint8_t  rd8(uint32_t a);
+|uint16_t rd16(uint32_t a);
+|uint32_t rd32(uint32_t a);
+|void wr8(uint32_t a, uint8_t v);
+|void wr16(uint32_t a, uint16_t v);
+|void wr32(uint32_t a, uint32_t v);
+|void bios_call(void);          /* SWI 1: function number in RW3 */
+|void swi(int n);
+|void halt(void);
+|void unknown_code(uint32_t a); /* indirect transfer to an address we never lifted */
+|void fallthrough_unknown(uint32_t a);
+|void UNIMPLEMENTED(const char *what);
+|uint32_t ldc_read(const char *cr);
+|void ldc_write(const char *cr, uint32_t v);
+|
+|void call_ind(uint32_t a);
+|void jump_ind(uint32_t a);
+|
+|/* ---- stack */
+|static inline void push8(uint8_t v)   { XSP -= 1; wr8(XSP, v); }
+|static inline void push16(uint16_t v) { XSP -= 2; wr16(XSP, v); }
+|static inline void push32(uint32_t v) { XSP -= 4; wr32(XSP, v); }
+|static inline uint8_t  pop8(void)  { uint8_t  v = rd8(XSP);  XSP += 1; return v; }
+|static inline uint16_t pop16(void) { uint16_t v = rd16(XSP); XSP += 2; return v; }
+|static inline uint32_t pop32(void) { uint32_t v = rd32(XSP); XSP += 4; return v; }
+|
+|/* ---- flags */
+|static inline uint8_t get_f(void) {
+|    return (uint8_t)(cpu.fs << 7 | cpu.fz << 6 | cpu.fh << 4 | cpu.fv << 2 | cpu.fn << 1 | cpu.fc);
+|}
+|static inline void set_f(uint8_t f) {
+|    cpu.fs = f >> 7 & 1; cpu.fz = f >> 6 & 1; cpu.fh = f >> 4 & 1;
+|    cpu.fv = f >> 2 & 1; cpu.fn = f >> 1 & 1; cpu.fc = f & 1;
+|}
+|static inline uint16_t get_sr(void) {
+|    return (uint16_t)(0x8800 | (cpu.iff & 7) << 12 | (cpu.rfp & 3) << 8 | get_f());
+|}
+|static inline void set_sr(uint16_t v) { cpu.iff = v >> 12 & 7; cpu.rfp = v >> 8 & 3; set_f((uint8_t)v); }
+|static inline void reti(void) { uint16_t sr = pop16(); XSP += 4; set_sr(sr); }
+|static inline void ex_f(void) {
+|    uint8_t t;
+|#define SWP(a, b) t = cpu.a; cpu.a = cpu.b; cpu.b = t
+|    SWP(fs, fs_); SWP(fz, fz_); SWP(fh, fh_); SWP(fv, fv_); SWP(fn, fn_); SWP(fc, fc_);
+|#undef SWP
+|}
+|
+|static inline uint32_t mask_of(int bits) { return bits == 32 ? 0xFFFFFFFFu : (1u << bits) - 1; }
+|static inline int parity(uint32_t v) { v ^= v >> 16; v ^= v >> 8; v ^= v >> 4; v ^= v >> 2; v ^= v >> 1; return !(v & 1); }
+|static inline void szflags(uint32_t r, int bits) {
+|    r &= mask_of(bits); cpu.fz = r == 0; cpu.fs = (r >> (bits - 1)) & 1;
+|}
+|
+|static inline uint32_t alu_addc(uint32_t a, uint32_t b, int c, int bits) {
+|    uint32_t m = mask_of(bits); a &= m; b &= m;
+|    uint64_t r = (uint64_t)a + b + c;
+|    uint32_t res = (uint32_t)r & m;
+|    szflags(res, bits);
+|    cpu.fc = (r >> bits) & 1;
+|    cpu.fv = ((~(a ^ b) & (a ^ res)) >> (bits - 1)) & 1;
+|    cpu.fh = ((a ^ b ^ res) >> 4) & 1;
+|    cpu.fn = 0;
+|    return res;
+|}
+|static inline uint32_t alu_subc(uint32_t a, uint32_t b, int c, int bits) {
+|    uint32_t m = mask_of(bits); a &= m; b &= m;
+|    uint64_t r = (uint64_t)a - b - c;
+|    uint32_t res = (uint32_t)r & m;
+|    szflags(res, bits);
+|    cpu.fc = (uint64_t)a < (uint64_t)b + c;
+|    cpu.fv = (((a ^ b) & (a ^ res)) >> (bits - 1)) & 1;
+|    cpu.fh = ((a ^ b ^ res) >> 4) & 1;
+|    cpu.fn = 1;
+|    return res;
+|}
+|#define alu_add(a, b, bits) alu_addc((a), (b), 0, (bits))
+|#define alu_adc(a, b, bits) alu_addc((a), (b), cpu.fc, (bits))
+|#define alu_sub(a, b, bits) alu_subc((a), (b), 0, (bits))
+|#define alu_sbc(a, b, bits) alu_subc((a), (b), cpu.fc, (bits))
+|#define alu_cp(a, b, bits)  ((void)alu_subc((a), (b), 0, (bits)))
+|static inline uint32_t alu_logic(uint32_t r, int bits, int h) {
+|    r &= mask_of(bits); szflags(r, bits);
+|    cpu.fh = h; cpu.fn = 0; cpu.fc = 0; cpu.fv = parity(r);
+|    return r;
+|}
+|#define alu_and(a, b, bits) alu_logic((a) & (b), (bits), 1)
+|#define alu_or(a, b, bits)  alu_logic((a) | (b), (bits), 0)
+|#define alu_xor(a, b, bits) alu_logic((a) ^ (b), (bits), 0)
+|
+|/* INC/DEC with flags (byte register or memory operand): C unchanged. */
+|static inline uint32_t alu_inc(uint32_t a, uint32_t n, int bits) {
+|    uint8_t c = cpu.fc; uint32_t r = alu_addc(a, n, 0, bits); cpu.fc = c; return r;
+|}
+|static inline uint32_t alu_dec(uint32_t a, uint32_t n, int bits) {
+|    uint8_t c = cpu.fc; uint32_t r = alu_subc(a, n, 0, bits); cpu.fc = c; return r;
+|}
+|
+|/* Shifts and rotates: count 1..16, C = last bit out, V = parity. */
+|static inline uint32_t shift_op(int kind, uint32_t v, int n, int bits) {
+|    uint32_t m = mask_of(bits), top = 1u << (bits - 1);
+|    v &= m;
+|    for (int i = 0; i < n; i++) {
+|        uint32_t out;
+|        switch (kind) {
+|        case 0: out = (v & top) != 0; v = ((v << 1) | out) & m; break;                 /* RLC */
+|        case 1: out = v & 1; v = (v >> 1) | (out ? top : 0); break;                     /* RRC */
+|        case 2: out = (v & top) != 0; v = ((v << 1) | cpu.fc) & m; break;               /* RL  */
+|        case 3: out = v & 1; v = (v >> 1) | (cpu.fc ? top : 0); break;                  /* RR  */
+|        case 4: case 6: out = (v & top) != 0; v = (v << 1) & m; break;                  /* SLA/SLL */
+|        case 5: out = v & 1; v = (v >> 1) | (v & top); break;                           /* SRA */
+|        default: out = v & 1; v >>= 1; break;                                           /* SRL */
+|        }
+|        cpu.fc = (uint8_t)out;
+|    }
+|    szflags(v, bits); cpu.fh = 0; cpu.fn = 0; cpu.fv = parity(v);
+|    return v;
+|}
+|#define shift_rlc(v, n, b) shift_op(0, (v), (n), (b))
+|#define shift_rrc(v, n, b) shift_op(1, (v), (n), (b))
+|#define shift_rl(v, n, b)  shift_op(2, (v), (n), (b))
+|#define shift_rr(v, n, b)  shift_op(3, (v), (n), (b))
+|#define shift_sla(v, n, b) shift_op(4, (v), (n), (b))
+|#define shift_sra(v, n, b) shift_op(5, (v), (n), (b))
+|#define shift_sll(v, n, b) shift_op(6, (v), (n), (b))
+|#define shift_srl(v, n, b) shift_op(7, (v), (n), (b))
+|
+|static inline uint32_t tset(uint32_t v, int b) {
+|    cpu.fz = !((v >> b) & 1); cpu.fh = 1; cpu.fn = 0; return v | (1u << b);
+|}
+|
+|/* MUL/DIV. RR is the double-size register; its low half is the multiplicand,
+| * and for DIV the quotient goes to the low half, the remainder to the high. */
+|static inline uint16_t mulu8(uint16_t rr, uint8_t s)  { return (uint16_t)((uint8_t)rr * s); }
+|static inline uint16_t muls8(uint16_t rr, uint8_t s)  { return (uint16_t)((int8_t)rr * (int8_t)s); }
+|static inline uint32_t mulu16(uint32_t rr, uint16_t s) { return (uint32_t)(uint16_t)rr * s; }
+|static inline uint32_t muls16(uint32_t rr, uint16_t s) { return (uint32_t)((int32_t)(int16_t)rr * (int16_t)s); }
+|static inline uint16_t divu8(uint16_t rr, uint8_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    uint32_t q = rr / s, r = rr % s; cpu.fv = q > 0xFF;
+|    return (uint16_t)((r << 8) | (q & 0xFF));
+|}
+|static inline uint16_t divs8(uint16_t rr, uint8_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    int32_t q = (int16_t)rr / (int8_t)s, r = (int16_t)rr % (int8_t)s; cpu.fv = q < -128 || q > 127;
+|    return (uint16_t)(((uint8_t)r << 8) | (uint8_t)q);
+|}
+|static inline uint32_t divu16(uint32_t rr, uint16_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    uint32_t q = rr / s, r = rr % s; cpu.fv = q > 0xFFFF;
+|    return (r << 16) | (q & 0xFFFF);
+|}
+|static inline uint32_t divs16(uint32_t rr, uint16_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    int64_t q = (int64_t)(int32_t)rr / (int16_t)s, r = (int64_t)(int32_t)rr % (int16_t)s;
+|    cpu.fv = q < -32768 || q > 32767;
+|    return ((uint32_t)(uint16_t)r << 16) | (uint16_t)q;
+|}
+|
+|static inline uint16_t mirr16(uint16_t v) {
+|    uint16_t r = 0; for (int i = 0; i < 16; i++) r |= ((v >> i) & 1) << (15 - i); return r;
+|}
+|static inline uint8_t daa(uint8_t a) {
+|    uint8_t adj = 0, c = cpu.fc;
+|    if (cpu.fh || (a & 15) > 9) adj |= 0x06;
+|    if (c || a > 0x99) { adj |= 0x60; c = 1; }
+|    uint8_t r = cpu.fn ? (uint8_t)(a - adj) : (uint8_t)(a + adj);
+|    cpu.fh = ((a ^ r) >> 4) & 1;
+|    szflags(r, 8); cpu.fv = parity(r); cpu.fc = c;
+|    return r;
+|}
+|static inline uint8_t bs1f(uint16_t v) {
+|    for (int i = 0; i < 16; i++) if (v >> i & 1) { cpu.fv = 0; return (uint8_t)i; }
+|    cpu.fv = 1; return 0;
+|}
+|static inline uint8_t bs1b(uint16_t v) {
+|    for (int i = 15; i >= 0; i--) if (v >> i & 1) { cpu.fv = 0; return (uint8_t)i; }
+|    cpu.fv = 1; return 0;
+|}
+|
+|#endif
+$ dis tiny.ngp -o src4 --hints hints.txt
+exit 0
+stdout
+|wrote src4/main.asm: 43 instructions (0 as db), 378 data bytes, 7 sections
+stderr
+file src4/hw.inc
+|; hw.inc: the NGPC hardware names this source uses (from unitron/data/ngpc_hw.inc).
+|SYS_LEVER	equ	0x6F82	; SNK SysPro l.200; SysWork l.28 (Sys_Lever)
+|VEC_VBLANK	equ	0x6FCC	; SNK SysPro l.218 (Vertical Blanking Interrupt)
+|VEC_TIMER0	equ	0x6FD4	; SNK SysPro l.220 (Timer Interrupt (8 bit timer 0))
+|WBA_H	equ	0x8002	; SNK K2GETechRef §4-5 l.408; K2GEres l.7 (WBA.H)
+|STATUS_2D	equ	0x8010	; SNK K2GEres l.14; K2GETechRef §4-10 (2D Status)
+file src4/main.asm
+|; 'TINY': asm900 source written by `unitron dis` from the ROM.
+|; Build: unitron asm main.asm -o out.ngp --origin 0x200000 --size 0x200
+|$maximum
+|	module	game
+|$include "hw.inc"
+|
+|
+|d_200000	section	romdata abs=0x200000
+|	db	0x20,0x4C,0x49,0x43,0x45,0x4E,0x53,0x45,0x44,0x20,0x42,0x59,0x20,0x53,0x4E,0x4B
+|	db	0x20,0x43,0x4F,0x52,0x50,0x4F,0x52,0x41,0x54,0x49,0x4F,0x4E,0x00,0x01,0x20,0x00
+|	db	0x00,0x00,0x00,0x10,0x54,0x49,0x4E,0x59,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20
+|	db	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|
+|c_200100	section	code abs=0x200100
+|start:
+|	di
+|	ld	XSP,0x6C00
+|	ld	XHL,0x200175
+|	ld	(VEC_VBLANK),XHL
+|	ld	XWA,0x200176
+|	ld	(VEC_TIMER0),XWA
+|	ld	A,(SYS_LEVER)
+|	ld	(0x62AA:24),A
+|	ld	BC,2:16
+|	ld	C,(XHL+0xF:16)
+|	cp	E,0:8
+|	ld	WA,BC
+|	mul	WA,5
+|	cp	XHL,0
+|	ld	(XIX+),DE
+|	ld	WA,(-XHL:1)
+|	lda	XHL,XHL+DE
+|	calr	sub_200172
+|	call	sub_200172
+|	jp	C,XIX+2
+|	ld	RW3,0x12
+|	swi	1	; BIOS call 0x12
+|	swi	1	; BIOS call 0x12
+|	ld	(WBA_H),A
+|	ldar	XIY,0x20017C
+|	ld	A,(XHL+A)
+|	ld	(0x8000),A
+|	ld	(0x87E2),A
+|	bit	3,(STATUS_2D)
+|loc_20016D:
+|	djnz	B,loc_20016D
+|	jr	loc_20016D
+|sub_200172:
+|	push	WA
+|	pop	WA
+|	ret
+|irq_vblank:
+|	reti
+|irq_timer0:
+|	ld	A,1
+|	ret	Z
+|	jr	irq_timer0
+|
+|d_20017C	section	romdata abs=0x20017C
+|	db	0x01,0x02,0x03,0x85,0x01,0x20,0x00,0xFF,0xFF
+|
+|c_200185	section	code abs=0x200185
+|hidden_fn:
+|	ld	A,2
+|	call	sub_20018E
+|	ret
+|
+|d_20018C	section	romdata abs=0x20018C
+|	db	0x55,0x66
+|
+|c_20018E	section	code abs=0x20018E
+|sub_20018E:
+|	ld	B,3
+|	ret
+|
+|d_200191	section	romdata abs=0x200191
+|	db	0x50,0x51,0x1F,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|	db	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+|
+|	end
+$ asm src4/main.asm -o back4.ngp --origin 0x200000 --size 0x200
+exit 0
+stdout
+|wrote back4.ngp: 0x200 bytes at 0x200000
+stderr
+file back4.ngp
+#204c4943454e53454420425920534e4b20434f52504f524154494f4e00012000
+#0000001054494e59202020202020202000000000000000000000000000000000
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#060747006c00004375012000f1cc6f634076012000f1d46f60c1826f21f2aa62
+#0041310200c3ed0f0023cdcf00d988c90805ebcf00000000f5f152d4ec20f307
+#ece8331e2c001d720120bc02d7c7310312f9f9f1028041f313210035c303ece0
+#21f1008041f1e28741f11080cbca1cfd68fb28480e072101b0f668fa01020385
+#012000ffff21021d8e01200e556622030e50511fffffff00000000ffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+$ roundtrip tiny.ngp --hints hints.txt
+exit 0
+stdout
+|OK: 43 instructions (0 as db), 378 data bytes; sha1 0ba4106f88e4b1d4e23d1d0100b7e024f97007a3
+stderr
+$ lift tiny.ngp -o lifted3 --hints hints.txt
+exit 0
+stdout
+|functions=5 instructions=43 unimplemented=0
+stderr
+file lifted3/game.c
+|/* TINY -- lifted from the ROM by unitron lift. Do not edit by hand;
+| * regenerate instead. One C function per discovered TLCS-900/H function. */
+|#include "ngpc_rt.h"
+|
+|void start(void);
+|void sub_200172(void);
+|void irq_vblank(void);
+|void irq_timer0(void);
+|void sub_20018E(void);
+|
+|void start(void)
+|{
+|    cpu.iff = 7;                                                 /* 200100 di */
+|    XSP = 0x6C00;                                                /* 200102 ld	XSP,0x6C00 */
+|    XHL = 0x200175;                                              /* 200107 ld	XHL,0x200175 */
+|    wr32(VEC_VBLANK, XHL);                                       /* 20010C ld	(0x6FCC),XHL */
+|    XWA = 0x200176;                                              /* 200110 ld	XWA,0x200176 */
+|    wr32(VEC_TIMER0, XWA);                                       /* 200115 ld	(0x6FD4),XWA */
+|    A = rd8(SYS_LEVER);                                          /* 200119 ld	A,(0x6F82) */
+|    wr8(0x62AA, A);                                              /* 20011D ld	(0x62AA),A */
+|    BC = 2;                                                      /* 200122 ld	BC,2 */
+|    C = rd8(XHL + 0xF);                                          /* 200125 ld	C,(XHL+0xF) */
+|    /* CP: flags unused */                                       /* 20012A cp	E,0 */
+|    WA = BC;                                                     /* 20012D ld	WA,BC */
+|    WA = mulu8(WA, 5);                                           /* 20012F mul	WA,5 */
+|    /* CP: flags unused */                                       /* 200132 cp	XHL,0 */
+|    wr16(XIX, DE); XIX += 2;                                     /* 200138 ld	(XIX+),DE */
+|    XHL -= 1; WA = rd16(XHL);                                    /* 20013B ld	WA,(-XHL:1) */
+|    XHL = (uint32_t)(XHL + (int16_t)DE);                         /* 20013E lda	XHL,XHL+DE */
+|    push32(0x200146); sub_200172();                              /* 200143 calr	0x200172 */
+|    push32(0x20014A); sub_200172();                              /* 200146 call	0x200172 */
+|    if (cpu.fc) { jump_ind(XIX + 2); return; }                   /* 20014A jp	C,XIX+2 */
+|    RW3 = 0x12;                                                  /* 20014D ld	RW3,0x12 */
+|    bios_call();  /* BIOS call 0x12 */                           /* 200151 swi	1 */
+|    bios_call();  /* BIOS call 0x12 */                           /* 200152 swi	1 */
+|    wr8(WBA_H, A);                                               /* 200153 ld	(0x8002),A */
+|    XIY = (uint32_t)(0x20017C);                                  /* 200157 ldar	XIY,0x20017C */
+|    A = rd8(XHL + (int8_t)A);                                    /* 20015C ld	A,(XHL+A) */
+|    wr8(0x8000, A);                                              /* 200161 ld	(0x8000),A */
+|    wr8(0x87E2, A);                                              /* 200165 ld	(0x87E2),A */
+|    cpu.fz = !((rd8(STATUS_2D) >> 3) & 1); cpu.fh = 1; cpu.fn = 0; /* 200169 bit	3,(0x8010) */
+|L_20016D:
+|    if (--B != 0) goto L_20016D;                                 /* 20016D djnz	B,0x20016D */
+|    goto L_20016D;                                               /* 200170 jr	0x20016D */
+|}
+|
+|void sub_200172(void)
+|{
+|    push16(WA);                                                  /* 200172 push	WA */
+|    WA = pop16();                                                /* 200173 pop	WA */
+|    XSP += 4; return;                                            /* 200174 ret */
+|}
+|
+|void irq_vblank(void)
+|{
+|    reti(); return;                                              /* 200175 reti */
+|}
+|
+|void irq_timer0(void)
+|{
+|L_200176:
+|    A = 1;                                                       /* 200176 ld	A,1 */
+|    if (cpu.fz) { XSP += 4; return; }                            /* 200178 ret	Z */
+|    goto L_200176;                                               /* 20017A jr	0x200176 */
+|}
+|
+|void sub_20018E(void)
+|{
+|    B = 3;                                                       /* 20018E ld	B,3 */
+|    XSP += 4; return;                                            /* 200190 ret */
+|}
+|
+|void call_ind(uint32_t a)
+|{
+|    switch (a & 0xFFFFFF) {
+|    case 0x200100: start(); return;
+|    case 0x200172: sub_200172(); return;
+|    case 0x200175: irq_vblank(); return;
+|    case 0x200176: irq_timer0(); return;
+|    case 0x20018E: sub_20018E(); return;
+|    default: unknown_code(a); return;
+|    }
+|}
+|
+|void jump_ind(uint32_t a) { call_ind(a); }
+|
+file lifted3/ngpc_regs.h
+|/* generated by unitron lift: register names as in the disassembly */
+|#ifndef NGPC_REGS_H
+|#define NGPC_REGS_H
+|#define A (R8(cpu.b[cpu.rfp][0],0))
+|#define A_P (R8(cpu.b[(cpu.rfp-1)&3][0],0))
+|#define B (R8(cpu.b[cpu.rfp][1],1))
+|#define BC (R16(cpu.b[cpu.rfp][1],0))
+|#define BC_P (R16(cpu.b[(cpu.rfp-1)&3][1],0))
+|#define B_P (R8(cpu.b[(cpu.rfp-1)&3][1],1))
+|#define C (R8(cpu.b[cpu.rfp][1],0))
+|#define C_P (R8(cpu.b[(cpu.rfp-1)&3][1],0))
+|#define D (R8(cpu.b[cpu.rfp][2],1))
+|#define DE (R16(cpu.b[cpu.rfp][2],0))
+|#define DE_P (R16(cpu.b[(cpu.rfp-1)&3][2],0))
+|#define D_P (R8(cpu.b[(cpu.rfp-1)&3][2],1))
+|#define E (R8(cpu.b[cpu.rfp][2],0))
+|#define E_P (R8(cpu.b[(cpu.rfp-1)&3][2],0))
+|#define H (R8(cpu.b[cpu.rfp][3],1))
+|#define HL (R16(cpu.b[cpu.rfp][3],0))
+|#define HL_P (R16(cpu.b[(cpu.rfp-1)&3][3],0))
+|#define H_P (R8(cpu.b[(cpu.rfp-1)&3][3],1))
+|#define IX (R16(cpu.x[0],0))
+|#define IXH (R8(cpu.x[0],1))
+|#define IXL (R8(cpu.x[0],0))
+|#define IY (R16(cpu.x[1],0))
+|#define IYH (R8(cpu.x[1],1))
+|#define IYL (R8(cpu.x[1],0))
+|#define IZ (R16(cpu.x[2],0))
+|#define IZH (R8(cpu.x[2],1))
+|#define IZL (R8(cpu.x[2],0))
+|#define L (R8(cpu.b[cpu.rfp][3],0))
+|#define L_P (R8(cpu.b[(cpu.rfp-1)&3][3],0))
+|#define QA (R8(cpu.b[cpu.rfp][0],2))
+|#define QA0 (R8(cpu.b[0][0],2))
+|#define QA1 (R8(cpu.b[1][0],2))
+|#define QA2 (R8(cpu.b[2][0],2))
+|#define QA3 (R8(cpu.b[3][0],2))
+|#define QA_P (R8(cpu.b[(cpu.rfp-1)&3][0],2))
+|#define QB (R8(cpu.b[cpu.rfp][1],3))
+|#define QB0 (R8(cpu.b[0][1],3))
+|#define QB1 (R8(cpu.b[1][1],3))
+|#define QB2 (R8(cpu.b[2][1],3))
+|#define QB3 (R8(cpu.b[3][1],3))
+|#define QBC (R16(cpu.b[cpu.rfp][1],1))
+|#define QBC0 (R16(cpu.b[0][1],1))
+|#define QBC1 (R16(cpu.b[1][1],1))
+|#define QBC2 (R16(cpu.b[2][1],1))
+|#define QBC3 (R16(cpu.b[3][1],1))
+|#define QBC_P (R16(cpu.b[(cpu.rfp-1)&3][1],1))
+|#define QB_P (R8(cpu.b[(cpu.rfp-1)&3][1],3))
+|#define QC (R8(cpu.b[cpu.rfp][1],2))
+|#define QC0 (R8(cpu.b[0][1],2))
+|#define QC1 (R8(cpu.b[1][1],2))
+|#define QC2 (R8(cpu.b[2][1],2))
+|#define QC3 (R8(cpu.b[3][1],2))
+|#define QC_P (R8(cpu.b[(cpu.rfp-1)&3][1],2))
+|#define QD (R8(cpu.b[cpu.rfp][2],3))
+|#define QD0 (R8(cpu.b[0][2],3))
+|#define QD1 (R8(cpu.b[1][2],3))
+|#define QD2 (R8(cpu.b[2][2],3))
+|#define QD3 (R8(cpu.b[3][2],3))
+|#define QDE (R16(cpu.b[cpu.rfp][2],1))
+|#define QDE0 (R16(cpu.b[0][2],1))
+|#define QDE1 (R16(cpu.b[1][2],1))
+|#define QDE2 (R16(cpu.b[2][2],1))
+|#define QDE3 (R16(cpu.b[3][2],1))
+|#define QDE_P (R16(cpu.b[(cpu.rfp-1)&3][2],1))
+|#define QD_P (R8(cpu.b[(cpu.rfp-1)&3][2],3))
+|#define QE (R8(cpu.b[cpu.rfp][2],2))
+|#define QE0 (R8(cpu.b[0][2],2))
+|#define QE1 (R8(cpu.b[1][2],2))
+|#define QE2 (R8(cpu.b[2][2],2))
+|#define QE3 (R8(cpu.b[3][2],2))
+|#define QE_P (R8(cpu.b[(cpu.rfp-1)&3][2],2))
+|#define QH (R8(cpu.b[cpu.rfp][3],3))
+|#define QH0 (R8(cpu.b[0][3],3))
+|#define QH1 (R8(cpu.b[1][3],3))
+|#define QH2 (R8(cpu.b[2][3],3))
+|#define QH3 (R8(cpu.b[3][3],3))
+|#define QHL (R16(cpu.b[cpu.rfp][3],1))
+|#define QHL0 (R16(cpu.b[0][3],1))
+|#define QHL1 (R16(cpu.b[1][3],1))
+|#define QHL2 (R16(cpu.b[2][3],1))
+|#define QHL3 (R16(cpu.b[3][3],1))
+|#define QHL_P (R16(cpu.b[(cpu.rfp-1)&3][3],1))
+|#define QH_P (R8(cpu.b[(cpu.rfp-1)&3][3],3))
+|#define QIX (R16(cpu.x[0],1))
+|#define QIXH (R8(cpu.x[0],3))
+|#define QIXL (R8(cpu.x[0],2))
+|#define QIY (R16(cpu.x[1],1))
+|#define QIYH (R8(cpu.x[1],3))
+|#define QIYL (R8(cpu.x[1],2))
+|#define QIZ (R16(cpu.x[2],1))
+|#define QIZH (R8(cpu.x[2],3))
+|#define QIZL (R8(cpu.x[2],2))
+|#define QL (R8(cpu.b[cpu.rfp][3],2))
+|#define QL0 (R8(cpu.b[0][3],2))
+|#define QL1 (R8(cpu.b[1][3],2))
+|#define QL2 (R8(cpu.b[2][3],2))
+|#define QL3 (R8(cpu.b[3][3],2))
+|#define QL_P (R8(cpu.b[(cpu.rfp-1)&3][3],2))
+|#define QSP (R16(cpu.x[3],1))
+|#define QSPH (R8(cpu.x[3],3))
+|#define QSPL (R8(cpu.x[3],2))
+|#define QW (R8(cpu.b[cpu.rfp][0],3))
+|#define QW0 (R8(cpu.b[0][0],3))
+|#define QW1 (R8(cpu.b[1][0],3))
+|#define QW2 (R8(cpu.b[2][0],3))
+|#define QW3 (R8(cpu.b[3][0],3))
+|#define QWA (R16(cpu.b[cpu.rfp][0],1))
+|#define QWA0 (R16(cpu.b[0][0],1))
+|#define QWA1 (R16(cpu.b[1][0],1))
+|#define QWA2 (R16(cpu.b[2][0],1))
+|#define QWA3 (R16(cpu.b[3][0],1))
+|#define QWA_P (R16(cpu.b[(cpu.rfp-1)&3][0],1))
+|#define QW_P (R8(cpu.b[(cpu.rfp-1)&3][0],3))
+|#define RA0 (R8(cpu.b[0][0],0))
+|#define RA1 (R8(cpu.b[1][0],0))
+|#define RA2 (R8(cpu.b[2][0],0))
+|#define RA3 (R8(cpu.b[3][0],0))
+|#define RB0 (R8(cpu.b[0][1],1))
+|#define RB1 (R8(cpu.b[1][1],1))
+|#define RB2 (R8(cpu.b[2][1],1))
+|#define RB3 (R8(cpu.b[3][1],1))
+|#define RBC0 (R16(cpu.b[0][1],0))
+|#define RBC1 (R16(cpu.b[1][1],0))
+|#define RBC2 (R16(cpu.b[2][1],0))
+|#define RBC3 (R16(cpu.b[3][1],0))
+|#define RC0 (R8(cpu.b[0][1],0))
+|#define RC1 (R8(cpu.b[1][1],0))
+|#define RC2 (R8(cpu.b[2][1],0))
+|#define RC3 (R8(cpu.b[3][1],0))
+|#define RD0 (R8(cpu.b[0][2],1))
+|#define RD1 (R8(cpu.b[1][2],1))
+|#define RD2 (R8(cpu.b[2][2],1))
+|#define RD3 (R8(cpu.b[3][2],1))
+|#define RDE0 (R16(cpu.b[0][2],0))
+|#define RDE1 (R16(cpu.b[1][2],0))
+|#define RDE2 (R16(cpu.b[2][2],0))
+|#define RDE3 (R16(cpu.b[3][2],0))
+|#define RE0 (R8(cpu.b[0][2],0))
+|#define RE1 (R8(cpu.b[1][2],0))
+|#define RE2 (R8(cpu.b[2][2],0))
+|#define RE3 (R8(cpu.b[3][2],0))
+|#define RH0 (R8(cpu.b[0][3],1))
+|#define RH1 (R8(cpu.b[1][3],1))
+|#define RH2 (R8(cpu.b[2][3],1))
+|#define RH3 (R8(cpu.b[3][3],1))
+|#define RHL0 (R16(cpu.b[0][3],0))
+|#define RHL1 (R16(cpu.b[1][3],0))
+|#define RHL2 (R16(cpu.b[2][3],0))
+|#define RHL3 (R16(cpu.b[3][3],0))
+|#define RL0 (R8(cpu.b[0][3],0))
+|#define RL1 (R8(cpu.b[1][3],0))
+|#define RL2 (R8(cpu.b[2][3],0))
+|#define RL3 (R8(cpu.b[3][3],0))
+|#define RW0 (R8(cpu.b[0][0],1))
+|#define RW1 (R8(cpu.b[1][0],1))
+|#define RW2 (R8(cpu.b[2][0],1))
+|#define RW3 (R8(cpu.b[3][0],1))
+|#define RWA0 (R16(cpu.b[0][0],0))
+|#define RWA1 (R16(cpu.b[1][0],0))
+|#define RWA2 (R16(cpu.b[2][0],0))
+|#define RWA3 (R16(cpu.b[3][0],0))
+|#define SP (R16(cpu.x[3],0))
+|#define SPH (R8(cpu.x[3],1))
+|#define SPL (R8(cpu.x[3],0))
+|#define W (R8(cpu.b[cpu.rfp][0],1))
+|#define WA (R16(cpu.b[cpu.rfp][0],0))
+|#define WA_P (R16(cpu.b[(cpu.rfp-1)&3][0],0))
+|#define W_P (R8(cpu.b[(cpu.rfp-1)&3][0],1))
+|#define XBC (cpu.b[cpu.rfp][1])
+|#define XBC0 (cpu.b[0][1])
+|#define XBC1 (cpu.b[1][1])
+|#define XBC2 (cpu.b[2][1])
+|#define XBC3 (cpu.b[3][1])
+|#define XBC_P (cpu.b[(cpu.rfp-1)&3][1])
+|#define XDE (cpu.b[cpu.rfp][2])
+|#define XDE0 (cpu.b[0][2])
+|#define XDE1 (cpu.b[1][2])
+|#define XDE2 (cpu.b[2][2])
+|#define XDE3 (cpu.b[3][2])
+|#define XDE_P (cpu.b[(cpu.rfp-1)&3][2])
+|#define XHL (cpu.b[cpu.rfp][3])
+|#define XHL0 (cpu.b[0][3])
+|#define XHL1 (cpu.b[1][3])
+|#define XHL2 (cpu.b[2][3])
+|#define XHL3 (cpu.b[3][3])
+|#define XHL_P (cpu.b[(cpu.rfp-1)&3][3])
+|#define XIX (cpu.x[0])
+|#define XIY (cpu.x[1])
+|#define XIZ (cpu.x[2])
+|#define XSP (cpu.x[3])
+|#define XWA (cpu.b[cpu.rfp][0])
+|#define XWA0 (cpu.b[0][0])
+|#define XWA1 (cpu.b[1][0])
+|#define XWA2 (cpu.b[2][0])
+|#define XWA3 (cpu.b[3][0])
+|#define XWA_P (cpu.b[(cpu.rfp-1)&3][0])
+|
+|/* hardware addresses (unitron/ngpc/hwnames.py) */
+|#define IOP1 0x1
+|#define P1CR 0x4
+|#define P1FC 0x5
+|#define IOP2 0x6
+|#define P2FC 0x9
+|#define IOP5 0xD
+|#define P5CR 0x10
+|#define P5FC 0x11
+|#define IOP6 0x12
+|#define IOP7 0x13
+|#define P6FC 0x15
+|#define P7CR 0x16
+|#define P7FC 0x17
+|#define IOP8 0x18
+|#define IOP9 0x19
+|#define P8CR 0x1A
+|#define P8FC 0x1B
+|#define IOPA 0x1E
+|#define IOPB 0x1F
+|#define TRUN 0x20
+|#define TREG0 0x22
+|#define TREG1 0x23
+|#define T01MOD 0x24
+|#define TFFCR 0x25
+|#define TREG2 0x26
+|#define TREG3 0x27
+|#define T23MOD 0x28
+|#define TRDC 0x29
+|#define PACR 0x2C
+|#define PAFC 0x2D
+|#define PBCR 0x2E
+|#define PBFC 0x2F
+|#define TREG4 0x30
+|#define TREG5 0x32
+|#define CAP1 0x34
+|#define CAP2 0x36
+|#define T4MOD 0x38
+|#define T4FFCR 0x39
+|#define T45CR 0x3A
+|#define MSAR0 0x3C
+|#define MAMR0 0x3D
+|#define MSAR1 0x3E
+|#define MAMR1 0x3F
+|#define TREG6 0x40
+|#define TREG7 0x42
+|#define CAP3 0x44
+|#define CAP4 0x46
+|#define T5MOD 0x48
+|#define T5FFCR 0x49
+|#define PG0REG 0x4C
+|#define PG1REG 0x4D
+|#define PG01CR 0x4E
+|#define SC0BUF 0x50
+|#define SC0CR 0x51
+|#define SC0MOD 0x52
+|#define BR0CR 0x53
+|#define SC1BUF 0x54
+|#define SC1CR 0x55
+|#define SC1MOD 0x56
+|#define BR1CR 0x57
+|#define ODE 0x58
+|#define DREFCR 0x5A
+|#define DMEMCR 0x5B
+|#define MSAR2 0x5C
+|#define MAMR2 0x5D
+|#define MSAR3 0x5E
+|#define MAMR3 0x5F
+|#define ADREG0 0x60
+|#define ADREG1 0x62
+|#define ADREG2 0x64
+|#define ADREG3 0x66
+|#define B0CS 0x68
+|#define B1CS 0x69
+|#define B2CS 0x6A
+|#define B3CS 0x6B
+|#define BEXCS 0x6C
+|#define ADMOD 0x6D
+|#define WDMOD 0x6E
+|#define WDCR 0x6F
+|#define INTE0AD 0x70
+|#define INTE45 0x71
+|#define INTE67 0x72
+|#define INTET01 0x73
+|#define INTET23 0x74
+|#define INTET45 0x75
+|#define INTET67 0x76
+|#define INTES0 0x77
+|#define INTES1 0x78
+|#define INTETC01 0x79
+|#define INTETC23 0x7A
+|#define IIMC 0x7B
+|#define DMA0V 0x7C
+|#define DMA1V 0x7D
+|#define DMA2V 0x7E
+|#define DMA3V 0x7F
+|#define BATTERY_VOLTAGE 0x6F80
+|#define SYS_LEVER 0x6F82
+|#define USER_BOOT 0x6F84
+|#define USER_SHUTDOWN 0x6F85
+|#define USER_ANSWER 0x6F86
+|#define LANGUAGE 0x6F87
+|#define OS_VERSION 0x6F91
+|#define VEC_SWI3 0x6FB8
+|#define VEC_SWI4 0x6FBC
+|#define VEC_SWI5 0x6FC0
+|#define VEC_SWI6 0x6FC4
+|#define VEC_RTC_ALARM 0x6FC8
+|#define VEC_VBLANK 0x6FCC
+|#define VEC_Z80 0x6FD0
+|#define VEC_TIMER0 0x6FD4
+|#define VEC_TIMER1 0x6FD8
+|#define VEC_TIMER2 0x6FDC
+|#define VEC_TIMER3 0x6FE0
+|#define VEC_SERIAL_TX 0x6FE4
+|#define VEC_SERIAL_RX 0x6FE8
+|#define VEC_DMA0_END 0x6FF0
+|#define VEC_DMA1_END 0x6FF4
+|#define VEC_DMA2_END 0x6FF8
+|#define VEC_DMA3_END 0x6FFC
+|#define Z80_RAM 0x7000
+|#define WBA_H 0x8002
+|#define WBA_V 0x8003
+|#define WSI_H 0x8004
+|#define WSI_V 0x8005
+|#define RAS_H 0x8008
+|#define RAS_V 0x8009
+|#define STATUS_2D 0x8010
+|#define CONTROL_2D 0x8012
+|#define PO_H 0x8020
+|#define PO_V 0x8021
+|#define SCROLL_PRIORITY 0x8030
+|#define S1SO_H 0x8032
+|#define S1SO_V 0x8033
+|#define S2SO_H 0x8034
+|#define S2SO_V 0x8035
+|#define SPPLT_01 0x8101
+|#define SPPLT_02 0x8102
+|#define SPPLT_03 0x8103
+|#define SPPLT_11 0x8105
+|#define SPPLT_12 0x8106
+|#define SPPLT_13 0x8107
+|#define SC1PLT_01 0x8109
+|#define SC1PLT_02 0x810A
+|#define SC1PLT_03 0x810B
+|#define SC1PLT_11 0x810D
+|#define SC1PLT_12 0x810E
+|#define SC1PLT_13 0x810F
+|#define SC2PLT_01 0x8111
+|#define SC2PLT_02 0x8112
+|#define SC2PLT_03 0x8113
+|#define SC2PLT_11 0x8115
+|#define SC2PLT_12 0x8116
+|#define SC2PLT_13 0x8117
+|#define BG 0x8118
+|#define SPRITE_PAL 0x8200
+|#define SCROLL1_PAL 0x8280
+|#define SCROLL2_PAL 0x8300
+|#define K1_SPRITE_PAL 0x8380
+|#define K1_SCROLL1_PAL 0x83A0
+|#define K1_SCROLL2_PAL 0x83C0
+|#define BG_PAL 0x83E0
+|#define WINDOW_PAL 0x83F0
+|#define SPRITE_VRAM 0x8800
+|#define SPRITE_PAL_CODE 0x8C00
+|#define SCROLL1_VRAM 0x9000
+|#define SCROLL2_VRAM 0x9800
+|#define CHARACTER_RAM 0xA000
+|#endif
+file lifted3/ngpc_rt.h
+|/* Runtime for C lifted from TLCS-900/H code (unitron lift).
+| *
+| * The CPU state is one global struct. Registers are named exactly as in the
+| * disassembly (XWA, WA, A, W, QA, RA3, XIX, ...) through macros generated in
+| * ngpc_regs.h. Memory and I/O go through rd8/rd16/rd32 and wr8/wr16/wr32,
+| * which the host program provides.
+| */
+|#ifndef NGPC_RT_H
+|#define NGPC_RT_H
+|#include <stdint.h>
+|
+|typedef struct {
+|    uint32_t b[4][4];   /* banked XWA XBC XDE XHL, banks 0..3 */
+|    uint32_t x[4];      /* XIX XIY XIZ XSP */
+|    unsigned rfp;       /* current register bank */
+|    unsigned iff;       /* interrupt mask level */
+|    uint8_t fs, fz, fh, fv, fn, fc;          /* flags */
+|    uint8_t fs_, fz_, fh_, fv_, fn_, fc_;    /* F' */
+|    uint32_t cr[0x40];  /* control registers (LDC) */
+|} Cpu;
+|extern Cpu cpu;
+|
+|/* Little-endian sub-register access: R8(v,i) = byte i, R16(v,i) = halfword i. */
+|#define R8(v, i)  (((uint8_t  *)&(v))[i])
+|#define R16(v, i) (((uint16_t *)&(v))[i])
+|
+|#include "ngpc_regs.h"
+|
+|/* ---- host-provided machine interface */
+|uint8_t  rd8(uint32_t a);
+|uint16_t rd16(uint32_t a);
+|uint32_t rd32(uint32_t a);
+|void wr8(uint32_t a, uint8_t v);
+|void wr16(uint32_t a, uint16_t v);
+|void wr32(uint32_t a, uint32_t v);
+|void bios_call(void);          /* SWI 1: function number in RW3 */
+|void swi(int n);
+|void halt(void);
+|void unknown_code(uint32_t a); /* indirect transfer to an address we never lifted */
+|void fallthrough_unknown(uint32_t a);
+|void UNIMPLEMENTED(const char *what);
+|uint32_t ldc_read(const char *cr);
+|void ldc_write(const char *cr, uint32_t v);
+|
+|void call_ind(uint32_t a);
+|void jump_ind(uint32_t a);
+|
+|/* ---- stack */
+|static inline void push8(uint8_t v)   { XSP -= 1; wr8(XSP, v); }
+|static inline void push16(uint16_t v) { XSP -= 2; wr16(XSP, v); }
+|static inline void push32(uint32_t v) { XSP -= 4; wr32(XSP, v); }
+|static inline uint8_t  pop8(void)  { uint8_t  v = rd8(XSP);  XSP += 1; return v; }
+|static inline uint16_t pop16(void) { uint16_t v = rd16(XSP); XSP += 2; return v; }
+|static inline uint32_t pop32(void) { uint32_t v = rd32(XSP); XSP += 4; return v; }
+|
+|/* ---- flags */
+|static inline uint8_t get_f(void) {
+|    return (uint8_t)(cpu.fs << 7 | cpu.fz << 6 | cpu.fh << 4 | cpu.fv << 2 | cpu.fn << 1 | cpu.fc);
+|}
+|static inline void set_f(uint8_t f) {
+|    cpu.fs = f >> 7 & 1; cpu.fz = f >> 6 & 1; cpu.fh = f >> 4 & 1;
+|    cpu.fv = f >> 2 & 1; cpu.fn = f >> 1 & 1; cpu.fc = f & 1;
+|}
+|static inline uint16_t get_sr(void) {
+|    return (uint16_t)(0x8800 | (cpu.iff & 7) << 12 | (cpu.rfp & 3) << 8 | get_f());
+|}
+|static inline void set_sr(uint16_t v) { cpu.iff = v >> 12 & 7; cpu.rfp = v >> 8 & 3; set_f((uint8_t)v); }
+|static inline void reti(void) { uint16_t sr = pop16(); XSP += 4; set_sr(sr); }
+|static inline void ex_f(void) {
+|    uint8_t t;
+|#define SWP(a, b) t = cpu.a; cpu.a = cpu.b; cpu.b = t
+|    SWP(fs, fs_); SWP(fz, fz_); SWP(fh, fh_); SWP(fv, fv_); SWP(fn, fn_); SWP(fc, fc_);
+|#undef SWP
+|}
+|
+|static inline uint32_t mask_of(int bits) { return bits == 32 ? 0xFFFFFFFFu : (1u << bits) - 1; }
+|static inline int parity(uint32_t v) { v ^= v >> 16; v ^= v >> 8; v ^= v >> 4; v ^= v >> 2; v ^= v >> 1; return !(v & 1); }
+|static inline void szflags(uint32_t r, int bits) {
+|    r &= mask_of(bits); cpu.fz = r == 0; cpu.fs = (r >> (bits - 1)) & 1;
+|}
+|
+|static inline uint32_t alu_addc(uint32_t a, uint32_t b, int c, int bits) {
+|    uint32_t m = mask_of(bits); a &= m; b &= m;
+|    uint64_t r = (uint64_t)a + b + c;
+|    uint32_t res = (uint32_t)r & m;
+|    szflags(res, bits);
+|    cpu.fc = (r >> bits) & 1;
+|    cpu.fv = ((~(a ^ b) & (a ^ res)) >> (bits - 1)) & 1;
+|    cpu.fh = ((a ^ b ^ res) >> 4) & 1;
+|    cpu.fn = 0;
+|    return res;
+|}
+|static inline uint32_t alu_subc(uint32_t a, uint32_t b, int c, int bits) {
+|    uint32_t m = mask_of(bits); a &= m; b &= m;
+|    uint64_t r = (uint64_t)a - b - c;
+|    uint32_t res = (uint32_t)r & m;
+|    szflags(res, bits);
+|    cpu.fc = (uint64_t)a < (uint64_t)b + c;
+|    cpu.fv = (((a ^ b) & (a ^ res)) >> (bits - 1)) & 1;
+|    cpu.fh = ((a ^ b ^ res) >> 4) & 1;
+|    cpu.fn = 1;
+|    return res;
+|}
+|#define alu_add(a, b, bits) alu_addc((a), (b), 0, (bits))
+|#define alu_adc(a, b, bits) alu_addc((a), (b), cpu.fc, (bits))
+|#define alu_sub(a, b, bits) alu_subc((a), (b), 0, (bits))
+|#define alu_sbc(a, b, bits) alu_subc((a), (b), cpu.fc, (bits))
+|#define alu_cp(a, b, bits)  ((void)alu_subc((a), (b), 0, (bits)))
+|static inline uint32_t alu_logic(uint32_t r, int bits, int h) {
+|    r &= mask_of(bits); szflags(r, bits);
+|    cpu.fh = h; cpu.fn = 0; cpu.fc = 0; cpu.fv = parity(r);
+|    return r;
+|}
+|#define alu_and(a, b, bits) alu_logic((a) & (b), (bits), 1)
+|#define alu_or(a, b, bits)  alu_logic((a) | (b), (bits), 0)
+|#define alu_xor(a, b, bits) alu_logic((a) ^ (b), (bits), 0)
+|
+|/* INC/DEC with flags (byte register or memory operand): C unchanged. */
+|static inline uint32_t alu_inc(uint32_t a, uint32_t n, int bits) {
+|    uint8_t c = cpu.fc; uint32_t r = alu_addc(a, n, 0, bits); cpu.fc = c; return r;
+|}
+|static inline uint32_t alu_dec(uint32_t a, uint32_t n, int bits) {
+|    uint8_t c = cpu.fc; uint32_t r = alu_subc(a, n, 0, bits); cpu.fc = c; return r;
+|}
+|
+|/* Shifts and rotates: count 1..16, C = last bit out, V = parity. */
+|static inline uint32_t shift_op(int kind, uint32_t v, int n, int bits) {
+|    uint32_t m = mask_of(bits), top = 1u << (bits - 1);
+|    v &= m;
+|    for (int i = 0; i < n; i++) {
+|        uint32_t out;
+|        switch (kind) {
+|        case 0: out = (v & top) != 0; v = ((v << 1) | out) & m; break;                 /* RLC */
+|        case 1: out = v & 1; v = (v >> 1) | (out ? top : 0); break;                     /* RRC */
+|        case 2: out = (v & top) != 0; v = ((v << 1) | cpu.fc) & m; break;               /* RL  */
+|        case 3: out = v & 1; v = (v >> 1) | (cpu.fc ? top : 0); break;                  /* RR  */
+|        case 4: case 6: out = (v & top) != 0; v = (v << 1) & m; break;                  /* SLA/SLL */
+|        case 5: out = v & 1; v = (v >> 1) | (v & top); break;                           /* SRA */
+|        default: out = v & 1; v >>= 1; break;                                           /* SRL */
+|        }
+|        cpu.fc = (uint8_t)out;
+|    }
+|    szflags(v, bits); cpu.fh = 0; cpu.fn = 0; cpu.fv = parity(v);
+|    return v;
+|}
+|#define shift_rlc(v, n, b) shift_op(0, (v), (n), (b))
+|#define shift_rrc(v, n, b) shift_op(1, (v), (n), (b))
+|#define shift_rl(v, n, b)  shift_op(2, (v), (n), (b))
+|#define shift_rr(v, n, b)  shift_op(3, (v), (n), (b))
+|#define shift_sla(v, n, b) shift_op(4, (v), (n), (b))
+|#define shift_sra(v, n, b) shift_op(5, (v), (n), (b))
+|#define shift_sll(v, n, b) shift_op(6, (v), (n), (b))
+|#define shift_srl(v, n, b) shift_op(7, (v), (n), (b))
+|
+|static inline uint32_t tset(uint32_t v, int b) {
+|    cpu.fz = !((v >> b) & 1); cpu.fh = 1; cpu.fn = 0; return v | (1u << b);
+|}
+|
+|/* MUL/DIV. RR is the double-size register; its low half is the multiplicand,
+| * and for DIV the quotient goes to the low half, the remainder to the high. */
+|static inline uint16_t mulu8(uint16_t rr, uint8_t s)  { return (uint16_t)((uint8_t)rr * s); }
+|static inline uint16_t muls8(uint16_t rr, uint8_t s)  { return (uint16_t)((int8_t)rr * (int8_t)s); }
+|static inline uint32_t mulu16(uint32_t rr, uint16_t s) { return (uint32_t)(uint16_t)rr * s; }
+|static inline uint32_t muls16(uint32_t rr, uint16_t s) { return (uint32_t)((int32_t)(int16_t)rr * (int16_t)s); }
+|static inline uint16_t divu8(uint16_t rr, uint8_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    uint32_t q = rr / s, r = rr % s; cpu.fv = q > 0xFF;
+|    return (uint16_t)((r << 8) | (q & 0xFF));
+|}
+|static inline uint16_t divs8(uint16_t rr, uint8_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    int32_t q = (int16_t)rr / (int8_t)s, r = (int16_t)rr % (int8_t)s; cpu.fv = q < -128 || q > 127;
+|    return (uint16_t)(((uint8_t)r << 8) | (uint8_t)q);
+|}
+|static inline uint32_t divu16(uint32_t rr, uint16_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    uint32_t q = rr / s, r = rr % s; cpu.fv = q > 0xFFFF;
+|    return (r << 16) | (q & 0xFFFF);
+|}
+|static inline uint32_t divs16(uint32_t rr, uint16_t s) {
+|    if (s == 0) { cpu.fv = 1; return rr; }
+|    int64_t q = (int64_t)(int32_t)rr / (int16_t)s, r = (int64_t)(int32_t)rr % (int16_t)s;
+|    cpu.fv = q < -32768 || q > 32767;
+|    return ((uint32_t)(uint16_t)r << 16) | (uint16_t)q;
+|}
+|
+|static inline uint16_t mirr16(uint16_t v) {
+|    uint16_t r = 0; for (int i = 0; i < 16; i++) r |= ((v >> i) & 1) << (15 - i); return r;
+|}
+|static inline uint8_t daa(uint8_t a) {
+|    uint8_t adj = 0, c = cpu.fc;
+|    if (cpu.fh || (a & 15) > 9) adj |= 0x06;
+|    if (c || a > 0x99) { adj |= 0x60; c = 1; }
+|    uint8_t r = cpu.fn ? (uint8_t)(a - adj) : (uint8_t)(a + adj);
+|    cpu.fh = ((a ^ r) >> 4) & 1;
+|    szflags(r, 8); cpu.fv = parity(r); cpu.fc = c;
+|    return r;
+|}
+|static inline uint8_t bs1f(uint16_t v) {
+|    for (int i = 0; i < 16; i++) if (v >> i & 1) { cpu.fv = 0; return (uint8_t)i; }
+|    cpu.fv = 1; return 0;
+|}
+|static inline uint8_t bs1b(uint16_t v) {
+|    for (int i = 15; i >= 0; i--) if (v >> i & 1) { cpu.fv = 0; return (uint8_t)i; }
+|    cpu.fv = 1; return 0;
+|}
+|
+|#endif
+$ dis tiny.ngp -o src5 --hints badhints.txt
+exit 1
+stdout
+stderr
+|error: badhints.txt:1: bad hex address 'zz'
+=== cli_errors
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x10 --fill 0x100
+exit 1
+stdout
+stderr
+|error: --fill must be a byte (0..255), not 256
+$ asm t.asm -o t.bin -D X=1 -D Y
+exit 0
+stdout
+|wrote t.bin: 0x1 bytes at 0x200000
+stderr
+file t.bin
+#00
+=== multi_ok
+$ asm a.asm b.asm -o ab.bin --sym ab.sym
+exit 0
+stdout
+|wrote ab.bin: 0x21 bytes at 0x200000
+stderr
+file ab.bin
+#1d1c0020c1004021c00021401c0020001c002000004000001b0000201d000020
+#0e
+file ab.sym
+|000000 tiny
+|004000 counter
+|200000 start
+|20001C sub1
+$ asm b.asm a.asm -o ba.bin --sym ba.sym --place r=0x200100
+exit 0
+stdout
+|wrote ba.bin: 0x105 bytes at 0x200000
+stderr
+file ba.bin
+#1d000120c1004021c00021400001200000012000004000001b000020ffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#1d0000200e
+file ba.sym
+|000000 tiny
+|004000 counter
+|200000 start
+|200100 sub1
+=== open_points_mpp
+$ mac t.asm
+exit 0
+stdout
+|$maximum
+|c	section	code abs=0x200000
+|Routine.loop:	nop
+|	jr	Routine.loop
+|	db	1,2,3
+|.tail:	nop
+|	jr	.tail
+|	end
+stderr
+$ asm t.asm -o t.bin
+exit 0
+stdout
+|wrote t.bin: 0x9 bytes at 0x200000
+stderr
+file t.bin
+#0068fd0102030068fd
+$ mac q.asm
+exit 1
+stdout
+stderr
+|q.asm:1: error: ?foo is not supported (only ?macro/?endm)
+$ mac r.asm
+exit 1
+stdout
+stderr
+|r.asm:1: error: ? is not supported (only ?macro/?endm)
+=== open_points_include_limits
+$ asm t.asm -o t.bin
+exit 0
+stdout
+|wrote t.bin: 0x5E bytes at 0x200000
+stderr
+|n8.asm:1: warning: include nesting deeper than 8 (asm900's limit; --strict makes it an error)
+|    included from t.asm:3
+|    included from n1.asm:1
+|    included from n2.asm:1
+|    included from n3.asm:1
+|    included from n4.asm:1
+|    included from n5.asm:1
+|    included from n6.asm:1
+|    included from n7.asm:1
+|d.asm:90: warning: more than 99 $include in one translation unit (asm900's limit; --strict makes it an error)
+|    included from t.asm:4
+file t.bin
+|	
+~
+$ asm t.asm -o t.bin --strict
+exit 1
+stdout
+stderr
+|n8.asm:1: error E234: include nesting deeper than 8
+|    included from t.asm:3
+|    included from n1.asm:1
+|    included from n2.asm:1
+|    included from n3.asm:1
+|    included from n4.asm:1
+|    included from n5.asm:1
+|    included from n6.asm:1
+|    included from n7.asm:1
+|d.asm:91: error E234: more than 99 $include in one translation unit
+|    included from t.asm:4
+|d.asm:92: error E234: more than 99 $include in one translation unit
+|    included from t.asm:4
+|d.asm:93: error E234: more than 99 $include in one translation unit
+|    included from t.asm:4
+|4 error(s); no output written
+=== open_points_data_init
+$ asm t.asm -o t.bin
+exit 0
+stdout
+|wrote t.bin: 0x4 bytes at 0x200000
+stderr
+|t.asm:4: warning: initialized data in data section v is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+|t.asm:7: warning: initialized data in data section w is not stored in the image; use ds* to reserve RAM, or a romdata section for constants (or an .lcf org= in ROM)
+file t.bin
+#c1004021
+=== open_points_j_cal
+$ asm t.asm -o t.bin --origin 0x200000 --size 0x20 --sym t.sym
+exit 0
+stdout
+|wrote t.bin: 0x20 bytes at 0x200000
+stderr
+|warning: 204 code/romdata bytes lie outside the image 0x200000+0x20
+file t.bin
+#00681566131e100078d600f2180020ef1be200201de200200e00000000000000
+file t.sym
+|200000 top
+|200018 near
+|2000E1 far
+|2000E2 other
+$ asm t.asm -o t0.bin --origin 0x200000 --size 0x20 -O0
+exit 0
+stdout
+|wrote t0.bin: 0x20 bytes at 0x200000
+stderr
+|warning: 214 code/romdata bytes lie outside the image 0x200000+0x20
+file t0.bin
+#001b1f0020f21f0020d61d1f00201be80020f21f0020ef1be900201de900200e
+$ asm t.asm -o t1.bin --origin 0x200000 --size 0x20 -O
+exit 0
+stdout
+|wrote t1.bin: 0x20 bytes at 0x200000
+stderr
+|warning: 204 code/romdata bytes lie outside the image 0x200000+0x20
+file t1.bin
+#00681566131e100078d600f2180020ef1be200201de200200e00000000000000
+$ asm t.asm -o t2.bin -O2
+exit 2
+stdout
+stderr
+|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] sources [sources ...]
+|unitron asm: error: argument -O: invalid level '2' (0 or 1)
+=== lcf
+$ asm main.asm sub.asm --lcf cart.lcf -o cart.bin --origin 0x200000 --sym cart.sym
+exit 0
+stdout
+|wrote cart.bin: 0x1F bytes at 0x200000
+stderr
+file cart.bin
+#1b10002002400000ffffffffffffffff401b002000f10040600e0034120500
+file cart.sym
+|004000 counter
+|004002 iv
+|200010 start
+|20001B init
+$ asm main.asm sub.asm --lcf bad.lcf -o bad.bin
+exit 1
+stdout
+stderr
+|error: bad.lcf:1: unknown function 'nosuch'
+|1 error(s); no output written
+$ asm main.asm sub.asm --lcf cart.lcf --place f_code=0x200100 -o x.bin
+exit 2
+stdout
+stderr
+|usage: unitron asm [-h] [-o OUTPUT] [-I INCLUDE] [-D DEFINE] [--origin ORIGIN] [--size SIZE] [--fill FILL] [--place SECTION=ADDR] [--lcf FILE] [--data-base DATA_BASE] [--code-base CODE_BASE] [--no-link] [--no-mpp] [--strict] [--sym SYM] [-H] [-O LEVEL] sources [sources ...]
+|unitron asm: error: argument --lcf: not allowed with --place (the link file places the sections)

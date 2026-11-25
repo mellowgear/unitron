@@ -1,10 +1,15 @@
 """Command-line smoke tests."""
 import subprocess
 import sys
+from pathlib import Path
+
+# Run the package from legacy/python without needing it pip-installed.
+PKG = str(Path(__file__).resolve().parents[1])
+BOOT = f"import sys, runpy; sys.path.insert(0, {PKG!r}); runpy.run_module('unitron', run_name='__main__')"
 
 
 def run(*args, cwd=None):
-    return subprocess.run([sys.executable, "-I", "-m", "unitron", *map(str, args)], capture_output=True,
+    return subprocess.run([sys.executable, "-I", "-c", BOOT, *map(str, args)], capture_output=True,
                           text=True, cwd=cwd)
 
 

@@ -1,0 +1,200 @@
+# NGPC hardware names: the single source for the C++ tables and data/ngpc_hw.inc.
+# Rebuilt from Toshiba IO900H.H (TMP95C061F) and SNK developer docs only; every entry cites its source.
+# docs/hardware-names.md explains the groups, the naming rule and what stays unnamed.
+# Tab-separated. Records:
+#   name  ADDR  NAME  SIZE  KIND  CITATION  OFFICIAL  (sorted by address)
+#     KIND: io (CPU on-chip I/O), sysram (system work RAM), vector (interrupt vector slot),
+#           k2ge (K2GE register), mem (memory area); SIZE: register width, or area length for mem
+#     NAME: official spelling normalized (uppercase, "." -> "_"); ours where SNK gives no name
+#   bit   REG   NAME  BIT   CITATION  OFFICIAL   (mask = 1 << BIT; SysWork names are SNK's)
+#   section KIND TITLE  (comment headers of ngpc_hw.inc, in order)
+section	io	CPU on-chip I/O (Toshiba IO900H.H, TMP95C061F)
+section	sysram	System work RAM (SNK SysPro, SysWork)
+section	vector	Interrupt vectors (SNK SysPro); names are ours
+section	k2ge	K2GE registers (SNK K2GEres, K2GETechRef)
+section	mem	Memory areas (SNK SysLib, K2GETechRef, K2GEpal)
+name	0x1	IOP1	1	io	IO900H.H l.12	IOP1
+name	0x4	P1CR	1	io	IO900H.H l.15	P1CR
+name	0x5	P1FC	1	io	IO900H.H l.16	P1FC
+name	0x6	IOP2	1	io	IO900H.H l.17	IOP2
+name	0x9	P2FC	1	io	IO900H.H l.20	P2FC
+name	0xD	IOP5	1	io	IO900H.H l.24	IOP5
+name	0x10	P5CR	1	io	IO900H.H l.29	P5CR
+name	0x11	P5FC	1	io	IO900H.H l.30	P5FC
+name	0x12	IOP6	1	io	IO900H.H l.31	IOP6
+name	0x13	IOP7	1	io	IO900H.H l.32	IOP7
+name	0x15	P6FC	1	io	IO900H.H l.34	P6FC
+name	0x16	P7CR	1	io	IO900H.H l.35	P7CR
+name	0x17	P7FC	1	io	IO900H.H l.36	P7FC
+name	0x18	IOP8	1	io	IO900H.H l.37	IOP8
+name	0x19	IOP9	1	io	IO900H.H l.38	IOP9
+name	0x1A	P8CR	1	io	IO900H.H l.39	P8CR
+name	0x1B	P8FC	1	io	IO900H.H l.40	P8FC
+name	0x1E	IOPA	1	io	IO900H.H l.43	IOPA
+name	0x1F	IOPB	1	io	IO900H.H l.44	IOPB
+name	0x20	TRUN	1	io	IO900H.H l.47	TRUN
+name	0x22	TREG0	1	io	IO900H.H l.49	TREG0
+name	0x23	TREG1	1	io	IO900H.H l.50	TREG1
+name	0x24	T01MOD	1	io	IO900H.H l.51	T01MOD
+name	0x25	TFFCR	1	io	IO900H.H l.52	TFFCR
+name	0x26	TREG2	1	io	IO900H.H l.53	TREG2
+name	0x27	TREG3	1	io	IO900H.H l.54	TREG3
+name	0x28	T23MOD	1	io	IO900H.H l.55	T23MOD
+name	0x29	TRDC	1	io	IO900H.H l.56	TRDC
+name	0x2C	PACR	1	io	IO900H.H l.59	PACR
+name	0x2D	PAFC	1	io	IO900H.H l.60	PAFC
+name	0x2E	PBCR	1	io	IO900H.H l.61	PBCR
+name	0x2F	PBFC	1	io	IO900H.H l.62	PBFC
+name	0x30	TREG4	2	io	IO900H.H l.65	TREG4
+name	0x32	TREG5	2	io	IO900H.H l.68	TREG5
+name	0x34	CAP1	2	io	IO900H.H l.71	CAP1
+name	0x36	CAP2	2	io	IO900H.H l.74	CAP2
+name	0x38	T4MOD	1	io	IO900H.H l.77	T4MOD
+name	0x39	T4FFCR	1	io	IO900H.H l.78	T4FFCR
+name	0x3A	T45CR	1	io	IO900H.H l.79	T45CR
+name	0x3C	MSAR0	1	io	IO900H.H l.81	MSAR0
+name	0x3D	MAMR0	1	io	IO900H.H l.82	MAMR0
+name	0x3E	MSAR1	1	io	IO900H.H l.83	MSAR1
+name	0x3F	MAMR1	1	io	IO900H.H l.84	MAMR1
+name	0x40	TREG6	2	io	IO900H.H l.87	TREG6
+name	0x42	TREG7	2	io	IO900H.H l.90	TREG7
+name	0x44	CAP3	2	io	IO900H.H l.93	CAP3
+name	0x46	CAP4	2	io	IO900H.H l.96	CAP4
+name	0x48	T5MOD	1	io	IO900H.H l.99	T5MOD
+name	0x49	T5FFCR	1	io	IO900H.H l.100	T5FFCR
+name	0x4C	PG0REG	1	io	IO900H.H l.103	PG0REG
+name	0x4D	PG1REG	1	io	IO900H.H l.104	PG1REG
+name	0x4E	PG01CR	1	io	IO900H.H l.105	PG01CR
+name	0x50	SC0BUF	1	io	IO900H.H l.109	SC0BUF
+name	0x51	SC0CR	1	io	IO900H.H l.110	SC0CR
+name	0x52	SC0MOD	1	io	IO900H.H l.111	SC0MOD
+name	0x53	BR0CR	1	io	IO900H.H l.112	BR0CR
+name	0x54	SC1BUF	1	io	IO900H.H l.113	SC1BUF
+name	0x55	SC1CR	1	io	IO900H.H l.114	SC1CR
+name	0x56	SC1MOD	1	io	IO900H.H l.115	SC1MOD
+name	0x57	BR1CR	1	io	IO900H.H l.116	BR1CR
+name	0x58	ODE	1	io	IO900H.H l.117	ODE
+name	0x5A	DREFCR	1	io	IO900H.H l.119	DREFCR
+name	0x5B	DMEMCR	1	io	IO900H.H l.120	DMEMCR
+name	0x5C	MSAR2	1	io	IO900H.H l.121	MSAR2
+name	0x5D	MAMR2	1	io	IO900H.H l.122	MAMR2
+name	0x5E	MSAR3	1	io	IO900H.H l.123	MSAR3
+name	0x5F	MAMR3	1	io	IO900H.H l.124	MAMR3
+name	0x60	ADREG0	2	io	IO900H.H l.127	ADREG0
+name	0x62	ADREG1	2	io	IO900H.H l.130	ADREG1
+name	0x64	ADREG2	2	io	IO900H.H l.133	ADREG2
+name	0x66	ADREG3	2	io	IO900H.H l.136	ADREG3
+name	0x68	B0CS	1	io	IO900H.H l.139	B0CS
+name	0x69	B1CS	1	io	IO900H.H l.140	B1CS
+name	0x6A	B2CS	1	io	IO900H.H l.141	B2CS
+name	0x6B	B3CS	1	io	IO900H.H l.142	B3CS
+name	0x6C	BEXCS	1	io	IO900H.H l.143	BEXCS
+name	0x6D	ADMOD	1	io	IO900H.H l.144	ADMOD
+name	0x6E	WDMOD	1	io	IO900H.H l.145	WDMOD
+name	0x6F	WDCR	1	io	IO900H.H l.146	WDCR
+name	0x70	INTE0AD	1	io	IO900H.H l.149	INTE0AD
+name	0x71	INTE45	1	io	IO900H.H l.150	INTE45
+name	0x72	INTE67	1	io	IO900H.H l.151	INTE67
+name	0x73	INTET01	1	io	IO900H.H l.152	INTET01
+name	0x74	INTET23	1	io	IO900H.H l.153	INTET23
+name	0x75	INTET45	1	io	IO900H.H l.154	INTET45
+name	0x76	INTET67	1	io	IO900H.H l.155	INTET67
+name	0x77	INTES0	1	io	IO900H.H l.156	INTES0
+name	0x78	INTES1	1	io	IO900H.H l.157	INTES1
+name	0x79	INTETC01	1	io	IO900H.H l.158	INTETC01
+name	0x7A	INTETC23	1	io	IO900H.H l.159	INTETC23
+name	0x7B	IIMC	1	io	IO900H.H l.160	IIMC
+name	0x7C	DMA0V	1	io	IO900H.H l.161	DMA0V
+name	0x7D	DMA1V	1	io	IO900H.H l.162	DMA1V
+name	0x7E	DMA2V	1	io	IO900H.H l.163	DMA2V
+name	0x7F	DMA3V	1	io	IO900H.H l.164	DMA3V
+name	0x6F80	BATTERY_VOLTAGE	2	sysram	SNK SysPro l.198; SysWork l.24	Battery_voltage
+name	0x6F82	SYS_LEVER	1	sysram	SNK SysPro l.200; SysWork l.28	Sys_Lever
+name	0x6F84	USER_BOOT	1	sysram	SNK SysPro l.203; SysWork l.76	User_Boot
+name	0x6F85	USER_SHUTDOWN	1	sysram	SNK SysPro l.202; SysWork l.40	User_Shutdown
+name	0x6F86	USER_ANSWER	1	sysram	SNK SysPro l.204; SysWork l.106	User_Answer
+name	0x6F87	LANGUAGE	1	sysram	SNK SysPro l.201; SysWork l.36	Language
+name	0x6F91	OS_VERSION	1	sysram	SNK SysPro l.205; SysWork l.134	OS_Version
+name	0x6FB8	VEC_SWI3	4	vector	SNK SysPro l.213	Software Interrupt (SWI 3)
+name	0x6FBC	VEC_SWI4	4	vector	SNK SysPro l.214	Software Interrupt (SWI 4)
+name	0x6FC0	VEC_SWI5	4	vector	SNK SysPro l.215	Software Interrupt (SWI 5)
+name	0x6FC4	VEC_SWI6	4	vector	SNK SysPro l.216	Software Interrupt (SWI 6)
+name	0x6FC8	VEC_RTC_ALARM	4	vector	SNK SysPro l.217	RTC Alarm Interrupt
+name	0x6FCC	VEC_VBLANK	4	vector	SNK SysPro l.218	Vertical Blanking Interrupt
+name	0x6FD0	VEC_Z80	4	vector	SNK SysPro l.219	Interrupt From Z80
+name	0x6FD4	VEC_TIMER0	4	vector	SNK SysPro l.220	Timer Interrupt (8 bit timer 0)
+name	0x6FD8	VEC_TIMER1	4	vector	SNK SysPro l.221	Timer Interrupt (8 bit timer 1)
+name	0x6FDC	VEC_TIMER2	4	vector	SNK SysPro l.222	Timer Interrupt (8 bit timer 2)
+name	0x6FE0	VEC_TIMER3	4	vector	SNK SysPro l.223	Timer Interrupt (8 bit timer 3)
+name	0x6FE4	VEC_SERIAL_TX	4	vector	SNK SysPro l.224	Serial Transmission Interrupt
+name	0x6FE8	VEC_SERIAL_RX	4	vector	SNK SysPro l.225	Serial Reception Interrupt
+name	0x6FF0	VEC_DMA0_END	4	vector	SNK SysPro l.227	End Micro DMA Interrupt (Micro DMA 0)
+name	0x6FF4	VEC_DMA1_END	4	vector	SNK SysPro l.228	End Micro DMA Interrupt (Micro DMA 1)
+name	0x6FF8	VEC_DMA2_END	4	vector	SNK SysPro l.229	End Micro DMA Interrupt (Micro DMA 2)
+name	0x6FFC	VEC_DMA3_END	4	vector	SNK SysPro l.230	End Micro DMA Interrupt (Micro DMA 3)
+name	0x7000	Z80_RAM	0x1000	mem	SNK SysLib l.39; SysPro l.108	z80
+name	0x8002	WBA_H	1	k2ge	SNK K2GETechRef §4-5 l.408; K2GEres l.7	WBA.H
+name	0x8003	WBA_V	1	k2ge	SNK K2GETechRef §4-5 l.409; K2GEres l.8	WBA.V
+name	0x8004	WSI_H	1	k2ge	SNK K2GETechRef §4-5 l.410; K2GEres l.9	WSI.H
+name	0x8005	WSI_V	1	k2ge	SNK K2GETechRef §4-5 l.411; K2GEres l.10	WSI.V
+name	0x8008	RAS_H	1	k2ge	SNK K2GETechRef §4-8 l.472; K2GEres l.11	RAS.H
+name	0x8009	RAS_V	1	k2ge	SNK K2GETechRef §4-8 l.473; K2GEres l.12	RAS.V
+name	0x8010	STATUS_2D	1	k2ge	SNK K2GEres l.14; K2GETechRef §4-10	2D Status
+name	0x8012	CONTROL_2D	1	k2ge	SNK K2GEres l.16; K2GETechRef §4-11	2D Control
+name	0x8020	PO_H	1	k2ge	SNK K2GETechRef §4-3-4 l.253; K2GEres l.17	PO.H
+name	0x8021	PO_V	1	k2ge	SNK K2GETechRef §4-3-4 l.254; K2GEres l.18	PO.V
+name	0x8030	SCROLL_PRIORITY	1	k2ge	SNK K2GEres l.20; K2GETechRef §4-4-7	Scroll Priority
+name	0x8032	S1SO_H	1	k2ge	SNK K2GETechRef §4-4-8 l.376; K2GEres l.22	S1SO.H
+name	0x8033	S1SO_V	1	k2ge	SNK K2GETechRef §4-4-8 l.377; K2GEres l.24	S1SO.V
+name	0x8034	S2SO_H	1	k2ge	SNK K2GETechRef §4-4-8 l.378; K2GEres l.26	S2SO.H
+name	0x8035	S2SO_V	1	k2ge	SNK K2GETechRef §4-4-8 l.379; K2GEres l.28	S2SO.V
+name	0x8101	SPPLT_01	1	k2ge	SNK K2GETechRef §4-12 l.543; K2GEres l.29	SPPLT.01
+name	0x8102	SPPLT_02	1	k2ge	SNK K2GETechRef §4-12 l.544; K2GEres l.30	SPPLT.02
+name	0x8103	SPPLT_03	1	k2ge	SNK K2GETechRef §4-12 l.545; K2GEres l.31	SPPLT.03
+name	0x8105	SPPLT_11	1	k2ge	SNK K2GETechRef §4-12 l.547; K2GEres l.37	SPPLT.11
+name	0x8106	SPPLT_12	1	k2ge	SNK K2GETechRef §4-12 l.548; K2GEres l.38	SPPLT.12
+name	0x8107	SPPLT_13	1	k2ge	SNK K2GETechRef §4-12 l.549; K2GEres l.39	SPPLT.13
+name	0x8109	SC1PLT_01	1	k2ge	SNK K2GEres l.41; K2GETechRef §4-13 l.594	SC1PLT.01
+name	0x810A	SC1PLT_02	1	k2ge	SNK K2GEres l.43; K2GETechRef §4-13 l.595	SC1PLT.02
+name	0x810B	SC1PLT_03	1	k2ge	SNK K2GEres l.45; K2GETechRef §4-13 l.596	SC1PLT.03
+name	0x810D	SC1PLT_11	1	k2ge	SNK K2GEres l.47; K2GETechRef §4-13 l.598	SC1PLT.11
+name	0x810E	SC1PLT_12	1	k2ge	SNK K2GEres l.49; K2GETechRef §4-13 l.599	SC1PLT.12
+name	0x810F	SC1PLT_13	1	k2ge	SNK K2GEres l.51; K2GETechRef §4-13 l.600	SC1PLT.13
+name	0x8111	SC2PLT_01	1	k2ge	SNK K2GEres l.53; K2GETechRef §4-14 l.622	SC2PLT.01
+name	0x8112	SC2PLT_02	1	k2ge	SNK K2GEres l.55; K2GETechRef §4-14 l.623	SC2PLT.02
+name	0x8113	SC2PLT_03	1	k2ge	SNK K2GEres l.57; K2GETechRef §4-14 l.624	SC2PLT.03
+name	0x8115	SC2PLT_11	1	k2ge	SNK K2GEres l.59; K2GETechRef §4-14 l.626	SC2PLT.11
+name	0x8116	SC2PLT_12	1	k2ge	SNK K2GEres l.61; K2GETechRef §4-14 l.627	SC2PLT.12
+name	0x8117	SC2PLT_13	1	k2ge	SNK K2GEres l.63; K2GETechRef §4-14 l.628	SC2PLT.13
+name	0x8118	BG	1	k2ge	SNK K2GEres l.64; K2GETechRef §4-6	BG
+name	0x8200	SPRITE_PAL	0x80	mem	SNK K2GETechRef §4-15 l.684; K2GEpal l.8	K2GE mode sprite color palette
+name	0x8280	SCROLL1_PAL	0x80	mem	SNK K2GETechRef §4-15 l.686; K2GEpal l.74	K2GE mode scroll 1 color palette
+name	0x8300	SCROLL2_PAL	0x80	mem	SNK K2GETechRef §4-15 l.688; K2GEpal l.142	K2GE mode scroll 2 color palette
+name	0x8380	K1_SPRITE_PAL	0x20	mem	SNK K2GETechRef §4-15 l.690; K2GEpal l.210	K1GE upper palette compatible (sprite)
+name	0x83A0	K1_SCROLL1_PAL	0x20	mem	SNK K2GETechRef §4-15 l.693; K2GEpal l.244	K1GE upper palette compatible (scroll 1)
+name	0x83C0	K1_SCROLL2_PAL	0x20	mem	SNK K2GETechRef §4-15 l.696; K2GEpal l.276	K1GE upper palette compatible (scroll 2)
+name	0x83E0	BG_PAL	0x10	mem	SNK K2GETechRef §4-15 l.699; K2GEpal l.309	Background color palette
+name	0x83F0	WINDOW_PAL	0x10	mem	SNK K2GETechRef §4-15 l.703; K2GEpal l.318	Window color palette
+name	0x8800	SPRITE_VRAM	0x100	mem	SNK K2GETechRef §4-3-3 l.156	Sprite VRAM
+name	0x8C00	SPRITE_PAL_CODE	0x40	mem	SNK K2GETechRef §4-3-3 l.158; §5-1 l.718	Sprite VRAM (color palette code)
+name	0x9000	SCROLL1_VRAM	0x800	mem	SNK K2GETechRef §4-4-4 l.319; §4-13 l.589	scroll plane 1 VRAM
+name	0x9800	SCROLL2_VRAM	0x800	mem	SNK K2GETechRef §4-4-5 l.339; §4-14 l.617	scroll plane 2 VRAM
+name	0xA000	CHARACTER_RAM	0x2000	mem	SNK K2GETechRef §4-2 l.121; §4-1 l.104	Character RAM
+bit	0x6F82	SYS_LEVER_UP	0	SNK SysWork l.32 (diagram)	UP
+bit	0x6F82	SYS_LEVER_DOWN	1	SNK SysWork l.32 (diagram)	DOWN
+bit	0x6F82	SYS_LEVER_LEFT	2	SNK SysWork l.32 (diagram)	LEFT
+bit	0x6F82	SYS_LEVER_RIGHT	3	SNK SysWork l.32 (diagram)	RIGHT
+bit	0x6F82	SYS_LEVER_A	4	SNK SysWork l.32 (diagram)	A BUTTON
+bit	0x6F82	SYS_LEVER_B	5	SNK SysWork l.32 (diagram)	B BUTTON
+bit	0x6F82	SYS_LEVER_OPTION	6	SNK SysWork l.34 (diagram text)	OPTION BUTTON
+bit	0x6F84	RESUME_BOOT_REQ	5	SNK SysWork l.98 (diagram l.80)	RESUME_BOOT_REQ
+bit	0x6F84	POWER_BOOT_REQ	6	SNK SysWork l.92 (diagram l.80)	POWER_BOOT_REQ
+bit	0x6F84	ALARM_BOOT_REQ	7	SNK SysWork l.84 (diagram l.80)	ALARM_BOOT_REQ
+bit	0x6F85	BAT_SHUTDOWN_REQ	5	SNK SysWork l.66 (diagram l.50)	BAT_SHUTDOWN_REQ
+bit	0x6F85	TIME_SHUTDOWN_REQ	6	SNK SysWork l.60 (diagram l.50)	TIME_SHUTDOWN_REQ
+bit	0x6F85	MP_SHUTDOWN_REQ	7	SNK SysWork l.54 (diagram l.50)	MP_SHUTDOWN_REQ
+bit	0x6F86	TIMER_SHUTDOWN_ANS	6	SNK SysWork l.124 (diagram l.110)	TIMER_SHUTDOWN_ANS
+bit	0x6F86	RESUME_ANS	7	SNK SysWork l.114 (diagram l.110)	RESUME_ANS
+bit	0x8010	STATUS_2D_C_OVR	7	SNK K2GEres l.14; K2GETechRef §4-10	C.OVR
+bit	0x8012	CONTROL_2D_NEG	7	SNK K2GEres l.16; K2GETechRef §4-11	NEG
+bit	0x8030	SCROLL_PRIORITY_P_F	7	SNK K2GEres l.20; K2GETechRef §4-4-7	P.F

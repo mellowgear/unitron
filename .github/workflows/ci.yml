@@ -1,0 +1,101 @@
+# Build unitron and run its tests on Linux, macOS and Windows (MSVC and MinGW).
+# Modeled on another toolchain's .github/workflows/testing.yml (same FetchContent zlib/libpng deps).
+# The rom test needs the the reference ROM ROM, which is not in the repo, so it skips itself here.
+name: CI
+on:
+  - push
+  - pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: ON
+  CTEST_NO_TESTS_ACTION: error
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  unix:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-26]
+        cxx: [g++, clang++]
+        exclude: # g++ on macOS is an alias for clang++
+          - { os: macos-15-intel, cxx: g++ }
+          - { os: macos-26, cxx: g++ }
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        # The libpng download (SourceForge) sometimes fails its TLS check; one retry.
+        run: |
+          CXX=${{ matrix.cxx }} cmake -S . -B build || CXX=${{ matrix.cxx }} cmake -S . -B build
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build
+      - name: Install
+        run: |
+          cmake --install build --prefix "$PWD/dist"
+          dist/bin/unitron --help > /dev/null
+      - uses: actions/upload-artifact@v7
+        with:
+          name: unitron-${{ matrix.os }}-${{ matrix.cxx }}
+          path: dist/bin
+          if-no-files-found: error
+
+  windows-msvc:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: cmake -S . -B build -A x64 || cmake -S . -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Test
+        run: ctest --test-dir build -C Release
+      - name: Install
+        run: |
+          cmake --install build --config Release --prefix "$PWD/dist"
+          dist/bin/unitron.exe --help > /dev/null
+      - uses: actions/upload-artifact@v7
+        with:
+          name: unitron-windows-msvc
+          path: dist/bin
+          if-no-files-found: error
+
+  windows-mingw:
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+      - name: Configure
+        run: cmake -S . -B build -G Ninja || cmake -S . -B build -G Ninja
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build
+      - name: Install
+        run: |
+          cmake --install build --prefix "$PWD/dist"
+          dist/bin/unitron.exe --help > /dev/null
+      - uses: actions/upload-artifact@v7
+        with:
+          name: unitron-windows-mingw
+          path: dist/bin
+          if-no-files-found: error

@@ -1,34 +1,46 @@
 # OPEN points
 
-What is not settled, with what unitron does meanwhile. "Plan" = ASM900_PLAN.md (O1-O10 are its
-numbers); "STATIC" = asm900-analysis/ASM900_STATIC.md (asm900's tables read, never run, D9).
+What is not settled, with what unitron does meanwhile, then what was settled and why. "Plan" =
+ASM900_PLAN.md (O1-O10 are its numbers); "STATIC" = asm900-analysis/ASM900_STATIC.md (asm900's
+tables read, never run, D9); "TR" = Toshiba's Assembler Reference; "DS" = the CPU datasheet
+instruction lists.
 
-## Language and encoding
+## Still open
 
 | # | Point | Status | unitron does |
 |---|---|---|---|
 | O1 | Which asm900 built the reference ROM | OPEN. STATIC argued "not V2.2d/2.2k" from the `ld r,r` rule, but that rested on the plan's misread rule (below); the ROM agrees with asm900's `ld` | nothing version-specific beyond the 32-char warning |
-| O2 | asm900's own encoding choices | settled by STATIC for `ld r,r`, `ld R,#`, MUL/DIV, CP, widths, `+0`, steps; not checked by running ASM900 (D9 forbids it) | docs/encoding.md |
-| O3 | `jp XHL` vs `jp (XHL)` | settled: bare only; `jp (x)` is an error [STATIC 3.1] | same |
-| O4 | `$list...`, word operators | settled: listing only; no `MOD NOT AND OR XOR` [STATIC 3.5] | ignores `$list...`; operators `+ - * / % & \| ^ ~ << >> :` |
-| O5 | `1234H` numbers | settled: only with asm900 `-H` [STATIC 3.2] | error by default; `unitron asm -H` accepts them |
-| O6 | `push n` / `pushb n` | settled: the same, byte [STATIC 3.3] | same |
-| O7 | TUMPL 1.0j vs tumpp V2.02 | settled in the plan's direction: the documented `?macro` is tumpp's [STATIC 6] | tumpp subset (docs/language.md) |
-| O8 | `extern large` naming another module's abs-section symbol | LIKELY allowed [STATIC 3.6]; tulink not read | allowed; references take the extern width |
-| O9 | the 6 misc long forms as "couldn't size in pass 1" | false for asm900 [STATIC 2.5]; they need `:n` | `:n` |
-| O10 | identifier significance | 1024 (V2.2k) vs 32 (V2.2d) [STATIC 3.4] | 1024, with a warning on 32-char collisions |
-| - | `0b` binary | TR p.8 documents `0b`/`0y`; asm900's lexer rejects `0b` (E202) [STATIC 3.2] | follows asm900: `0b` is an error |
-| - | `ldar` with a label | the datasheet shows only `$+d16` | `ldar XWA,label`, offset from the instruction + 4 |
-| - | `ld RA3,5` (non-standard byte register) | STATIC 2.4 says form 4 (`C7 xx 03 #`) is the path for non-standard registers but does not say whether `LD r,#3` is tried first | `LD r,#3` when the value fits 3 bits (shortest) |
-| - | omitted operands | `EI` and `SWI` with no operand; `DJNZ` with no register | `ei` = `ei 0`, `swi` = `swi 7`, `djnz label` = `djnz B,label` |
-| - | `ldf` range | 900/H has 4 banks; the field is #3 | accepts 0-7 |
-| - | missing `end` | TR p.18 says error, the error list (506) says warning | warning W506 |
-| - | `$include` limits (8 deep, 99 per unit) [TR p.24, 32] | | enforced only with `--strict` (8 deep) |
-| - | relocatable placement | Toshiba uses tulink and an `.lcf` file, not implemented | `--place`, else first fit (docs/language.md "Linking") |
-| - | `j`/`cal` | asm900 relaxes only with `-O1` | always relaxes, absolute targets only |
-| - | initialized data in `data` sections | TR doesn't say what the image holds | bytes outside the image are dropped with a warning; `ds*` reserve only |
-| - | `#define` and `Routine.loop` | tumpp identifiers have no `.`, so a define named `loop` also replaces the tail of `Routine.loop` | documented tumpp behavior |
-| - | `?if ?repeat ?while ?variable ?eval` and string macros | documented by TR, not needed yet | error "not supported" |
+| O2 | asm900's own encoding choices | settled by STATIC for `ld r,r`, `ld R,#`, MUL/DIV, CP, widths, `+0`, steps; never checked by running ASM900 (D9 forbids it) | docs/encoding.md |
+| O8 | `extern large` naming another module's abs-section symbol | LIKELY allowed [STATIC 3.6]; tulink was not read | allowed; references take the extern width |
+| O10 | identifier significance | 1024 (V2.2k) vs 32 (V2.2d) [STATIC 3.4]; depends on O1 | 1024, with a warning on 32-char collisions |
+| - | tulink beyond docs/lcf.md | libraries, incremental links (`-r`), the `I` attribute, `-F` fill, padding in the image, assembler symbols in lcf expressions | rejected or ignored as docs/lcf.md "Not supported" says |
+| - | BIOS call numbers | no SNK source (below) | no names |
+| - | NGPC facts | below | unnamed where no source |
+
+## Settled
+
+| # | Point | Evidence | unitron does |
+|---|---|---|---|
+| O3 | `jp XHL` vs `jp (XHL)` | bare only [STATIC 3.1] | `jp (x)` is an error |
+| O4 | `$list...`, word operators | listing only; no `MOD NOT AND OR XOR` [STATIC 3.5] | ignores `$list...`; operators `+ - * / % & \| ^ ~ << >> :` |
+| O5 | `1234H` numbers | only with asm900 `-H` [STATIC 3.2] | error by default; `unitron asm -H` accepts them |
+| O6 | `push n` / `pushb n` | the same, byte [STATIC 3.3] | same |
+| O7 | TUMPL 1.0j vs tumpp V2.02 | the documented `?macro` is tumpp's [STATIC 6] | tumpp subset (docs/language.md) |
+| O9 | the 6 misc long forms as "couldn't size in pass 1" | false for asm900 [STATIC 2.5] | they need `:n` |
+| - | `0b` binary | TR p.8 documents `0b`/`0y`, but asm900's lexer rejects `0b` (E202) [STATIC 3.2] | follows asm900: `0b` is an error |
+| - | `ld RA3,5` (a non-standard register, small value) | STATIC 2.4 names form 4 (`C7 rr 03 #`) for non-standard registers but not whether `LD r,#3` is tried first. The ROM: all 83 `ld` of 0-7 into a non-standard register in unitron's the reference ROM trace (74 byte: `QA..QD`, `RA3..RC3`; 9 word/long: `QW`, `RW3`, `RBC3`) use `LD r,#3`, none needs a `:n` width | `LD r,#3` when the value fits 3 bits (shortest) |
+| - | omitted operands | DS notes: "When operand #3 coding in the EI instruction is omitted, 0 is used", the same for SWI with 7. DS writes DJNZ as `[r, ]$+3/4+d8` and names no default register | `ei` = `ei 0`, `swi` = `swi 7`, `djnz label` = `djnz B,label` |
+| - | `ldf` range | DS: `LDF #3`, and asm900 encodes a #3 field (operand role 7, STATIC "Operand roles"); the 900/H has 4 banks | accepts 0-7, as asm900 does |
+| - | `ldar` with a label | DS shows only `ldar R,$+4+d16` | both work: `ldar XWA,label` and `ldar XWA,$+0x10` give the same offset (from the instruction + 4) |
+| - | missing `end` | TR p.18 calls it an error, but TR's error list says warning 506: "It is treated as if the directive exists" | warning W506 |
+| - | `$include` limits | TR p.24, 32: 8 levels deep, 99 per translation unit | a warning by default; with `--strict` error E234. Nesting deeper than 64 (a recursive include) is always E234 |
+| - | relocatable placement | Toshiba uses tulink with an `.lcf` file [TR ch. 8] | `--lcf FILE` (a subset, docs/lcf.md); without it `--place`, else first fit (docs/language.md "Linking") |
+| - | `j`/`cal` | TR p.16-17, p.29: asm900 relaxes with `-O1`; `-O0` keeps jp/call | `-O1` (default) relaxes for absolute targets and same-section labels; `-O0` never (docs/encoding.md rule 9) |
+| - | initialized data in `data` sections | TR doesn't say what the image holds; `data` sections are RAM | the bytes are not in the image, with a warning naming `ds*`, `romdata`, or an `.lcf` `org=` in ROM |
+| - | `#define` and `Routine.loop` | tumpp identifiers have no `.`; asm900's do [STATIC 3.4] | a dotted name is one token, never rewritten by a `#define` |
+| - | `?if ?repeat ?while ?variable ?eval` and string macros | documented by TR ch. 15, not needed yet | error `?repeat is not supported (only ?macro/?endm)` |
+| - | `--fill` value | a byte | outside 0-255 is an error |
+| - | trace gap sweep | a heuristic; results depended on tuning | `--hints FILE` (`code ADDR [NAME]`, `data START END`) pins it down; without it the output is unchanged |
 
 ## `ld r,r` and the ROM
 
@@ -64,4 +76,4 @@ emit `db`. If other NGPC games show the same rule, it may become a unitron optio
   `base + n + 1` (`--base`); code 0 is an empty cell. Map files are `wh8` (width byte, height
   byte, entries; the reference ROM's form) or `raw` with `--map-width`. Other games' map headers may differ.
 - The trace's gap sweep is a heuristic (data may decode as code); the writer still reproduces the
-  bytes, but labels in swept code are guesses.
+  bytes, but labels in swept code are guesses. `--hints` fixes the result where it matters.
