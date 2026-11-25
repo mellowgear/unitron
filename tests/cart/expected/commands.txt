@@ -16,7 +16,7 @@ exit 0
 stdout
 wrote cart.ngp: 0x8000 bytes at 0x200000
 stderr
-hints hints.txt: 11 code lines, 0 stale
+hints hints.txt: 8 code lines, 0 stale
 hints sound.hints: 4 code lines, 0 stale
 $ dis cart.ngp
 exit 0
@@ -166,6 +166,19 @@ wrote src_nosweep.ngp: 0x8000 bytes at 0x200000
 stderr
 compare cart.ngp src_nosweep.ngp: byte-identical
 src_nosweep/main.asm: 0 branches to a bare number
+$ dis cart.ngp -o src_names --hints hints.txt --names cart.sym
+exit 0
+stdout
+wrote src_names/main.asm: 199 instructions (0 as db), 32114 data bytes, 5 sections
+stderr
+names cart.sym: 40 labels, 30 outside the ROM, 0 not at an instruction or data start, 185 hardware names skipped
+$ asm src_names/main.asm -o src_names.ngp --origin 0x200000 --size 0x8000
+exit 0
+stdout
+wrote src_names.ngp: 0x8000 bytes at 0x200000
+stderr
+compare cart.ngp src_names.ngp: byte-identical
+src_names/main.asm: 0 branches to a bare number
 $ roundtrip cart.ngp
 exit 0
 stdout

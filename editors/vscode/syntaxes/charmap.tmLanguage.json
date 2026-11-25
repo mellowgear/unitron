@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Character map",
+  "scopeName": "source.charmap",
+  "comment": "unitron character maps (src/charmap.cpp): char \"x\" XX, cmd NAME XX|- [string], ; comments.",
+  "patterns": [
+    {
+      "name": "comment.line.semicolon.charmap",
+      "match": "^\\s*;.*$"
+    },
+    {
+      "match": "^\\s*(char)\\s+(\")((?:[^\"]|\"\")+)(\")\\s+([0-9A-Fa-f]{2})\\s*(;.*)?$",
+      "captures": {
+        "1": {
+          "name": "keyword.other.char.charmap"
+        },
+        "2": {
+          "name": "string.quoted.double.charmap punctuation.definition.string.begin.charmap"
+        },
+        "3": {
+          "name": "string.quoted.double.charmap",
+          "patterns": [
+            {
+              "name": "constant.character.escape.charmap",
+              "match": "\"\""
+            }
+          ]
+        },
+        "4": {
+          "name": "string.quoted.double.charmap punctuation.definition.string.end.charmap"
+        },
+        "5": {
+          "name": "constant.numeric.hex.charmap"
+        },
+        "6": {
+          "name": "comment.line.semicolon.charmap"
+        }
+      }
+    },
+    {
+      "match": "^\\s*(cmd)\\s+(\\w+)\\s+([0-9A-Fa-f]{2}|-)\\s*(string)?\\s*(;.*)?$",
+      "captures": {
+        "1": {
+          "name": "keyword.other.cmd.charmap"
+        },
+        "2": {
+          "name": "entity.name.function.command.charmap"
+        },
+        "3": {
+          "name": "constant.numeric.hex.charmap"
+        },
+        "4": {
+          "name": "storage.type.string.charmap"
+        },
+        "5": {
+          "name": "comment.line.semicolon.charmap"
+        }
+      }
+    },
+    {
+      "name": "invalid.illegal.line.charmap",
+      "match": "^\\s*\\S.*$"
+    }
+  ]
+}

@@ -59,6 +59,7 @@ signed.
 | `dsb dsw dsp dsd dsl n` | n units reserved (0xFF, or `--fill`, in the image; `--fill` takes a byte, 0-255, and another value is an error); n as for `dfb` |
 | `$include "file"` | assembler-level include: source dir, `-I`, `$THOME900/include`. asm900's limits, 8 levels deep and 99 per translation unit [TR p.24, 32], give a warning; with `--strict` they are error E234. Nesting deeper than 64 (a recursive include) is always E234 |
 | `$list $nolist $title $eject $save $restore` (+ short forms) | listing only; ignored |
+| `$charmap "file"` | unitron extension (not in asm900): loads a character map (the `unitron text` format: `char "a" 01`, `cmd text - string`, ...; found like `$include`). From then on the map's commands assemble to bytes: `text "Hello"`, `line "<PLAYER>"`, `done`. `slot WIDTH PAD` (decimal width, hex pad) pads each string, from a `text` line to the next `text`, label, other statement or the end of the file, to WIDTH bytes; a longer string is error E231; `slot 0` ends it. Slot mode is per file. Write `slot` indented: at the start of a line it is read as a label |
 | `end` | ends the module; later text is ignored with a warning. A missing `end` is warning W506 (TR p.18 calls it an error; TR's error list makes it warning 506, "treated as if the directive exists") |
 
 `equ` and `org` still accept forward references. Not supported: `fdatas/d/x`, `file`, `line`,
@@ -146,12 +147,22 @@ what is left. The sweep is a heuristic, so a hints file pins its result down:
 # comments start with # or ;
 code 200185 hidden_fn     ; a trace entry point (name optional: code_200185)
 data 20018C 200191        ; no swept instruction touches [start, end)
+pointers 200200 20020C    ; a table of 4-byte addresses
 ```
 
 Addresses are hex, with or without `0x`. A bad line is an error with its line number. Without
-`--hints` the output is unchanged. A `dis` listing (no `-o`) is linear from the entry point or
-`--start`, but it reads the hints too: a `code` line's name labels its address, and a `data` range
-is listed as `db` lines of up to 4 bytes instead of being decoded (`--executed` addresses get
+`--hints` the output is unchanged.
+
+A `pointers START END` range (END-START a multiple of 4) is data, like a `data` range, and
+`dis -o` writes it as `dl` lines of up to 4 words. Each word is written as a label when its value
+is one (see "Addresses used as values"), else as a hardware name or a number. Every word whose
+value lies in the ROM is a trace entry, labelled `code_XXXXXX` unless it already has a label; a
+word that points at data must be covered by a `data` line, or it is traced as code. `z80 dis`
+rejects `pointers` lines.
+
+A `dis` listing (no `-o`) is linear from the entry point or `--start`, but it reads the hints too:
+a `code` line's name labels its address, a `data` range is listed as `db` lines of up to 4 bytes
+instead of being decoded, and a `pointers` range as one `dl` per word (`--executed` addresses get
 their `dyn_` labels).
 
 The sweep covers the whole image that can hold code: from the end of the 0x40-byte header to the
@@ -178,9 +189,81 @@ digits):
   hint `code` lines: the hint's name, or `code_XXXXXX`; `--executed` entries: `dyn_XXXXXX`.
 - `sub_XXXXXX`: a call target; `loc_XXXXXX`: any other jump target.
 - `swp_XXXXXX`: where a block the gap sweep found starts (unless code just before it runs into it).
+- `code_XXXXXX`: also code whose address is used as a value, or a `pointers` target;
+  `dat_XXXXXX`: data whose address is used as a value or in a memory operand (next section).
+- `ROUTINE.N`: a `loc_` label between a routine's label and the next one, numbered from 1 in
+  address order (`sub_2004A0.1`, `start.3`). A routine's label is any label without a `.` that
+  is not a `loc_`; a run of code (between data) with no such label keeps its `loc_` labels. The
+  dotted names are plain identifiers (see "Lines").
 
 Every jump or call target that is an instruction start in the written source has a label: one
 with none of the above gets `sub_` (called) or `loc_` (only jumped to), so no branch into the code
 is a bare number and the code can be moved. A target in bytes written as data, or in the middle of
 an instruction, keeps its number (on the reference ROM, 55 calls and jumps from swept code into
 bytes the sweep rejected as code).
+
+### Addresses used as values
+
+`dis -o` writes an address the code uses as a value as a label, and some as hardware names.
+
+- **ROM addresses.** A candidate is a number in an instruction with a 32-bit register operand
+  (`ld XHL,n`, `add XIX,n`, `cp XDE,n`), the address of `lda`/`ldar`, a memory operand, a
+  `pointers` word or the header's startup address. If its value is an instruction start in the
+  first 2 MB of the image, it is written as that instruction's label; if it is a data byte, as a
+  `dat_` label placed there (splitting the `db` line). A value inside an instruction, inside a
+  header field or inside a `dl` word stays a number.
+- **Hardware names.** Only `ld XRR,n` and `pointers` words, only an exact address, and only the
+  names at 0x6F80 and above (system work RAM, vectors, K2GE registers, memory areas;
+  `hardware-names.md`). `ld XHL,0x8200` is `ld XHL,SPRITE_PAL`; `ld XBC,0x20` stays a number.
+- **Values that only look like addresses.** The rule takes any such value for an address. A count
+  of 0x200000 or more in a 32-bit register is unlikely; a count equal to a hardware address in
+  `ld XRR,n` is possible, which is why the I/O registers (0x00-0xFF, where small counts are),
+  16-bit registers and every other instruction are left out. A wrong guess names a number, the
+  bytes stay the same.
+
+### The cartridge header
+
+When none of 0x200000-0x20003F is code, `dis -o` writes it field by field (SNK *SysPro*, SOFTWARE
+CASSETTE RECOGNITION HEADER INFORMATION FORMAT): the recognition code and the title as strings
+(as `db` bytes if they hold anything but plain ASCII, or `"`, `'`, `\` or `;`), the startup
+address as `dl` (its label), the ID code as `dw`, the sub-code, the system code and the 16
+reserved bytes as `db`, each with a comment.
+
+### Names (`--names FILE` on `dis`, `roundtrip`)
+
+A names file gives the project's own names instead of placeholders. It has the `asm --sym`
+format, so a symbol file can be passed as it is: one `ADDR NAME` per line, the address in hex
+(`0x` optional), `#` or `;` starts a comment.
+
+- An address in the ROM that is an instruction start or a data byte (not inside a header field
+  or a `dl` word) is labelled NAME; the first name for it replaces the placeholder, and further
+  names are extra labels on the same line. A data block is split there. Anything else in the ROM
+  is not placed (counted on stderr).
+- Any other address is an `equ` in `names.inc` (included after `hw.inc`), written only if the
+  source uses it: in memory operands, and as a value under the rules of "Addresses used as
+  values" for hardware names (`ld XRR,n`, `pointers` words), at 0x100 and above. It is used
+  before a hardware name for the same address.
+- unitron's hardware and bit names (`hardware-names.md`) are skipped: a symbol file holds every
+  `equ` of `ngpc_hw.inc`. Other `equ` constants in a symbol file are taken for addresses too;
+  delete them from the file if they name the wrong things.
+- Errors: a line that is not `ADDR NAME`, a name that is not an identifier (letters, digits,
+  `_`, `.`), an asm900 reserved word, one name with two addresses.
+
+stderr says what was done: `names FILE: N labels, N outside the ROM, N not at an instruction or
+data start, N hardware names skipped`.
+
+### Other `dis -o` output
+
+- **Runs of one byte value**, 16 bytes or longer, are written as `dfb n,v`. A run stops at a
+  label, a header field and a `dl` word.
+- **`--addr`** ends every instruction and data line with `; @XXXXXX`, its address (before the
+  line's own comment, if it has one). Without it the section names and the placeholder labels
+  carry the addresses.
+- **BIOS calls.** A `swi 1` is commented `BIOS call 0xNN` with the RW3 that the code before it
+  loads (`ld RW3,n`; SNK *SysCall*, "USE WITH SOFTWARE INTERRUPTS"). So is a call of a BIOS-call
+  subroutine (*SysCall*, "USE WITH SUBROUTINE CALLS": the vector number in RW3, then a call of
+  SYSTEM_CALL), recognised by its shape: at most 16 instructions of straight-line code up to a
+  `ret`, with an indirect `call`/`jp` or a `swi 1` and no direct call (`BIOS call 0xNN (by
+  subroutine)`). In traced code RW3 is followed along the trace; elsewhere (swept code, the calls)
+  through straight-line code, forgotten at a label, a call, a bank change or another write to
+  RW3. The numbers stay numbers (`hardware-names.md`, "Not named").

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Z80 (unitron)",
+  "scopeName": "source.z80unitron",
+  "comment": "Zilog syntax as unitron z80 asm reads it (docs/z80.md). The word lists are written by hand from src/z80.cpp (mnemonics), src/z80asm.cpp (keywords(), the pseudo-ops) and docs/z80.md; keep them in step with those files. Opcodes and keywords are all capitals or all lower case (ZM p.12).",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#command"
+    },
+    {
+      "include": "#label"
+    },
+    {
+      "include": "#directive"
+    },
+    {
+      "include": "#mnemonic"
+    },
+    {
+      "include": "#operands"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.semicolon.z80unitron",
+      "match": ";.*$"
+    },
+    "command": {
+      "match": "^(\\*(?i:include|list|eject|heading|maclist))\\b(.*?)(?=;|$)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.directive.z80unitron"
+        },
+        "2": {
+          "name": "string.unquoted.include.z80unitron"
+        }
+      }
+    },
+    "label": {
+      "patterns": [
+        {
+          "match": "^([A-Za-z][\\w?]*)(:)",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.label.z80unitron"
+            },
+            "2": {
+              "name": "punctuation.separator.label.z80unitron"
+            }
+          }
+        },
+        {
+          "match": "^([A-Za-z][\\w?]*)(?=\\s+(?:EQU|equ|DEFL|defl)\\b)",
+          "captures": {
+            "1": {
+              "name": "entity.name.constant.z80unitron"
+            }
+          }
+        },
+        {
+          "match": "^([A-Za-z][\\w?]*)(?=\\s|$)",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.label.z80unitron"
+            }
+          }
+        },
+        {
+          "match": "^\\s+([A-Za-z][\\w?]*)(:)",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.label.z80unitron"
+            },
+            "2": {
+              "name": "punctuation.separator.label.z80unitron"
+            }
+          }
+        }
+      ]
+    },
+    "directive": {
+      "name": "storage.type.directive.z80unitron",
+      "match": "(?<![\\w?$])(?:COND|DEFB|DEFL|DEFM|DEFS|DEFW|ENDC|END|EQU|ORG|cond|defb|defl|defm|defs|defw|endc|end|equ|org)(?![\\w?'])"
+    },
+    "mnemonic": {
+      "name": "keyword.operator.mnemonic.z80unitron",
+      "match": "(?<![\\w?$])(?:CALL|CPDR|CPIR|DJNZ|HALT|INDR|INIR|LDDR|LDIR|OTDR|OTIR|OUTD|OUTI|PUSH|RETI|RETN|RLCA|RRCA|ADC|ADD|AND|BIT|CCF|CPD|CPI|CPL|DAA|DEC|EXX|INC|IND|INI|LDD|LDI|NEG|NOP|OUT|POP|RES|RET|RLA|RLC|RLD|RRA|RRC|RRD|RST|SBC|SCF|SET|SLA|SRA|SRL|SUB|XOR|CP|DI|EI|EX|IM|IN|JP|JR|LD|OR|RL|RR|call|cpdr|cpir|djnz|halt|indr|inir|lddr|ldir|otdr|otir|outd|outi|push|reti|retn|rlca|rrca|adc|add|and|bit|ccf|cpd|cpi|cpl|daa|dec|exx|inc|ind|ini|ldd|ldi|neg|nop|out|pop|res|ret|rla|rlc|rld|rra|rrc|rrd|rst|sbc|scf|set|sla|sra|srl|sub|xor|cp|di|ei|ex|im|in|jp|jr|ld|or|rl|rr)(?![\\w?'])"
+    },
+    "operands": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "name": "string.quoted.single.z80unitron",
+          "begin": "(?<![\\w])'",
+          "end": "'(?!')|$",
+          "patterns": [
+            {
+              "name": "constant.character.escape.z80unitron",
+              "match": "''"
+            }
+          ]
+        },
+        {
+          "name": "variable.language.register.z80unitron",
+          "match": "(?<![\\w?$])(?:AF'|af')(?!\\w)"
+        },
+        {
+          "name": "variable.language.register.z80unitron",
+          "match": "(?<![\\w?$])(?:AF|BC|DE|HL|IX|IY|SP|A|B|C|D|E|H|I|L|R|af|bc|de|hl|ix|iy|sp|a|b|c|d|e|h|i|l|r)(?![\\w?'])"
+        },
+        {
+          "name": "support.constant.condition.z80unitron",
+          "match": "(?<![\\w?$])(?:NC|NZ|PE|PO|C|M|P|Z|nc|nz|pe|po|c|m|p|z)(?![\\w?'])"
+        },
+        {
+          "name": "keyword.operator.word.z80unitron",
+          "match": "\\.(?i:NOT|RES|MOD|SHR|SHL|AND|OR|XOR|EQ|GT|LT|UGT|ULT)\\."
+        },
+        {
+          "name": "constant.numeric.z80unitron",
+          "match": "(?<![\\w?$])[0-9][0-9A-Fa-f]*[HhBbOoQqDd]?(?![\\w?'])"
+        },
+        {
+          "name": "variable.language.location.z80unitron",
+          "match": "\\$(?![\\w])"
+        },
+        {
+          "name": "keyword.operator.z80unitron",
+          "match": "\\*\\*|[-+*/&=<>\\\\]"
+        },
+        {
+          "name": "punctuation.separator.comma.z80unitron",
+          "match": ","
+        },
+        {
+          "name": "variable.other.symbol.z80unitron",
+          "match": "[A-Za-z][\\w?]*"
+        }
+      ]
+    }
+  }
+}

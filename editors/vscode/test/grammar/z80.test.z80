@@ -1,0 +1,45 @@
+; SYNTAX TEST "source.z80unitron" "Z80 constructs"
+*Include sound.inc
+; <-------- keyword.control.directive.z80unitron
+;        ^^^^^^^^^ string.unquoted.include.z80unitron
+PORT	EQU	0FFH		; a port
+; <---- entity.name.constant.z80unitron
+;   	^^^ storage.type.directive.z80unitron
+;   	   	^^^^ constant.numeric.z80unitron
+;   	   	    		^^^^^^^^ comment.line.semicolon.z80unitron
+Reset:	DI
+; <----- entity.name.function.label.z80unitron
+;    ^ punctuation.separator.label.z80unitron
+;     	^^ keyword.operator.mnemonic.z80unitron
+Main	LD	(IX+05H),A
+; <---- entity.name.function.label.z80unitron
+;   	^^ keyword.operator.mnemonic.z80unitron
+;   	  	 ^^ variable.language.register.z80unitron
+;   	  	    ^^^ constant.numeric.z80unitron
+;   	  	         ^ variable.language.register.z80unitron
+	EX	AF,AF'
+;^^ keyword.operator.mnemonic.z80unitron
+;  	^^ variable.language.register.z80unitron
+;  	   ^^^ variable.language.register.z80unitron
+	ld	hl,Table
+;^^ keyword.operator.mnemonic.z80unitron
+;  	^^ variable.language.register.z80unitron
+;  	   ^^^^^ variable.other.symbol.z80unitron
+	Ld	A,B
+;^^ - keyword.operator.mnemonic.z80unitron
+	JR	NZ,$+4
+;  	^^ support.constant.condition.z80unitron
+;  	   ^ variable.language.location.z80unitron
+	LD	DE,1 .SHL. 4 .OR. 101B
+;  	     ^^^^^ keyword.operator.word.z80unitron
+;  	                  ^^^^ constant.numeric.z80unitron
+	DEFM	'It''s'
+;^^^^ storage.type.directive.z80unitron
+;    	^^^^^^^ string.quoted.single.z80unitron
+;    	   ^^ constant.character.escape.z80unitron
+	COND	FLAG
+;^^^^ storage.type.directive.z80unitron
+	ENDC
+;^^^^ storage.type.directive.z80unitron
+	END
+;^^^ storage.type.directive.z80unitron

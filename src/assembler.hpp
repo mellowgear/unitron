@@ -12,11 +12,16 @@
 #include <utility>
 #include <vector>
 
+#include "charmap.hpp"
 #include "encode.hpp"
 #include "mpp.hpp"
 #include "where.hpp"
 
 namespace unitron {
+
+// The reserved words of asm900 by kind (upper case), for editors: mnemonics (without B/W/L), registers,
+// conditions, control registers, directives, $ controls (without $), other keywords.
+std::vector<std::pair<std::string, std::vector<std::string>>> asm900_keywords();
 
 struct AsmError : std::runtime_error {
     int code;
@@ -133,6 +138,17 @@ public:
     std::vector<Chunk> assemble(bool link = true, const std::map<std::string, int64_t>& placements = {},
                                 int64_t data_base = 0x4000, int64_t code_base = 0x200000, int max_passes = 24);
     std::vector<std::pair<std::string, int64_t>> symbols();   // name -> value, dict order
+    // Every symbol defined in the sources, for editors: name, equ or label, where, its section
+    // (labels), and its value when it has one after assemble().
+    struct SymDef {
+        std::string name;
+        bool label = false;
+        Where where;
+        std::string section;
+        bool has_value = false;
+        int64_t value = 0;
+    };
+    std::vector<SymDef> symbol_defs();
     // Place relocatable sections with a Toshiba link command file instead of --place/first fit
     // (docs/lcf.md); its assign statements define symbols that externs can name.
     void set_lcf(const std::string& path) { lcf_path_ = path; }
@@ -169,6 +185,19 @@ private:
     Section* cur_sec_ = nullptr;
     bool first_ = true;
     int64_t seq_ = 0;     // statements so far (Item::seq, Sym::seq)
+
+    // Text with a character map (`$charmap "file"`): the map's commands (text, line, page, done, ...)
+    // assemble as bytes. `slot WIDTH PAD` pads each string (a `text` line up to the next `text`,
+    // label, other statement or the end of the file) with PAD to WIDTH bytes; `slot 0` ends it.
+    std::unique_ptr<Charmap> charmap_;
+    struct Slot {
+        size_t width = 0, bytes = 0;
+        int pad = 0;
+        bool in_str = false;
+        Where where;
+    } slot_;
+    void slot_close();
+    void text_statement(const std::string& op, const std::string& line, const Where& where);
 
     std::vector<SrcLine> lines_of(const std::string& path);
     std::string find_include(const std::string& name, const std::string& cur);

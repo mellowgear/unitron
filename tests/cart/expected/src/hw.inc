@@ -1,13 +1,4 @@
-; hw.inc: the NGPC hardware names this source uses (from unitron/data/ngpc_hw.inc).
-WDCR	equ	0x6F	; IO900H.H l.146 (WDCR)
-SYS_LEVER	equ	0x6F82	; SNK SysPro, SYSTEM INFORMATION; SysWork, SYSTEM WORK DEFINITION (Sys_Lever)
-VEC_SWI3	equ	0x6FB8	; SNK SysPro, SYSTEM INFORMATION (Software Interrupt (SWI 3))
-VEC_VBLANK	equ	0x6FCC	; SNK SysPro, SYSTEM INFORMATION (Vertical Blanking Interrupt)
-WBA_H	equ	0x8002	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WBA.H)
-WBA_V	equ	0x8003	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WBA.V)
-WSI_H	equ	0x8004	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WSI.H)
-WSI_V	equ	0x8005	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WSI.V)
-S1SO_H	equ	0x8032	; SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table (S1SO.H)
-S2SO_H	equ	0x8034	; SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table (S2SO.H)
-S2SO_V	equ	0x8035	; SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table (S2SO.V)
-BG_PAL	equ	0x83E0	; SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table (Background color palette)
+; hw.inc: the NGPC hardware names this source uses (from unitron's data/ngpc_hw.inc), by part.
+$include "cpu.inc"
+$include "system.inc"
+$include "k2ge.inc"

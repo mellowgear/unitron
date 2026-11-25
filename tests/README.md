@@ -40,6 +40,7 @@ One small case per behavior, run by
 | `z80/` | `z80 asm NAME.z80 -o out.bin` |
 | `toshiba/` | none: every case has a `.cmd` |
 | `cli/` | none |
+| `lsp/` | none: every case has a `.cmd` (`lsp --script FILE`, docs/editor.md) |
 
 `*.asm` stands for every `.asm` file at the top of the case's directory, sorted by name.
 

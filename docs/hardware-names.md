@@ -1,7 +1,8 @@
 # NGPC hardware names
 
 This file explains `data/hwnames.tsv`, the table of hardware names that `unitron dis` writes into
-`hw.inc`: where each group of names comes from, the naming rule, what the source documents get
+`cpu.inc` (kind `io`), `k2ge.inc` (every name in 0x8000-0xBFFF, the K2GE's range in SNK
+*K2GETechRef*, 4-2. MEMORY MAP) and `system.inc` (the rest), all included from `hw.inc`: where each group of names comes from, the naming rule, what the source documents get
 wrong, and what stays unnamed and why.
 
 The table is embedded into the binary at build time (cmake/embed.cmake). `data/ngpc_hw.inc` is

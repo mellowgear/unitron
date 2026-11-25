@@ -1,0 +1,20 @@
+; SYNTAX TEST "source.charmap" "character map constructs"
+char " " 00
+; <---- keyword.other.char.charmap
+;    ^^^ string.quoted.double.charmap
+;        ^^ constant.numeric.hex.charmap
+char """" 22	; a quote
+;     ^^ constant.character.escape.charmap
+;         ^^ constant.numeric.hex.charmap
+;           	^^^^^^^^^ comment.line.semicolon.charmap
+char "ab" 7F
+;    ^^^^ string.quoted.double.charmap
+cmd text - string
+; <--- keyword.other.cmd.charmap
+;   ^^^^ entity.name.function.command.charmap
+;        ^ constant.numeric.hex.charmap
+;          ^^^^^^ storage.type.string.charmap
+cmd done FF
+;        ^^ constant.numeric.hex.charmap
+chr "x" 01
+; <----------- invalid.illegal.line.charmap

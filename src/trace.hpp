@@ -46,6 +46,9 @@ const std::map<int64_t, std::string>& VECTORS();
 
 // Track RW3 loads; comment `swi 1` with the BIOS vector number it selects (SNK SysCall).
 void annotate_bios(Insn& ins, Regs& regs);
+// Comment, in address order, the `swi 1` that have no comment yet (swept code) and the calls of
+// a BIOS-call subroutine, with the RW3 that straight-line code before them loads.
+void annotate_bios_linear(InsnMap& insns, const Labels& labels);
 // Recursive-descent disassembly into insns/labels.
 void trace(const Rom& rom, const std::vector<std::pair<int64_t, std::string>>& entries, InsnMap& insns, Labels& labels);
 // Fill gaps in the code region with code that decodes as plausible functions; returns the count added.
@@ -55,12 +58,20 @@ int64_t sweep(const Rom& rom, InsnMap& insns, Labels& labels, int rounds = 30, c
 // '#' or ';' starts a comment; addresses in hex):
 //   code ADDR [NAME]    an extra trace entry point (like --executed), labeled NAME or code_ADDR
 //   data START END      bytes START..END-1 are data: the sweep never puts code there
+//   pointers START END  a table of 4-byte addresses (END-START a multiple of 4): data, written
+//                       as `dl`, and every address in the ROM is a trace entry (code_ADDR)
 struct Hints {
     std::vector<std::pair<int64_t, std::string>> code;
-    std::vector<std::pair<int64_t, int64_t>> data;
+    std::vector<std::pair<int64_t, int64_t>> data, pointers;
     bool is_data(int64_t a) const {
-        for (auto& r : data)
-            if (r.first <= a && a < r.second) return true;
+        for (auto* v : {&data, &pointers})
+            for (auto& r : *v)
+                if (r.first <= a && a < r.second) return true;
+        return false;
+    }
+    bool is_pointer(int64_t a) const {   // a is the first byte of a word in a pointers range
+        for (auto& r : pointers)
+            if (r.first <= a && a < r.second && (a - r.first) % 4 == 0) return true;
         return false;
     }
 };

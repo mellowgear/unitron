@@ -1,2 +1,2 @@
-usage: unitron roundtrip [-h] [--workdir WORKDIR] [--executed EXECUTED] [--hints HINTS] rom
+usage: unitron roundtrip [-h] [--workdir WORKDIR] [--executed EXECUTED] [--hints HINTS] [--names NAMES] rom
 unitron roundtrip: error: the following arguments are required: rom

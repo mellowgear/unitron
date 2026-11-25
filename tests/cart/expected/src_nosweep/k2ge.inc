@@ -1,0 +1,10 @@
+; k2ge.inc: the K2GE video chip, 0x8000-0xBFFF (SNK K2GETechRef, 4-2. MEMORY MAP).
+WBA_H	equ	0x8002	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WBA.H)
+WBA_V	equ	0x8003	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WBA.V)
+WSI_H	equ	0x8004	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WSI.H)
+WSI_V	equ	0x8005	; SNK K2GETechRef §4-5; K2GEres, K1GE Resister Table (WSI.V)
+S1SO_H	equ	0x8032	; SNK K2GETechRef §4-4-8; K2GEres, K1GE Resister Table (S1SO.H)
+SCROLL1_PAL	equ	0x8280	; SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table (K2GE mode scroll 1 color palette)
+BG_PAL	equ	0x83E0	; SNK K2GETechRef §4-15; K2GEpal, K2GE Color Palette Table (Background color palette)
+SCROLL1_VRAM	equ	0x9000	; SNK K2GETechRef §4-4-4; §4-13 (scroll plane 1 VRAM)
+CHARACTER_RAM	equ	0xA000	; SNK K2GETechRef §4-2; §4-1 (Character RAM)

@@ -19,6 +19,11 @@ sources named in `language.md`; ZM and UM those in `z80.md`.
   unitron reports `?repeat is not supported (only ?macro/?endm)`.
 - **The trace's gap sweep:** a heuristic; data may decode as code, and labels in swept code are
   guesses (the bytes still match). `--hints FILE` pins it down (`language.md`, "Trace hints").
+- **`dis --names` and `equ` constants:** a symbol file's constants (sizes, flags) are taken for
+  addresses like its labels; unitron can't tell them apart. The project removes them from the
+  file (`language.md`, "Names").
+- **The BIOS-call subroutine shape** (`language.md`, "Other `dis -o` output"): recognised by its
+  form, not by any address; a short wrapper of another kind with an indirect call matches too.
 - **`gfx --map` layouts of other games:** their map headers may differ. unitron reads the two
   forms `--map-format` names, `wh8` and `raw` (README, "Graphics").
 - **An `ld r,r` encoding another ROM uses that asm900's rule doesn't give:** none seen yet.

@@ -1,4 +1,4 @@
-# The third-party libraries unitron uses (zlib and libpng), declared with `FetchContent`.
+# The third-party libraries unitron uses (zlib, libpng, and nlohmann/json for unitron lsp), declared with `FetchContent`.
 # Pinned release tarballs (version and SHA256), static builds, no tests or tools.
 # https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html#downloading-and-building-from-source-with-fetchcontent
 #
@@ -34,3 +34,9 @@ FetchContent_Declare(ZLIB
 
 set(ZLIB_BUILD_SHARED OFF CACHE INTERNAL "")
 set(ZLIB_BUILD_STATIC ON CACHE INTERNAL "")
+
+# nlohmann/json (header-only, MIT): JSON-RPC for unitron lsp.
+FetchContent_Declare(json
+                     URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+                     URL_HASH SHA256=d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d
+                     EXCLUDE_FROM_ALL)

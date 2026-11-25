@@ -55,7 +55,7 @@ int test_rom(const std::string& vdir, const std::string& exe0) {
                 Run r = run_in(d, exe, c.second, scratch);
                 check(c.first, "exit " + dec(r.code) + " stdout " + sha256_hex(r.out) + " stderr " + sha256_hex(r.err));
             }
-            for (auto f : {"src/main.asm", "src/hw.inc", "src_ns/main.asm"}) {
+            for (auto f : {"src/main.asm", "src/hw.inc", "src/cpu.inc", "src/system.inc", "src/k2ge.inc", "src_ns/main.asm"}) {
                 Bytes b;
                 read_bytes_opt((d / f).u8string(), b);
                 check(std::string("file ") + f, sha256_hex(b));

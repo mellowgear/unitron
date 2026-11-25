@@ -1,0 +1,15 @@
+wrote out.ngp: 0x80 bytes at 0x200000
+wrote out/main.asm: 9 instructions (0 as db), 105 data bytes, 5 sections
+200040  47 00 6c 00 00           ld XSP,0x6C00
+200045  44 51 00 20 00           ld XIX,0x200051
+20004A  ac 04 23                 ld XHL,(XIX+4)
+20004D  b3 e8                    call XHL
+20004F  68 ef                    jr 0x200040
+200051  6b 00 20 00              dl 0x0020006B
+200055  65 00 20 00              dl 0x00200065
+200059  68 00 20 00              dl 0x00200068
+20005D  82 6f 00 00              dl 0x00006F82
+200061  56 34 12 00              dl 0x00123456
+200065  21 01                    ld A,1
+200067  0e                       ret
+OK: 9 instructions (0 as db), 105 data bytes; sha1 f435d75292ebadab63c04e28d8ed77ce75913d9b

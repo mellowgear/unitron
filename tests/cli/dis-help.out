@@ -1,4 +1,4 @@
-usage: unitron dis [-h] [-o OUTPUT] [--start START] [--count COUNT] [--executed EXECUTED] [--no-sweep] [--hints HINTS] rom
+usage: unitron dis [-h] [-o OUTPUT] [--start START] [--count COUNT] [--executed EXECUTED] [--no-sweep] [--hints HINTS] [--names NAMES] [--addr] rom
 
 disassemble: a listing, or (-o DIR) rebuildable asm900 source
 
@@ -13,3 +13,5 @@ options:
   --executed EXECUTED	file of hex code addresses (extra trace entry points)
   --no-sweep	static trace only (no gap sweep)
   --hints HINTS	code/data hints for the gap sweep (see docs/language.md)
+  --names NAMES	ADDR NAME lines (the asm --sym format) to use instead of placeholders
+  --addr	end every line of -o output with a ; @ADDR comment

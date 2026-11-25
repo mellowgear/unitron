@@ -1,0 +1,147 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Link command file",
+  "scopeName": "source.lcf",
+  "comment": "unitron's subset of tulink link command files (docs/lcf.md). Reserved words are case-insensitive (TR 8.1.1).",
+  "patterns": [
+    {
+      "include": "#body"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.block.lcf",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.lcf",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "body": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "match": "(?i)\\b(memory|sections)\\s*(?=\\{|$)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.block.lcf"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(addr|org|sizeof|align|next)\\s*(\\()\\s*([A-Za-z_.][\\w.]*)?",
+          "captures": {
+            "1": {
+              "name": "support.function.lcf"
+            },
+            "2": {
+              "name": "punctuation.section.parens.begin.lcf"
+            },
+            "3": {
+              "name": "variable.other.section.lcf"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(org|origin|addr|len|length|align)\\s*(?==)",
+          "captures": {
+            "1": {
+              "name": "variable.parameter.attribute.lcf"
+            }
+          }
+        },
+        {
+          "name": "storage.modifier.lcf",
+          "match": "(?i)\\((?:DSECT|COPY|NOLOAD|OVERLAY)\\)"
+        },
+        {
+          "match": "\\(([RWXI]+)\\)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.access.lcf"
+            }
+          }
+        },
+        {
+          "name": "support.constant.memory.lcf",
+          "match": "(?i)\\b(?:code\\.[ml]|data\\.[sml]|romdata\\.[ml])\\b"
+        },
+        {
+          "match": "(\\*|[A-Za-z_][\\w.\\-]*)(\\()([^)]*)(\\))",
+          "captures": {
+            "1": {
+              "name": "entity.name.module.lcf"
+            },
+            "2": {
+              "name": "punctuation.section.parens.begin.lcf"
+            },
+            "3": {
+              "name": "variable.other.section.lcf"
+            },
+            "4": {
+              "name": "punctuation.section.parens.end.lcf"
+            }
+          }
+        },
+        {
+          "match": "^\\s*([A-Za-z_][\\w.]*)\\s*(\\+?=)(?!=)",
+          "captures": {
+            "1": {
+              "name": "variable.other.assignment.lcf"
+            },
+            "2": {
+              "name": "keyword.operator.assignment.lcf"
+            }
+          }
+        },
+        {
+          "match": "^\\s*([A-Za-z_][\\w.]*)(?=\\s*(?:\\(|:|addr|org|align|len|$))",
+          "captures": {
+            "1": {
+              "name": "entity.name.section.lcf"
+            }
+          }
+        },
+        {
+          "name": "constant.numeric.hex.lcf",
+          "match": "\\b0[xX][0-9A-Fa-f]+\\b"
+        },
+        {
+          "name": "constant.numeric.binary.lcf",
+          "match": "\\b0[yY][01]+\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.lcf",
+          "match": "\\b[0-9]+\\b"
+        },
+        {
+          "name": "variable.language.location.lcf",
+          "match": "(?<![\\w.])\\.(?![\\w.])"
+        },
+        {
+          "name": "keyword.operator.lcf",
+          "match": "<<|>>|<=|>=|==|!=|&&|\\|\\||[-+*/!~<>&|=]"
+        },
+        {
+          "name": "punctuation.terminator.lcf",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.section.braces.lcf",
+          "match": "[{}]"
+        },
+        {
+          "name": "variable.other.symbol.lcf",
+          "match": "[A-Za-z_][\\w.]*"
+        }
+      ]
+    }
+  }
+}

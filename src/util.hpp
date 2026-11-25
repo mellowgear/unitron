@@ -2,6 +2,7 @@
 #pragma once
 #include <cstdint>
 #include <stdexcept>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -46,6 +47,10 @@ int64_t py_int10(const std::string& s);
 
 // Files
 Bytes read_bytes(const std::string& path);          // throws std::runtime_error
+// Editors (unitron lsp): file contents to use instead of the disk, keyed by canonical path
+// (std::filesystem::weakly_canonical). Null (the default) reads the disk only.
+void set_read_overlay(const std::map<std::string, std::string>* overlay);
+std::string canonical_path(const std::string& path);
 bool read_bytes_opt(const std::string& path, Bytes& out);
 void write_bytes(const std::string& path, const Bytes& b);
 void write_text(const std::string& path, const std::string& s);

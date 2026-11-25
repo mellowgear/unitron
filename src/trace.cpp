@@ -50,6 +50,66 @@ void annotate_bios(Insn& ins, Regs& regs) {
     }
 }
 
+// RA3, RW3 and the registers that hold them (bank 3's WA)
+static bool holds_rw3(const std::string& r) { return r == "RW3" || r == "RA3" || r == "RWA3" || r == "QWA3" || r == "XWA3" || r == "QW3"; }
+
+// A BIOS-call subroutine, by shape (SNK SysCall, "USE WITH SUBROUTINE CALLS": the vector number
+// in RW3, then a call): straight-line code of at most 16 instructions up to a ret, with an
+// indirect call or jump or a `swi 1`, and no direct call.
+static bool bios_wrapper(const InsnMap& insns, int64_t a) {
+    bool via = false;
+    for (int k = 0; k < 16; k++) {
+        const Insn* i = insns.get(a);
+        if (!i) return false;
+        if (i->mnem == "SWI" && i->ops.size() == 1 && i->ops[0].text == "1") via = true;
+        else if ((i->mnem == "CALL" || i->mnem == "JP") && !i->has_target) via = true;
+        else if (i->is_call && i->has_target) return false;
+        if (i->mnem == "RET") return via;
+        if (i->ends_block) return false;
+        a += i->size;
+    }
+    return false;
+}
+
+void annotate_bios_linear(InsnMap& insns, const Labels& labels) {
+    std::vector<int64_t> order;
+    for (auto& ai : insns) order.push_back(ai.first);
+    std::sort(order.begin(), order.end());
+    std::map<int64_t, bool> wrapper;
+    Regs regs;
+    int64_t next = -1;
+    for (int64_t a : order) {
+        Insn& i = insns.at(a);
+        if (a != next || labels.count(a)) regs.clear();   // a new block: RW3 unknown
+        next = a + i.size;
+        bool is_swi1 = i.mnem == "SWI" && i.ops.size() == 1 && i.ops[0].text == "1";
+        if (is_swi1) {
+            if (i.comment.empty()) {
+                auto it = regs.find("RW3");
+                i.comment = it != regs.end() ? "BIOS call 0x" + hexs(it->second, 2) : "BIOS call (RW3 not known here)";
+            }
+        } else if (i.mnem == "LD" && i.ops.size() == 2 && i.ops[0].text == "RW3") {
+            try {
+                regs["RW3"] = py_int0(i.ops[1].text);
+            } catch (std::exception&) {
+                regs.erase("RW3");
+            }
+            continue;
+        } else if (i.is_call && i.has_target) {
+            auto it = regs.find("RW3");
+            if (it != regs.end() && i.comment.empty()) {
+                auto w = wrapper.find(i.target);
+                if (w == wrapper.end()) w = wrapper.emplace(i.target, bios_wrapper(insns, i.target)).first;
+                if (w->second) i.comment = "BIOS call 0x" + hexs(it->second, 2) + " (by subroutine)";
+            }
+        }
+        // anything else that may change RW3 forgets it: a write to it, a call, a bank change
+        if (i.is_call || is_swi1 || i.mnem == "LDF" || i.mnem == "INCF" || i.mnem == "DECF" ||
+            (!i.ops.empty() && holds_rw3(i.ops[0].text)))
+            regs.erase("RW3");
+    }
+}
+
 static MemFn memfn(const Rom& rom) {
     return [&rom](int64_t a) { return rom(a); };
 }
@@ -388,8 +448,14 @@ Hints read_hints(const std::string& path) {
             int64_t a = num(w[1]), b = num(w[2]);
             if (b <= a) throw std::runtime_error(path + ":" + std::to_string(ln) + ": data range ends before it starts");
             h.data.push_back({a, b});
+        } else if (w[0] == "pointers" && w.size() == 3) {
+            int64_t a = num(w[1]), b = num(w[2]);
+            if (b <= a) throw std::runtime_error(path + ":" + std::to_string(ln) + ": pointers range ends before it starts");
+            if ((b - a) % 4) throw std::runtime_error(path + ":" + std::to_string(ln) + ": pointers range is not a whole number of 4-byte words");
+            h.pointers.push_back({a, b});
         } else {
-            throw std::runtime_error(path + ":" + std::to_string(ln) + ": expected `code ADDR [NAME]` or `data START END`");
+            throw std::runtime_error(path + ":" + std::to_string(ln) +
+                                     ": expected `code ADDR [NAME]`, `data START END` or `pointers START END`");
         }
     }
     return h;
@@ -409,13 +475,21 @@ void discover(const Rom& rom, const std::string& executed_path, bool do_sweep, I
         trace(rom, entries, insns, labels);
         st.dynamic = int64_t(insns.size()) - st.static_;
     }
-    if (hints && !hints->code.empty()) {
+    if (hints && !(hints->code.empty() && hints->pointers.empty())) {
         std::vector<std::pair<int64_t, std::string>> entries;
         for (auto& c : hints->code)
             if (!insns.has(c.first)) entries.push_back(c);
+        // every address in a pointers table that lies in the ROM is code
+        for (auto& r : hints->pointers)
+            for (int64_t a = r.first; a + 3 < r.second; a += 4) {
+                if (!(rom.contains(a) && rom.contains(a + 3))) continue;
+                int64_t v = int64_t(rom(a)) | int64_t(rom(a + 1)) << 8 | int64_t(rom(a + 2)) << 16 | int64_t(rom(a + 3)) << 24;
+                if (rom.contains(v) && !insns.has(v) && !hints->is_data(v)) entries.push_back({v, "code_" + hexs(v, 6)});
+            }
         trace(rom, entries, insns, labels);
     }
     if (do_sweep) st.sweep = sweep(rom, insns, labels, 30, hints);
+    annotate_bios_linear(insns, labels);
     // drop dyn_/swp_ labels that straight-line code already reaches
     std::vector<int64_t> drop;
     for (auto& kv : labels)

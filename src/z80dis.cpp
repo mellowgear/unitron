@@ -36,6 +36,7 @@ Model build(const Bytes& img, const DisOptions& opt) {
     MemFn mem = [&](int64_t a) { return in(a) ? int(img[size_t(a)]) : -1; };
     Hints hints;
     if (!opt.hints.empty()) hints = read_hints(opt.hints);
+    if (!hints.pointers.empty()) throw std::runtime_error(opt.hints + ": `pointers` hints are for the main CPU (dis), not z80 dis");
     std::map<int64_t, std::string> names;   // chosen names (vectors, hints)
     std::vector<int64_t> entries;
     // the Z80's fixed entry points: reset (UM0080 p.7), NMI and mode 1 interrupt (p.19)

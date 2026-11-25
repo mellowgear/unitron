@@ -16,6 +16,7 @@
 #include "assembler.hpp"
 #include "bin2db.hpp"
 #include "charmap.hpp"
+#include "lsp.hpp"
 #include "hash.hpp"
 #include "mpp.hpp"
 #include "tiles.hpp"
@@ -370,7 +371,12 @@ int cmd_mac(const Parser&, const Args& a) {
 int cmd_dis(const Parser& p, const Args& a) {
     Rom rom(read_bytes(a.get("rom")));
     if (a.has("output")) {
-        WriteStats st = disassemble_rom(rom, a.get("output"), a.get("executed"), !a.has("no_sweep"), a.get("hints"));
+        DisOptions o{a.get("executed"), a.get("hints"), a.get("names"), !a.has("no_sweep"), a.has("addr")};
+        NameStats ns;
+        WriteStats st = disassemble_rom(rom, a.get("output"), o, &ns);
+        if (a.has("names"))
+            std::cerr << "names " << a.get("names") << ": " << ns.labels << " labels, " << ns.equs << " outside the ROM, " << ns.unplaced
+                      << " not at an instruction or data start, " << ns.skipped << " hardware names skipped\n";
         std::cout << "wrote " << a.get("output") << "/main.asm: " << st.instructions << " instructions (" << st.db_fallback
                   << " as db), " << st.data_bytes << " data bytes, " << st.sections << " sections\n";
         return 0;
@@ -379,8 +385,8 @@ int cmd_dis(const Parser& p, const Args& a) {
     int64_t count = num_arg(p, a, "count", "--count", 64);
     MemFn mem = [&rom](int64_t x) { return rom(x); };
     // the listing is linear, but it uses the hints: a `code` line's name labels its address, and a
-    // `data` range is listed as db lines (4 bytes each) instead of being decoded; --executed
-    // addresses get their dyn_ labels, as in -o output
+    // `data` range is listed as db lines (4 bytes each) instead of being decoded, a `pointers`
+    // range as dl lines (one word each); --executed addresses get their dyn_ labels, as in -o output
     Hints hints;
     std::map<int64_t, std::string> names;
     if (a.has("hints")) {
@@ -393,6 +399,18 @@ int cmd_dis(const Parser& p, const Args& a) {
         if (!rom.contains(pc)) break;
         auto nm = names.find(pc);
         if (nm != names.end()) std::cout << nm->second << ":\n";
+        if (hints.is_pointer(pc) && rom.contains(pc + 3)) {   // a pointers hint's word: dl
+            int64_t v = 0;
+            std::string raw;
+            for (int k = 0; k < 4; k++) {
+                v |= int64_t(rom(pc + k)) << (8 * k);
+                raw += (k ? " " : "") + hexl(rom(pc + k), 2);
+            }
+            while (raw.size() < 24) raw += ' ';
+            std::cout << hexs(pc, 6) << "  " << raw << " dl 0x" << hexs(v, 8) << "\n";
+            pc += 4;
+            continue;
+        }
         if (hints.is_data(pc)) {
             std::string raw, t = "db ";
             int64_t k = 0;
@@ -435,7 +453,7 @@ int cmd_roundtrip(const Parser&, const Args& a) {
     std::string work = a.get("workdir");
     bool tmp = work.empty();
     if (tmp) work = make_temp_dir();
-    WriteStats st = disassemble_rom(rom, work, a.get("executed"), true, a.get("hints"));
+    WriteStats st = disassemble_rom(rom, work, DisOptions{a.get("executed"), a.get("hints"), a.get("names"), true, false});
     Assembler as;
     as.add_module(path_join(work, "main.asm"));
     auto chunks = as.assemble();
@@ -650,10 +668,10 @@ Pos P(std::string dest, char nargs = 1, std::string help = "") {
 }
 
 const char* TOP =
-    "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80} ...\n\n"
+    "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp} ...\n\n"
     "NGPC (TLCS-900/H) toolchain\n\n"
     "positional arguments:\n"
-    "  {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80}\n"
+    "  {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp}\n"
     "    asm                 assemble (and link) asm900 sources into a raw image\n"
     "    mac (preprocess)    run the macro preprocessor only\n"
     "    dis                 disassemble: a listing, or (-o DIR) rebuildable asm900 source\n"
@@ -661,13 +679,14 @@ const char* TOP =
     "    bin2db              binary file -> labeled asm900 db lines\n"
     "    text                text file + character map -> asm900 db lines\n"
     "    gfx                 2bpp tiles <-> indexed PNG (plain sheet or map layout); PNG palette -> words\n"
-    "    z80                 the Z80 sound CPU: dis, asm, roundtrip (docs/z80.md)\n\n"
+    "    z80                 the Z80 sound CPU: dis, asm, roundtrip (docs/z80.md)\n"
+    "    lsp                 language server for editors (docs/editor.md)\n\n"
     "options:\n  -h, --help            show this help message and exit\n";
 
 int run(int argc, char** argv) {
     std::vector<std::string> args(argv + 1, argv + argc);
     if (args.empty()) {
-        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80} ...\n"
+        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp} ...\n"
                      "unitron: error: the following arguments are required: cmd\n";
         return 2;
     }
@@ -677,6 +696,7 @@ int run(int argc, char** argv) {
         return 0;
     }
     std::vector<std::string> rest(args.begin() + 1, args.end());
+    if (cmd == "lsp") return cmd_lsp(rest);
     Parser p;
     p.prog = "unitron " + cmd;
     std::string sub;
@@ -721,12 +741,14 @@ int run(int argc, char** argv) {
                   O({"--count"}, "count"),
                   O({"--executed"}, "executed", "file of hex code addresses (extra trace entry points)"),
                   O({"--no-sweep"}, "no_sweep", "static trace only (no gap sweep)", false),
-                  O({"--hints"}, "hints", "code/data hints for the gap sweep (see docs/language.md)")};
+                  O({"--hints"}, "hints", "code/data hints for the gap sweep (see docs/language.md)"),
+                  O({"--names"}, "names", "ADDR NAME lines (the asm --sym format) to use instead of placeholders"),
+                  O({"--addr"}, "addr", "end every line of -o output with a ; @ADDR comment", false)};
     } else if (cmd == "roundtrip") {
         p.help = "dis -> asm a ROM and compare the bytes";
         p.pos = {P("rom")};
         p.opts = {O({"--workdir"}, "workdir", "keep the source here (default: a temporary directory)"), O({"--executed"}, "executed"),
-                  O({"--hints"}, "hints", "code/data hints for the gap sweep")};
+                  O({"--hints"}, "hints", "code/data hints for the gap sweep"), O({"--names"}, "names")};
     } else if (cmd == "bin2db") {
         p.help = "binary file -> labeled asm900 db lines";
         p.pos = {P("input"), P("label", '?')};
@@ -815,7 +837,7 @@ int run(int argc, char** argv) {
                       O({"--executed"}, "executed"), O({"--hints"}, "hints")};
         }
     } else {
-        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80} ...\n"
+        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp} ...\n"
                      "unitron: error: argument cmd: invalid choice: '"
                   << cmd << "' (choose from asm, mac, preprocess, dis, roundtrip, bin2db, text, gfx, z80)\n";
         return 2;

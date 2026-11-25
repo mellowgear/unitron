@@ -273,7 +273,22 @@ int64_t py_int10(const std::string& s0) {
     return neg ? -v : v;
 }
 
+static const std::map<std::string, std::string>* g_overlay = nullptr;
+void set_read_overlay(const std::map<std::string, std::string>* overlay) { g_overlay = overlay; }
+std::string canonical_path(const std::string& path) {
+    std::error_code ec;
+    auto p = fs::weakly_canonical(fs::u8path(path), ec);
+    return ec ? path : p.u8string();
+}
+
 bool read_bytes_opt(const std::string& path, Bytes& out) {
+    if (g_overlay && !g_overlay->empty()) {
+        auto it = g_overlay->find(canonical_path(path));
+        if (it != g_overlay->end()) {
+            out.assign(it->second.begin(), it->second.end());
+            return true;
+        }
+    }
     std::error_code ec;
     if (!fs::is_regular_file(fs::u8path(path), ec)) return false;
     std::ifstream f(fs::u8path(path), std::ios::binary);

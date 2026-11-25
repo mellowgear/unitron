@@ -220,6 +220,21 @@ std::string split_comment(const std::string& line) {
     return line;
 }
 
+std::vector<std::pair<std::string, std::vector<std::string>>> asm900_keywords() {
+    auto vec = [](auto&& s) { return std::vector<std::string>(s.begin(), s.end()); };
+    std::set<std::string> regs, ccs, crs;
+    for (auto& kv : REG()) regs.insert(kv.first);
+    for (int i = 0; i < 16; i++) ccs.insert(CC[i]);
+    for (auto& kv : CR_CODE()) crs.insert(kv.first);
+    std::set<std::string> controls = {"MAXIMUM", "MINIMUM", "SYSTEM", "NORMAL", "INCLUDE", "CHARMAP"};
+    for (auto& x : LISTING) controls.insert(x);
+    std::set<std::string> words = {"CODE", "DATA", "ROMDATA", "SMALL", "MEDIUM", "LARGE", "ABS", "SIZEOF", "STARTOF",
+                                   "BANK", "LOC0", "COM0"};
+    return {{"mnemonics", vec(MNEMONICS())}, {"registers", vec(regs)},     {"conditions", vec(ccs)},
+            {"control_registers", vec(crs)},  {"directives", vec(DIRECTIVES())}, {"controls", vec(controls)},
+            {"keywords", vec(words)}};
+}
+
 bool is_reserved(const std::string& name) {
     static const std::set<std::string> extra = {"F", "F'", "SR", "CODE", "DATA", "ROMDATA", "SIZEOF", "STARTOF", "INCLUDE",
                                                 "MAX", "MIN", "LIST", "LI", "TITLE", "TT", "SA", "RS", "EJ", "NOR", "SYS",
@@ -311,6 +326,13 @@ void Assembler::add_module(const std::string& path0) {
 }
 
 void Assembler::run(Module& mod, const std::vector<SrcLine>& lines, const std::string& path, const std::vector<Loc>& chain) {
+    Slot outer = slot_;   // slot mode is per file
+    slot_ = Slot{};
+    struct Restore {
+        Assembler* a;
+        Slot s;
+        ~Restore() { a->slot_ = s; }
+    } restore{this, outer};
     for (auto& tl : lines) {
         std::string text = tl.first;
         Where where = tl.second;
@@ -333,6 +355,85 @@ void Assembler::run(Module& mod, const std::vector<SrcLine>& lines, const std::s
             d.error(where, 200, e.what());
         }
     }
+    try {
+        slot_close();
+    } catch (AsmError& e) {
+        d.error(slot_.where, e.code, e.what());
+    }
+}
+
+void Assembler::slot_close() {
+    if (!slot_.width || !slot_.in_str) return;
+    slot_.in_str = false;
+    if (slot_.bytes > slot_.width)
+        throw AsmError(231, "string is " + std::to_string(slot_.bytes) + " bytes, the slot is " +
+                                std::to_string(slot_.width));
+    if (slot_.bytes == slot_.width) return;
+    Section& sec = need_section();
+    auto it = std::make_unique<Item>();
+    it->kind = Item::Bin;
+    it->where = slot_.where;
+    it->seq = seq_;
+    it->w = 1;
+    it->data = Bytes(slot_.width - slot_.bytes, uint8_t(slot_.pad));
+    sec.items.push_back(std::move(it));
+}
+
+void Assembler::text_statement(const std::string& op, const std::string& line, const Where& where) {
+    if (op == "slot") {
+        slot_close();
+        // slot WIDTH PAD (decimal width, two hex digits; the pad may be left out only for slot 0)
+        auto parts = split_ws(strip(line), -1);
+        bool ok = parts.size() >= 2 && parts.size() <= 3;
+        size_t width = 0;
+        int pad = 0;
+        if (ok) {
+            for (char ch : parts[1]) ok = ok && py_digit(ch);
+            if (ok) width = std::stoul(parts[1]);
+        }
+        if (ok && parts.size() == 3) {
+            ok = parts[2].size() == 2 && isxdigit((unsigned char)parts[2][0]) && isxdigit((unsigned char)parts[2][1]);
+            if (ok) pad = std::stoi(parts[2], nullptr, 16);
+        } else if (ok) {
+            ok = width == 0;
+        }
+        if (!ok) throw AsmError(231, "bad slot line (slot WIDTH PAD, e.g. slot 7 FF; slot 0 ends slot mode)");
+        slot_.width = width;
+        slot_.pad = pad;
+        slot_.in_str = false;
+        return;
+    }
+    std::optional<Bytes> b;
+    try {
+        b = charmap_->command(line);
+    } catch (CharmapError& e) {
+        throw AsmError(231, e.what());
+    }
+    if (!b) throw AsmError(231, "not a text command: " + strip(line));
+    if (slot_.width) {
+        if (op == "text") {
+            slot_close();
+            slot_.in_str = true;
+            slot_.bytes = 0;
+            slot_.where = where;
+        } else if (!slot_.in_str) {
+            throw AsmError(231, "in a slot, each string starts with a text line");
+        }
+        slot_.bytes += b->size();
+    }
+    Section& sec = need_section();
+    if (sec.kind == "data" && !sec.has_init) {
+        sec.has_init = true;
+        sec.init_where = where;
+    }
+    if (b->empty()) return;
+    auto it = std::make_unique<Item>();
+    it->kind = Item::Bin;
+    it->where = where;
+    it->seq = seq_;
+    it->w = 1;
+    it->data = *b;
+    sec.items.push_back(std::move(it));
 }
 
 void Assembler::statement(Module& mod, const std::string& text, const Where& where, const std::string& path) {
@@ -359,6 +460,12 @@ void Assembler::statement(Module& mod, const std::string& text, const Where& whe
     }
     std::string u = st.has_op ? upper(st.op) : "";
     bool label = st.has_label && !st.label.empty();
+    bool is_text = charmap_ && st.has_op && (st.op == "slot" || charmap_->cmds.count(st.op));
+    if (label || !is_text) slot_close();
+    if (is_text && !label) {   // the whole line: the charmap reads strings with "" and ; itself
+        text_statement(st.op, text, where);
+        return;
+    }
     if (st.has_op && (u == "EQU" || u == "SECTION")) {
         if (!label) throw AsmError(200, "`" + st.op + "` needs a name");
         if (u == "EQU") {
@@ -388,6 +495,10 @@ void Assembler::statement(Module& mod, const std::string& text, const Where& whe
         define(mod, st.label, s);
     }
     if (!st.has_op) return;
+    if (is_text) {
+        text_statement(st.op, st.op + " " + st.field, where);
+        return;
+    }
     if (data_w(u) || fill_w(u) || space_w(u)) {
         data(u, st.field, where);
     } else if (u == "MODULE") {
@@ -509,6 +620,20 @@ void Assembler::control(Module& mod, const std::string& name, const std::string&
         int n = 1;
         for (auto& t : splitlines(text)) lines.push_back({t, Where{p, n++, {}, false}});
         run(mod, lines, p, chain);
+        return;
+    }
+    if (name == "CHARMAP") {
+        std::string f = strip(field);
+        if (f.size() < 3 || f.front() != '"' || f.back() != '"' || f.find('"', 1) != f.size() - 1)
+            throw AsmError(218, "$charmap needs \"file\"");
+        std::string p = find_include(f.substr(1, f.size() - 2), where.file);
+        if (p.empty()) throw AsmError(20, "can't open " + py_repr(f.substr(1, f.size() - 2)));
+        add_dep(p);
+        try {
+            charmap_ = std::make_unique<Charmap>(p);
+        } catch (std::runtime_error& e) {
+            throw AsmError(20, e.what());
+        }
         return;
     }
     throw AsmError(218, "unknown control instruction $" + lower(name));
@@ -1153,6 +1278,26 @@ std::vector<std::pair<std::string, int64_t>> Assembler::symbols() {
             }
         }
     return out.items;
+}
+
+std::vector<Assembler::SymDef> Assembler::symbol_defs() {
+    std::vector<SymDef> out;
+    for (auto& mp : modules_)
+        for (auto& kv : mp->syms.items) {
+            if (kv.second.kind == Sym::Extern) continue;
+            SymDef s;
+            s.name = kv.first;
+            s.label = kv.second.kind == Sym::Label;
+            s.where = kv.second.where;
+            if (kv.second.sec) s.section = kv.second.sec->name;
+            try {
+                s.value = lookup(*mp, kv.first).first;
+                s.has_value = true;
+            } catch (...) {
+            }
+            out.push_back(std::move(s));
+        }
+    return out;
 }
 
 Image build_image(const std::vector<Chunk>& chunks, const int64_t* origin, const int64_t* size, int fill, Diags* d) {

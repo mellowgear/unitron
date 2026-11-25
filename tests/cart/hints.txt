@@ -12,10 +12,9 @@ code 200174 StateOver
 code 2001B4 AddScore
 code 2005AA SoundCommand
 code 2005B1 SoundSetNoise
-# the effects, reached only through FxTable (call XHL):
-code 200609 FxNone
-code 20060A FxFlash
-code 20061D FxScroll
+# FxTable: the effects' addresses (called through call XHL); dis writes the table as dl and
+# traces the three routines from it (their labels are code_ADDR)
+pointers 200219 200225
 # data that the gap sweep would take for code:
 data 200212 200219	; StartLevels (decodes as ld A / ld B / ld C / ret)
 data 200564 200590	; the strings (strings.txt) and the padding before the next code section

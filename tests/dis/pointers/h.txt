@@ -1,0 +1,2 @@
+pointers 200051 200065	; table
+data 20006B 20006E	; text: a data target is not traced

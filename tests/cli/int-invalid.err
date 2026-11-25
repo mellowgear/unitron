@@ -1,2 +1,2 @@
-usage: unitron dis [-h] [-o OUTPUT] [--start START] [--count COUNT] [--executed EXECUTED] [--no-sweep] [--hints HINTS] rom
+usage: unitron dis [-h] [-o OUTPUT] [--start START] [--count COUNT] [--executed EXECUTED] [--no-sweep] [--hints HINTS] [--names NAMES] [--addr] rom
 unitron dis: error: argument --count: not a number: 'x'

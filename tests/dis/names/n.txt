@@ -1,0 +1,10 @@
+# the asm --sym format, edited: Second is a second name for Boot, Mid1 is inside an instruction
+004000 Count
+000010 Limit
+200040 Boot
+200040 Second
+20004A Boot.loop
+200069 Mid
+20006A Mid1
+20006C Table
+6F82 SYS_LEVER		; a hardware name: skipped

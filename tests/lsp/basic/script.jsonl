@@ -1,0 +1,18 @@
+# unitron lsp --script: one message per line; file:///ROOT is the case's work folder
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"rootUri":"file:///ROOT","capabilities":{}}}
+{"jsonrpc":"2.0","method":"initialized","params":{}}
+# definition of LIMIT (line 6, "ld A,LIMIT"), into the same file; of Helper, into sub.asm
+{"jsonrpc":"2.0","id":2,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///ROOT/src/main.asm"},"position":{"line":6,"character":8}}}
+{"jsonrpc":"2.0","id":3,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///ROOT/src/main.asm"},"position":{"line":7,"character":10}}}
+# references of Start.loop, hover on LIMIT (value and comment), hover on Helper (address)
+{"jsonrpc":"2.0","id":4,"method":"textDocument/references","params":{"textDocument":{"uri":"file:///ROOT/src/main.asm"},"position":{"line":9,"character":6},"context":{"includeDeclaration":true}}}
+{"jsonrpc":"2.0","id":5,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///ROOT/src/main.asm"},"position":{"line":6,"character":8}}}
+{"jsonrpc":"2.0","id":6,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///ROOT/src/main.asm"},"position":{"line":7,"character":10}}}
+# the include link, symbols, rename
+{"jsonrpc":"2.0","id":7,"method":"textDocument/documentLink","params":{"textDocument":{"uri":"file:///ROOT/src/main.asm"}}}
+{"jsonrpc":"2.0","id":8,"method":"workspace/symbol","params":{"query":"start"}}
+{"jsonrpc":"2.0","id":9,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///ROOT/src/sub.asm"},"position":{"line":1,"character":2},"newName":"Helper2"}}
+# an edit that breaks the build: the diagnostic comes with the next request
+{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///ROOT/src/sub.asm","languageId":"asm900","version":1,"text":"Helper:\n\tret\n\tld\tA,Missing\n"}}}
+{"jsonrpc":"2.0","id":10,"method":"textDocument/documentSymbol","params":{"textDocument":{"uri":"file:///ROOT/src/sub.asm"}}}
+{"jsonrpc":"2.0","id":11,"method":"shutdown"}

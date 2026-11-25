@@ -29,8 +29,10 @@ tested on Linux; the code is written to be portable to macOS and Windows.
 unitron dis game.ngp -o src/
 ```
 
-This writes `src/main.asm` (the whole ROM as asm900 source) and `src/hw.inc` (the names of the
-hardware registers the code uses). To build a ROM from that source again:
+This writes `src/main.asm` (the whole ROM as asm900 source) and the names of the hardware the code
+uses, by part of the machine: `src/cpu.inc` (the CPU's on-chip I/O), `src/system.inc` (system
+work RAM, interrupt vectors, Z80 RAM) and `src/k2ge.inc` (the K2GE video chip, 0x8000-0xBFFF),
+all three included through `src/hw.inc`. To build a ROM from that source again:
 
 ```
 unitron asm src/main.asm -o rebuilt.ngp
@@ -42,8 +44,11 @@ The source holds every byte of the ROM, so no options are needed.
 `unitron roundtrip game.ngp` does both steps in one go and says whether the bytes match.
 
 The labels in the source are placeholders built from addresses (`sub_2004A0` for a routine that
-is called, `loc_2004B2` for a place that is jumped to, `swp_...` for code found by scanning). A
-disassembler can't know what anything is called; renaming them is the decompilation work.
+is called, `loc_2004B2` for a place that is jumped to, `swp_...` for code found by scanning,
+`dat_...` for data whose address the code uses; `sub_2004A0.1` for a place inside a routine).
+The cartridge header is written field by field. Once you have names, `--names` puts them back in
+(`docs/language.md`, "Names").
+A disassembler can't know what anything is called; renaming them is the decompilation work.
 
 Some code is only reached through tables of addresses, which the disassembler can't always follow.
 A hints file tells it where code starts or where data is:
@@ -52,6 +57,7 @@ A hints file tells it where code starts or where data is:
 # hints.txt: comments start with # or ;
 code 200185 hidden_fn     ; code starts here (the name is optional)
 data 20018C 200191        ; these bytes are data: never decode them as code
+pointers 200200 20020C    ; a table of 4-byte addresses: written as dl, its targets are code
 ```
 
 ```
@@ -153,14 +159,17 @@ is the address of the image's first byte, and `--size` is how many bytes the ima
 - **`unitron text charmap.txt strings.txt -o strings.asm`** turns text into `db` lines through a
   character map (see "Text" below).
 - **`unitron gfx`** converts the NGPC's tiles and palettes to and from PNG (see "Graphics" below).
+- **`unitron lsp`** is a language server for editors: go to definition, references, rename,
+  hover with values and comments, and errors as you type. `editors/vscode/` is a VS Code extension
+  for it, with colouring for asm900, Z80, link files and character maps. Both were written by
+  Claude (Anthropic's AI model); see `docs/editor.md`.
 
 ## The language
 
 `docs/language.md` describes the asm900 language as unitron implements it, `docs/encoding.md`
 which encoding unitron picks when several are possible, `docs/lcf.md` link files, `docs/z80.md`
 the Z80 side, and `docs/OPEN.md` what is not settled. The style unitron writes: lowercase
-mnemonics, uppercase registers, `0x` hex numbers, `Routine.label` for labels local to a routine,
-`jp XHL` without parentheses, `(XHL+:1)` for a step that differs from the operand size, and
+mnemonics, uppercase registers, `0x` hex numbers, `jp XHL` without parentheses, `(XHL+:1)` for a step that differs from the operand size, and
 `ld (wX:24),A` to force an address width.
 
 ## Graphics
@@ -263,7 +272,8 @@ game.ngp: src/main.asm
 **`unitron dis` and `unitron roundtrip`** options: `-o DIR` (dis: write source instead of a
 listing), `--hints FILE` (above; `docs/language.md`, "Trace hints"), `--executed FILE` (more
 addresses where code starts, in hex), `--no-sweep` (only follow the code from its entry points; no
-scanning of the rest). The scan covers the whole image after the header; past the code it has
+scanning of the rest), `--names FILE` (your own names for addresses, in the `asm --sym` format,
+instead of placeholders), `--addr` (dis: a `; @ADDR` comment on every line). The scan covers the whole image after the header; past the code it has
 traced it starts only from call targets and from address tables that also point at known code.
 
 ## Tests

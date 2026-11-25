@@ -1,0 +1,8 @@
+; test character map
+char " " 00
+char "a" 01
+char "b" 02
+char "<P>" F0
+cmd text - string
+cmd line FE string
+cmd done FF

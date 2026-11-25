@@ -6,7 +6,8 @@
 //    of the three modules with cart.lcf;
 // 2. checks that every `code ADDR NAME` line of hints.txt and sound.hints still names that
 //    label's address in the symbol files (so the hints follow the source);
-// 3. runs dis (listings), dis -o with the sweep, with --hints and with --no-sweep, and assembles
+// 3. runs dis (listings), dis -o with the sweep, with --hints, with --no-sweep and with --hints
+//    and the assembler's symbol file as --names, and assembles
 //    each source back: each must give the image byte for byte, and no branch or call in it may be
 //    written as a bare number (every target is labelled); roundtrip with and without hints;
 // 4. runs z80 dis (listings, -o with and without hints, assembled back), z80 roundtrip, and the
@@ -154,7 +155,8 @@ int test_cart(const std::string& cart_dir, const std::string& exe0, bool write) 
     run({"dis", "cart.ngp"});
     run({"dis", "cart.ngp", "--start", "0x200580", "--count", "40"});
     for (auto& v : std::vector<std::pair<std::string, std::vector<std::string>>>{
-             {"src", {}}, {"src_hints", {"--hints", "hints.txt"}}, {"src_nosweep", {"--no-sweep"}}}) {
+             {"src", {}}, {"src_hints", {"--hints", "hints.txt"}}, {"src_nosweep", {"--no-sweep"}},
+             {"src_names", {"--hints", "hints.txt", "--names", "cart.sym"}}}) {
         run(with({"dis", "cart.ngp", "-o", v.first}, v.second));
         run(with({"asm", v.first + "/main.asm", "-o", v.first + ".ngp"}, place));
         same("cart.ngp", v.first + ".ngp");
@@ -204,10 +206,15 @@ int test_cart(const std::string& cart_dir, const std::string& exe0, bool write) 
 
     // compare (or write) expected/
     std::vector<std::pair<std::string, std::string>> outs = {{"commands.txt", log}, {"files.txt", files}};
-    for (auto f : {"src/main.asm", "src/hw.inc", "src_hints/main.asm", "src_hints/hw.inc", "src_nosweep/main.asm", "src_nosweep/hw.inc",
-                   "zsrc/main.z80", "zsrc_hints/main.z80"}) {
+    std::vector<std::string> written;
+    for (auto dir : {"src", "src_hints", "src_nosweep", "src_names"})
+        for (auto f : {"main.asm", "hw.inc", "cpu.inc", "system.inc", "k2ge.inc"}) written.push_back(std::string(dir) + "/" + f);
+    written.push_back("src_names/names.inc");
+    written.push_back("zsrc/main.z80");
+    written.push_back("zsrc_hints/main.z80");
+    for (auto& f : written) {
         Bytes b;
-        read_bytes_opt((d / f).u8string(), b);
+        read_bytes_opt((d / fs::u8path(f)).u8string(), b);
         outs.push_back({f, text_of(b)});
     }
     for (auto& o : outs) {

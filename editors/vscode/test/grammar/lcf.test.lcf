@@ -1,0 +1,35 @@
+// SYNTAX TEST "source.lcf" "link command file constructs"
+memory {
+// <------ keyword.control.block.lcf
+    ram (RW) : org=0x4000, len=0x2000
+//  ^^^ entity.name.section.lcf
+//       ^^ storage.modifier.access.lcf
+//             ^^^ variable.parameter.attribute.lcf
+//                 ^^^^^^ constant.numeric.hex.lcf
+//                         ^^^ variable.parameter.attribute.lcf
+}
+sections {
+// <-------- keyword.control.block.lcf
+    head     addr=0x200000 : { *(f_head) }
+//  ^^^^ entity.name.section.lcf
+//           ^^^^ variable.parameter.attribute.lcf
+//                             ^ entity.name.module.lcf
+//                               ^^^^^^ variable.other.section.lcf
+    code     addr=addr(head)+sizeof(head) : { crt.rel(f_code) *(f_code) }
+//                ^^^^ support.function.lcf
+//                     ^^^^ variable.other.section.lcf
+//                           ^^^^^^ support.function.lcf
+//                                            ^^^^^^^ entity.name.module.lcf
+    roinit   org=org(code)+sizeof(code)    /* stored in ROM */
+//                                         ^^^^^^^^^^^^^^^^^^ comment.block.lcf
+             (NOLOAD) : { *(f_data) } > data.m
+//           ^^^^^^^^ storage.modifier.lcf
+//                                      ^^^^^^ support.constant.memory.lcf
+    __DataLen = sizeof(roinit);
+//  ^^^^^^^^^ variable.other.assignment.lcf
+//            ^ keyword.operator.assignment.lcf
+//                            ^ punctuation.terminator.lcf
+    . += 0y1000;
+//  ^ variable.language.location.lcf
+//       ^^^^^^ constant.numeric.binary.lcf
+}

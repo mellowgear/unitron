@@ -1,1 +1,1 @@
-error: h.txt:2: expected `code ADDR [NAME]` or `data START END`
+error: h.txt:2: expected `code ADDR [NAME]`, `data START END` or `pointers START END`
