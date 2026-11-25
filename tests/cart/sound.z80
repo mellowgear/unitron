@@ -1,0 +1,156 @@
+; sound.z80: the Z80 program of unitron's test cartridge (tests/cart/), in Zilog's assembly
+; language (docs/z80.md). It is ours, written for the tests; it is an example, not a sound driver.
+;
+; Build (the cart test does this):
+;   unitron z80 asm sound.z80 -o sound.bin --equ sound.inc --db sound.db
+; sound.inc gives the main CPU every label below at its main-CPU address (0x7000 + n), sound.db is
+; the image as asm900 db lines; the main CPU's sound.asm includes both.
+;
+; How it runs. The NGPC's sound CPU is a "Z80 compatible CPU core" with 4 KB of RAM that the main
+; CPU can reach (SNK SysPro l.106-108); the main CPU sees that RAM at 0x7000 (SysLib l.39), so Z80
+; address n is main-CPU address 0x7000 + n. The main CPU stops the Z80, copies this image to 0x7000
+; and starts it again; the Z80 then begins at 0000H (Zilog UM0080 p.7). The main CPU sends a
+; command by writing it to its address 0xBC, which the Z80 reads at 8000H, and raising the Z80's
+; NMI. No SNK document gives these addresses (docs/hardware-names.md, "Not named"); they are what
+; the NGPC sound drivers we have do (docs/Z80_PLAN.md 1.3), so they stay numbers here.
+;
+; What it exercises in `unitron z80 dis`:
+; - the three entry points the trace starts from: 0000H (reset), 0038H (the mode 1 interrupt) and
+;   0066H (the NMI) [UM0080 p.7, p.19];
+; - RST 18H and RST 20H, whose targets the trace follows;
+; - a jump table reached only through JP (HL): the trace can't follow it, so without hints the four
+;   handlers stay data; sound.hints names them;
+; - code that rewrites its own operand: SndTick keeps its count in the operand of the LD A,n at
+;   SndTickVal, and SndTone stores into the one at SndToneVal; dis writes the stores as label+1;
+; - references just past the end of the image: SndParams is the end, where the main CPU writes
+;   four parameter bytes after the upload; dis writes them as DriverEnd+k, and the length word
+;   SndSize as DEFW DriverEnd.
+
+CHIP	EQU	4000H		; sound chip writes go here and to 4001H (docs/Z80_PLAN.md 1.3)
+CMDIN	EQU	8000H		; the command byte: the main CPU's 0xBC
+TICKPORT	EQU	0FFH		; the tick count goes out on this port
+
+; ---- reset: 0000H
+	ORG	0000H
+SndReset:	DI
+	LD	SP,1000H	; the top of the 4 KB of RAM
+	IM	1		; maskable interrupts go to 0038H
+	JP	SndInit
+
+; ---- RST 18H: one byte to the sound chip
+	ORG	0018H
+SndOut:	LD	(CHIP),A
+	RET
+
+; ---- RST 20H: the same byte to the second output
+	ORG	0020H
+SndOut2:	LD	(CHIP+1),A
+	RET
+
+; ---- mode 1 interrupt: 0038H. The main CPU's timer 3 drives it (SysPro l.124; 8Bit l.159-163).
+	ORG	0038H
+; The tick count lives in the operand of the LD at SndTickVal, which the handler rewrites.
+SndTick:	PUSH	AF
+SndTickVal:	LD	A,00H
+	INC	A
+	LD	(SndTickVal+1),A
+	OUT	(TICKPORT),A
+	POP	AF
+	EI
+	RETI
+
+; ---- NMI: 0066H. Take the command, answer with its complement (the main CPU can check it).
+	ORG	0066H
+SndNmi:	PUSH	AF
+	LD	A,(CMDIN)
+	LD	(SndCommand),A
+	CPL
+	LD	(CMDIN),A
+	POP	AF
+	RETN
+
+; The image length, for the main CPU's copy loop: SndParams is the address after the last byte.
+SndSize:	DEFW	SndParams
+
+; ---- start-up: clear the command and the parameter block, then wait for commands
+SndInit:	LD	A,9FH		; silence channel 0 (latch format 1 cc 1 vvvv, volume 1111 = off)
+	RST	18H
+	XOR	A
+	LD	(SndCommand),A
+	LD	HL,SndParams	; the parameter block, just past the image
+	LD	B,4
+SndInit1:	LD	(HL),A
+	INC	HL
+	DJNZ	SndInit1
+	EI
+
+; Command byte: 0 = none; otherwise bits 0-1 + 1 are the command (1-4) and bits 2-7 a value.
+SndMain:	LD	A,(SndCommand)
+	OR	A
+	JR	Z,SndMain
+	LD	C,A		; keep the whole byte for the handler
+	DEC	A
+	AND	03H
+	ADD	A,A		; two bytes per table entry
+	LD	E,A
+	LD	D,0
+	LD	HL,SndJumps
+	ADD	HL,DE
+	LD	A,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,A
+	JP	(HL)		; a computed jump: only the hints say where it goes
+
+SndJumps:	DEFW	SndStop
+	DEFW	SndTone
+	DEFW	SndNoise
+	DEFW	SndVolume
+
+; command 1: silence all four channels (volume 1111 = off)
+SndStop:	LD	A,9FH
+	LD	B,4
+SndStop1:	RST	18H
+	RST	20H
+	ADD	A,20H		; next channel
+	DJNZ	SndStop1
+	JR	SndDone
+
+; command 2: a tone; the value bits become the tone's low bits
+SndTone:	LD	A,C
+	RRCA
+	RRCA
+	AND	0FH
+	LD	(SndToneVal+1),A	; rewrite the operand of the next instruction
+SndToneVal:	LD	A,00H
+	OR	80H		; latch, channel 0, tone
+	RST	18H
+	RST	20H
+	JR	SndDone
+
+; command 3: noise, with the setting the main CPU left in SndParams
+SndNoise:	LD	A,(SndParams)
+	AND	07H
+	OR	0E0H		; latch, channel 3, noise
+	RST	18H
+	JR	SndDone
+
+; command 4: the two output volumes, from SndParams+2 and +3
+SndVolume:	LD	HL,(SndParams+2)
+	LD	A,L
+	OR	90H
+	RST	18H
+	LD	A,H
+	OR	90H
+	RST	20H
+
+SndDone:	XOR	A
+	LD	(SndCommand),A
+	JR	SndMain
+
+SndCommand:	DEFB	0
+
+; The end of the image. The main CPU writes four bytes here after the upload; they are not part
+; of the image, so this label is the image's end address.
+SndParams:
+	END

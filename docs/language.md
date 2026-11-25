@@ -115,7 +115,7 @@ sections with the same name are joined in module order and placed in one of two 
 Overlapping sections are error E217, which names both source lines. `--no-link` checks one module
 with unresolved externs.
 
-## Trace hints (`--hints FILE` on `dis`, `roundtrip`, `lift`)
+## Trace hints (`--hints FILE` on `dis`, `roundtrip`)
 
 The trace follows code from the cartridge header's entry point, then from the `--executed`
 addresses (hex, separated by white space) and the hints' `code` lines; then a gap sweep decodes
@@ -129,3 +129,34 @@ data 20018C 200191        ; no swept instruction touches [start, end)
 
 Addresses are hex, with or without `0x`. A bad line is an error with its line number. Without
 `--hints` the output is unchanged.
+
+The sweep covers the whole image that can hold code: from the end of the 0x40-byte header to the
+end of the image (on a 4 MB cartridge, to the end of the first 2 MB chip, the part `dis -o` writes
+as code). Between the first and the last traced instruction it tries every candidate: call
+targets, the bytes after a block ends, and 4-byte values that point there. Outside that range data
+is far more common than code, so it only starts from stronger evidence:
+
+- a call target in code the sweep has accepted, or
+- a pointer in a table: a run of 4-byte values in the image range, at least one of which points
+  at a labelled routine found already, the value itself not inside code.
+
+The bytes after a block ends are not tried there, and a block found there may branch anywhere in
+the image. On the reference ROM, trying every candidate outside the range would add 400 blocks, all in what
+the decomp has as data; with these rules it adds none (the decomp has no code past the traced
+range either).
+
+### Placeholder labels in `dis -o` output
+
+The disassembler can't know names, so it writes placeholders built from the address (6 hex
+digits); real names come from the user's own work (a symbols file in the decomp):
+
+- `start`: the header's entry point; `irq_NAME`: a handler the code installs in a vector;
+  hint `code` lines: the hint's name, or `code_XXXXXX`; `--executed` entries: `dyn_XXXXXX`.
+- `sub_XXXXXX`: a call target; `loc_XXXXXX`: any other jump target.
+- `swp_XXXXXX`: where a block the gap sweep found starts (unless code just before it runs into it).
+
+Every jump or call target that is an instruction start in the written source has a label: one
+with none of the above gets `sub_` (called) or `loc_` (only jumped to), so no branch into the code
+is a bare number and the code can be moved. A target in bytes written as data, or in the middle of
+an instruction, keeps its number (on the reference ROM, 55 calls and jumps from swept code into bytes the
+sweep rejected as code).

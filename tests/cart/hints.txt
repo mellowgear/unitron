@@ -1,0 +1,21 @@
+# hints.txt: trace hints for `unitron dis` on cart.ngp (docs/language.md, "Trace hints").
+# Each code line's name is the label in the cartridge source; the cart test checks that the
+# address still matches the assembler's symbol file.
+#
+# The states, reached only through Main's jp XHL into JumpTable:
+code 2000B5 JumpTable
+code 2000C5 StateTitle
+code 2000D9 StatePlay
+code 200153 StatePause
+code 200174 StateOver
+# called only from the states:
+code 2001B4 AddScore
+code 2005AA SoundCommand
+code 2005B1 SoundSetNoise
+# the effects, reached only through FxTable (call XHL):
+code 200609 FxNone
+code 20060A FxFlash
+code 20061D FxScroll
+# data that the gap sweep would take for code:
+data 200212 200219	; StartLevels (decodes as ld A / ld B / ld C / ret)
+data 200564 200590	; the strings (strings.txt) and the padding before the next code section

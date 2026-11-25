@@ -1,0 +1,18 @@
+/* cart.lcf: the layout of unitron's test cartridge (docs/lcf.md).
+   The image is 32 KB at 0x200000. The header (main.asm, f_head) is absolute at 0x200000-0x20003F
+   (SNK SysPro l.174). The program uses only the first 16 KB: the last 16 KB block of a cassette is
+   reserved for the system program (SysPro l.190). */
+memory
+{
+    ram (RW) : org=0x4000, len=0x2C00     /* the user work RAM, 0x4000-0x6BFF (SysPro l.194) */
+    rom (RX) : org=0x200040, len=0x3FC0   /* after the header, up to the reserved block */
+}
+sections
+{
+    vars   addr=0x4000 : { *(f_vars) }
+    buf    addr=0x4100 : { *(f_buf) }
+    code   addr=0x200040 : { main(f_code) }
+    /* constant data between main's code and the other modules' code */
+    const  addr=addr(code)+sizeof(code) : { *(f_const) }
+    code2  addr=align(16) : { *(f_code) }
+}

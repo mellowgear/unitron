@@ -1,0 +1,120 @@
+; sound.bin: a Z80 program of 222 bytes, written by unitron z80 dis.
+; Zilog syntax (unitron docs/z80.md); unitron z80 asm assembles it back to the same bytes.
+	ORG	0000H
+Reset:
+	DI
+	LD	SP,1000H
+	IM	1
+	JP	L0076
+	DEFS	0FH
+Rst18:
+	LD	(4000H),A
+	RET
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+	DEFB	00H
+Rst20:
+	LD	(4001H),A
+	RET
+	DEFS	14H
+Int38:
+	PUSH	AF
+L0039:
+	LD	A,00H
+	INC	A
+	LD	(L0039+1),A
+	OUT	(0FFH),A
+	POP	AF
+	EI
+	RETI
+	DEFS	21H
+Nmi:
+	PUSH	AF
+	LD	A,(8000H)
+	LD	(L00DD),A
+	CPL
+	LD	(8000H),A
+	POP	AF
+	RETN
+	DEFW	DriverEnd
+L0076:
+	LD	A,9FH
+	RST	18H
+	XOR	A
+	LD	(L00DD),A
+	LD	HL,DriverEnd
+	LD	B,04H
+L0082:
+	LD	(HL),A
+	INC	HL
+	DJNZ	L0082
+	EI
+L0087:
+	LD	A,(L00DD)
+	OR	A
+	JR	Z,L0087
+	LD	C,A
+	DEC	A
+	AND	03H
+	ADD	A,A
+	LD	E,A
+	LD	D,00H
+	LD	HL,009EH
+	ADD	HL,DE
+	LD	A,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,A
+	JP	(HL)
+	DEFB	0A6H
+	DEFB	00H
+	DEFB	0B2H
+	DEFB	00H
+	DEFB	0C2H
+	DEFB	00H
+	DEFB	0CCH
+	DEFB	00H
+SndStop:
+	LD	A,9FH
+	LD	B,04H
+L00AA:
+	RST	18H
+	RST	20H
+	ADD	A,20H
+	DJNZ	L00AA
+	JR	L00D7
+SndTone:
+	LD	A,C
+	RRCA
+	RRCA
+	AND	0FH
+	LD	(L00BA+1),A
+L00BA:
+	LD	A,00H
+	OR	80H
+	RST	18H
+	RST	20H
+	JR	L00D7
+SndNoise:
+	LD	A,(DriverEnd)
+	AND	07H
+	OR	0E0H
+	RST	18H
+	JR	L00D7
+SndVolume:
+	LD	HL,(DriverEnd+2)
+	LD	A,L
+	OR	90H
+	RST	18H
+	LD	A,H
+	OR	90H
+	RST	20H
+L00D7:
+	XOR	A
+	LD	(L00DD),A
+	JR	L0087
+L00DD:
+	DEFB	00H
+DriverEnd:
+	END

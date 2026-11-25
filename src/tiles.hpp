@@ -1,5 +1,5 @@
 // K2GE 2bpp tiles and palettes <-> indexed PNG, plain sheets or laid out by a tile map.
-// Port of legacy/python/unitron/gfx/tiles.py (pixel semantics as Pillow sees them).
+// Port of the original Python unitron/gfx/tiles.py (removed; in git history before this commit) (pixel semantics as Pillow sees them).
 #pragma once
 #include <array>
 #include <cstdint>

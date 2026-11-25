@@ -1,0 +1,10 @@
+; strings.txt: the cartridge's strings (unitron text charmap.txt strings.txt -o strings.db).
+TitleText:
+    text "UNITRON TEST CART"
+    done
+PauseText:
+    text "PAUSE"
+    done
+OverText:
+    text "GAME OVER"
+    done

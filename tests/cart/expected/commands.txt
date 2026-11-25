@@ -1,0 +1,468 @@
+$ z80 asm sound.z80 -o sound.bin --equ sound.inc --db sound.db --sym sound.sym
+exit 0
+stdout
+wrote sound.bin: 0xDE bytes at Z80 0x0000
+stderr
+$ bin2db tiles.bin -o tiles.db
+exit 0
+stdout
+stderr
+$ text charmap.txt strings.txt -o strings.db
+exit 0
+stdout
+stderr
+$ asm main.asm sound.asm gfx.asm --lcf cart.lcf -I DATA -o cart.ngp --sym cart.sym --origin 0x200000 --size 0x8000
+exit 0
+stdout
+wrote cart.ngp: 0x8000 bytes at 0x200000
+stderr
+hints hints.txt: 11 code lines, 0 stale
+hints sound.hints: 4 code lines, 0 stale
+$ dis cart.ngp
+exit 0
+stdout
+200040  47 00 6c 00 00           ld XSP,0x6C00
+200045  08 6f 4e                 ldb (0x6F),0x4E
+200048  1e 86 01                 calr 0x2001D1
+20004B  e8 a8                    ld XWA,0
+20004D  e7 00 98                 ld XWA0,XWA
+200050  e7 10 98                 ld XWA1,XWA
+200053  e7 20 98                 ld XWA2,XWA
+200056  43 f1 01 20 00           ld XHL,0x2001F1
+20005B  f1 cc 6f 63              ld (0x6FCC),XHL
+20005F  40 06 02 20 00           ld XWA,0x200206
+200064  f1 b8 6f 60              ld (0x6FB8),XWA
+200068  06 00                    ei 0
+20006A  1d 90 05 20              call 0x200590
+20006E  1d b6 05 20              call 0x2005B6
+200072  44 64 05 20 00           ld XIX,0x200564
+200077  45 0a 92 00 00           ld XIY,0x920A
+20007C  1d 3d 06 20              call 0x20063D
+200080  f1 02 40 00 00           ldb (0x4002),0
+200085  c1 01 40 21              ld A,(0x4001)
+200089  c1 00 40 f1              cp A,(0x4000)
+20008D  66 fa                    jr Z,0x200089
+20008F  c1 00 40 21              ld A,(0x4000)
+200093  f1 01 40 41              ld (0x4001),A
+200097  08 6f 4e                 ldb (0x6F),0x4E
+20009A  1e 02 01                 calr 0x20019F
+20009D  c1 02 40 21              ld A,(0x4002)
+2000A1  c9 cc 03                 and A,3
+2000A4  d8 12                    extz WA
+2000A6  d8 ee 02                 sll 2,WA
+2000A9  43 b5 00 20 00           ld XHL,0x2000B5
+2000AE  f3 07 ec e0 33           lda XHL,XHL+WA
+2000B3  b3 d8                    jp XHL
+2000B5  1b c5 00 20              jp 0x2000C5
+2000B9  1b d9 00 20              jp 0x2000D9
+2000BD  1b 53 01 20              jp 0x200153
+2000C1  1b 74 01 20              jp 0x200174
+2000C5  f1 04 40 cc              bit 4,(0x4004)
+2000C9  66 0b                    jr Z,0x2000D6
+2000CB  f1 02 40 00 01           ldb (0x4002),1
+2000D0  21 06                    ld A,6
+2000D2  1d aa 05 20              call 0x2005AA
+2000D6  78 ac ff                 jrl 0x200085
+2000D9  c1 03 40 21              ld A,(0x4003)
+2000DD  c9 33 02                 bit 2,A
+2000E0  66 0a                    jr Z,0x2000EC
+2000E2  d1 06 40 23              ld HL,(0x4006)
+2000E6  db 69                    dec 1,HL
+2000E8  f1 06 40 53              ld (0x4006),HL
+2000EC  c9 33 03                 bit 3,A
+2000EF  66 0d                    jr Z,0x2000FE
+2000F1  d1 06 40 23              ld HL,(0x4006)
+2000F5  db 61                    inc 1,HL
+2000F7  f1 06 40 53              ld (0x4006),HL
+2000FB  1e b6 00                 calr 0x2001B4
+2000FE  f1 04 40 cd              bit 5,(0x4004)
+200102  66 16                    jr Z,0x20011A
+200104  c1 05 40 21              ld A,(0x4005)
+200108  c9 61                    inc 1,A
+20010A  c9 db                    cp A,3
+20010C  67 02                    jr C,0x200110
+20010E  21 00                    ld A,0
+200110  f1 05 40 41              ld (0x4005),A
+200114  14                       push A
+200115  1d b1 05 20              call 0x2005B1
+stderr
+$ dis cart.ngp --start 0x200580 --count 40
+exit 0
+stdout
+200580  00                       nop
+200581  0f 16 05                 retd 1302
+200584  12                       ccf
+200585  ff                       swi 7
+200586  ff                       swi 7
+200587  ff                       swi 7
+200588  ff                       swi 7
+200589  ff                       swi 7
+20058A  ff                       swi 7
+20058B  ff                       swi 7
+20058C  ff                       swi 7
+20058D  ff                       swi 7
+20058E  ff                       swi 7
+20058F  ff                       swi 7
+200590  0a b8 aa aa              ldw (0xB8),0xAAAA
+200594  42 00 70 00 00           ld XDE,0x7000
+200599  43 25 02 20 00           ld XHL,0x200225
+20059E  d2 99 02 20 21           ld BC,(0x200299)
+2005A3  83 11                    ldir (XDE+),(XHL+)
+2005A5  0a b8 55 55              ldw (0xB8),0x5555
+2005A9  0e                       ret
+2005AA  f0 bc 41                 ld (0xBC),A
+2005AD  08 ba 01                 ldb (0xBA),1
+2005B0  0e                       ret
+2005B1  f1 de 70 41              ld (0x70DE),A
+2005B5  0e                       ret
+2005B6  f1 02 80 00 00           ldb (0x8002),0
+2005BB  f1 03 80 00 00           ldb (0x8003),0
+2005C0  f1 04 80 00 a0           ldb (0x8004),0xA0
+2005C5  f1 05 80 00 98           ldb (0x8005),0x98
+2005CA  42 80 82 00 00           ld XDE,0x8280
+2005CF  43 0c 03 20 00           ld XHL,0x20030C
+2005D4  d9 ac                    ld BC,4
+2005D6  93 11                    ldirw (XDE+),(XHL+)
+2005D8  42 e0 83 00 00           ld XDE,0x83E0
+2005DD  43 0c 03 20 00           ld XHL,0x20030C
+2005E2  d9 a9                    ld BC,1
+2005E4  93 11                    ldirw (XDE+),(XHL+)
+2005E6  42 00 a0 00 00           ld XDE,0xA000
+2005EB  43 14 03 20 00           ld XHL,0x200314
+stderr
+$ dis cart.ngp -o src
+exit 0
+stdout
+wrote src/main.asm: 209 instructions (0 as db), 32098 data bytes, 9 sections
+stderr
+$ asm src/main.asm -o src.ngp --origin 0x200000 --size 0x8000
+exit 0
+stdout
+wrote src.ngp: 0x8000 bytes at 0x200000
+stderr
+compare cart.ngp src.ngp: byte-identical
+src/main.asm: 0 branches to a bare number
+$ dis cart.ngp -o src_hints --hints hints.txt
+exit 0
+stdout
+wrote src_hints/main.asm: 199 instructions (0 as db), 32114 data bytes, 5 sections
+stderr
+$ asm src_hints/main.asm -o src_hints.ngp --origin 0x200000 --size 0x8000
+exit 0
+stdout
+wrote src_hints.ngp: 0x8000 bytes at 0x200000
+stderr
+compare cart.ngp src_hints.ngp: byte-identical
+src_hints/main.asm: 0 branches to a bare number
+$ dis cart.ngp -o src_nosweep --no-sweep
+exit 0
+stdout
+wrote src_nosweep/main.asm: 99 instructions (0 as db), 32441 data bytes, 13 sections
+stderr
+$ asm src_nosweep/main.asm -o src_nosweep.ngp --origin 0x200000 --size 0x8000
+exit 0
+stdout
+wrote src_nosweep.ngp: 0x8000 bytes at 0x200000
+stderr
+compare cart.ngp src_nosweep.ngp: byte-identical
+src_nosweep/main.asm: 0 branches to a bare number
+$ roundtrip cart.ngp
+exit 0
+stdout
+OK: 209 instructions (0 as db), 32098 data bytes; sha1 8ef4e5c56bcf3fc1dab680bd8eb81f905bb272f4
+stderr
+$ roundtrip cart.ngp --hints hints.txt
+exit 0
+stdout
+OK: 199 instructions (0 as db), 32114 data bytes; sha1 8ef4e5c56bcf3fc1dab680bd8eb81f905bb272f4
+stderr
+$ z80 dis sound.bin
+exit 0
+stdout
+Reset:
+0000  F3             DI
+0001  31 00 10       LD SP,1000H
+0004  ED 56          IM 1
+0006  C3 76 00       JP L0076
+0009  00 00 00 00 .. DEFS 0FH
+Rst18:
+0018  32 00 40       LD (4000H),A
+001B  C9             RET
+001C  00             DEFB 00H
+001D  00             DEFB 00H
+001E  00             DEFB 00H
+001F  00             DEFB 00H
+0020  32             DEFB 32H
+0021  01             DEFB 01H
+0022  40             DEFB 40H
+0023  C9             DEFB 0C9H
+0024  00 00 00 00 .. DEFS 14H
+Int38:
+0038  F5             PUSH AF
+L0039:
+0039  3E 00          LD A,00H
+003B  3C             INC A
+003C  32 3A 00       LD (L0039+1),A
+003F  D3 FF          OUT (0FFH),A
+0041  F1             POP AF
+0042  FB             EI
+0043  ED 4D          RETI
+0045  00 00 00 00 .. DEFS 21H
+Nmi:
+0066  F5             PUSH AF
+0067  3A 00 80       LD A,(8000H)
+006A  32 DD 00       LD (L00DD),A
+006D  2F             CPL
+006E  32 00 80       LD (8000H),A
+0071  F1             POP AF
+0072  ED 45          RETN
+0074  DE 00          DEFW DriverEnd
+L0076:
+0076  3E 9F          LD A,9FH
+0078  DF             RST 18H
+0079  AF             XOR A
+007A  32 DD 00       LD (L00DD),A
+007D  21 DE 00       LD HL,DriverEnd
+0080  06 04          LD B,04H
+L0082:
+0082  77             LD (HL),A
+0083  23             INC HL
+0084  10 FC          DJNZ L0082
+0086  FB             EI
+L0087:
+0087  3A DD 00       LD A,(L00DD)
+008A  B7             OR A
+008B  28 FA          JR Z,L0087
+008D  4F             LD C,A
+008E  3D             DEC A
+008F  E6 03          AND 03H
+0091  87             ADD A,A
+0092  5F             LD E,A
+0093  16 00          LD D,00H
+0095  21 9E 00       LD HL,009EH
+0098  19             ADD HL,DE
+0099  7E             LD A,(HL)
+009A  23             INC HL
+009B  66             LD H,(HL)
+009C  6F             LD L,A
+009D  E9             JP (HL)
+009E  A6             DEFB 0A6H
+009F  00             DEFB 00H
+00A0  B2             DEFB 0B2H
+00A1  00             DEFB 00H
+00A2  C2             DEFB 0C2H
+00A3  00             DEFB 00H
+00A4  CC             DEFB 0CCH
+00A5  00             DEFB 00H
+00A6  3E             DEFB 3EH
+00A7  9F             DEFB 9FH
+00A8  06             DEFB 06H
+00A9  04             DEFB 04H
+00AA  DF             DEFB 0DFH
+00AB  E7             DEFB 0E7H
+00AC  C6             DEFB 0C6H
+00AD  20             DEFB 20H
+00AE  10             DEFB 10H
+00AF  FA             DEFB 0FAH
+00B0  18             DEFB 18H
+00B1  25             DEFB 25H
+00B2  79             DEFB 79H
+00B3  0F             DEFB 0FH
+00B4  0F             DEFB 0FH
+00B5  E6             DEFB 0E6H
+00B6  0F             DEFB 0FH
+00B7  32             DEFB 32H
+00B8  BB             DEFB 0BBH
+00B9  00             DEFB 00H
+00BA  3E             DEFB 3EH
+00BB  00             DEFB 00H
+00BC  F6             DEFB 0F6H
+00BD  80             DEFB 80H
+00BE  DF             DEFB 0DFH
+00BF  E7             DEFB 0E7H
+00C0  18             DEFB 18H
+00C1  15             DEFB 15H
+00C2  3A             DEFB 3AH
+00C3  DE 00          DEFW DriverEnd
+00C5  E6             DEFB 0E6H
+00C6  07             DEFB 07H
+00C7  F6             DEFB 0F6H
+00C8  E0             DEFB 0E0H
+00C9  DF             DEFB 0DFH
+00CA  18             DEFB 18H
+00CB  0B             DEFB 0BH
+00CC  2A             DEFB 2AH
+00CD  E0             DEFB 0E0H
+00CE  00             DEFB 00H
+00CF  7D             DEFB 7DH
+00D0  F6             DEFB 0F6H
+00D1  90             DEFB 90H
+00D2  DF             DEFB 0DFH
+00D3  7C             DEFB 7CH
+00D4  F6             DEFB 0F6H
+00D5  90             DEFB 90H
+00D6  E7             DEFB 0E7H
+00D7  AF             DEFB 0AFH
+00D8  32             DEFB 32H
+00D9  DD             DEFB 0DDH
+00DA  00             DEFB 00H
+00DB  18             DEFB 18H
+00DC  AA             DEFB 0AAH
+L00DD:
+00DD  00             DEFB 00H
+DriverEnd:
+00DE                 ; the end of the image
+stderr
+$ z80 dis sound.bin --hints sound.hints
+exit 0
+stdout
+Reset:
+0000  F3             DI
+0001  31 00 10       LD SP,1000H
+0004  ED 56          IM 1
+0006  C3 76 00       JP L0076
+0009  00 00 00 00 .. DEFS 0FH
+Rst18:
+0018  32 00 40       LD (4000H),A
+001B  C9             RET
+001C  00             DEFB 00H
+001D  00             DEFB 00H
+001E  00             DEFB 00H
+001F  00             DEFB 00H
+Rst20:
+0020  32 01 40       LD (4001H),A
+0023  C9             RET
+0024  00 00 00 00 .. DEFS 14H
+Int38:
+0038  F5             PUSH AF
+L0039:
+0039  3E 00          LD A,00H
+003B  3C             INC A
+003C  32 3A 00       LD (L0039+1),A
+003F  D3 FF          OUT (0FFH),A
+0041  F1             POP AF
+0042  FB             EI
+0043  ED 4D          RETI
+0045  00 00 00 00 .. DEFS 21H
+Nmi:
+0066  F5             PUSH AF
+0067  3A 00 80       LD A,(8000H)
+006A  32 DD 00       LD (L00DD),A
+006D  2F             CPL
+006E  32 00 80       LD (8000H),A
+0071  F1             POP AF
+0072  ED 45          RETN
+0074  DE 00          DEFW DriverEnd
+L0076:
+0076  3E 9F          LD A,9FH
+0078  DF             RST 18H
+0079  AF             XOR A
+007A  32 DD 00       LD (L00DD),A
+007D  21 DE 00       LD HL,DriverEnd
+0080  06 04          LD B,04H
+L0082:
+0082  77             LD (HL),A
+0083  23             INC HL
+0084  10 FC          DJNZ L0082
+0086  FB             EI
+L0087:
+0087  3A DD 00       LD A,(L00DD)
+008A  B7             OR A
+008B  28 FA          JR Z,L0087
+008D  4F             LD C,A
+008E  3D             DEC A
+008F  E6 03          AND 03H
+0091  87             ADD A,A
+0092  5F             LD E,A
+0093  16 00          LD D,00H
+0095  21 9E 00       LD HL,009EH
+0098  19             ADD HL,DE
+0099  7E             LD A,(HL)
+009A  23             INC HL
+009B  66             LD H,(HL)
+009C  6F             LD L,A
+009D  E9             JP (HL)
+009E  A6             DEFB 0A6H
+009F  00             DEFB 00H
+00A0  B2             DEFB 0B2H
+00A1  00             DEFB 00H
+00A2  C2             DEFB 0C2H
+00A3  00             DEFB 00H
+00A4  CC             DEFB 0CCH
+00A5  00             DEFB 00H
+SndStop:
+00A6  3E 9F          LD A,9FH
+00A8  06 04          LD B,04H
+L00AA:
+00AA  DF             RST 18H
+00AB  E7             RST 20H
+00AC  C6 20          ADD A,20H
+00AE  10 FA          DJNZ L00AA
+00B0  18 25          JR L00D7
+SndTone:
+00B2  79             LD A,C
+00B3  0F             RRCA
+00B4  0F             RRCA
+00B5  E6 0F          AND 0FH
+00B7  32 BB 00       LD (L00BA+1),A
+L00BA:
+00BA  3E 00          LD A,00H
+00BC  F6 80          OR 80H
+00BE  DF             RST 18H
+00BF  E7             RST 20H
+00C0  18 15          JR L00D7
+SndNoise:
+00C2  3A DE 00       LD A,(DriverEnd)
+00C5  E6 07          AND 07H
+00C7  F6 E0          OR 0E0H
+00C9  DF             RST 18H
+00CA  18 0B          JR L00D7
+SndVolume:
+00CC  2A E0 00       LD HL,(DriverEnd+2)
+00CF  7D             LD A,L
+00D0  F6 90          OR 90H
+00D2  DF             RST 18H
+00D3  7C             LD A,H
+00D4  F6 90          OR 90H
+00D6  E7             RST 20H
+L00D7:
+00D7  AF             XOR A
+00D8  32 DD 00       LD (L00DD),A
+00DB  18 AA          JR L0087
+L00DD:
+00DD  00             DEFB 00H
+DriverEnd:
+00DE                 ; the end of the image
+stderr
+$ z80 dis sound.bin -o zsrc
+exit 0
+stdout
+wrote zsrc/main.z80: 47 instructions (0 bytes as DEFB), 142 data bytes
+stderr
+$ z80 asm zsrc/main.z80 -o zsrc.bin
+exit 0
+stdout
+wrote zsrc.bin: 0xDE bytes at Z80 0x0000
+stderr
+compare sound.bin zsrc.bin: byte-identical
+$ z80 dis sound.bin -o zsrc_hints --hints sound.hints
+exit 0
+stdout
+wrote zsrc_hints/main.z80: 81 instructions (0 bytes as DEFB), 83 data bytes
+stderr
+$ z80 asm zsrc_hints/main.z80 -o zsrc_hints.bin
+exit 0
+stdout
+wrote zsrc_hints.bin: 0xDE bytes at Z80 0x0000
+stderr
+compare sound.bin zsrc_hints.bin: byte-identical
+$ z80 roundtrip sound.bin
+exit 0
+stdout
+OK: 47 instructions (0 bytes as DEFB), 142 data bytes; sha1 02bd93284dbdc8726a63e77b55fb94857ae3ed00
+stderr
+$ z80 roundtrip sound.bin --hints sound.hints
+exit 0
+stdout
+OK: 81 instructions (0 bytes as DEFB), 83 data bytes; sha1 02bd93284dbdc8726a63e77b55fb94857ae3ed00
+stderr

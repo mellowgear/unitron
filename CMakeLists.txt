@@ -45,7 +45,7 @@ list(REMOVE_ITEM UNITRON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 set(EMBEDDED ${CMAKE_CURRENT_BINARY_DIR}/embedded.cpp)
 add_custom_command(OUTPUT ${EMBEDDED}
   COMMAND ${CMAKE_COMMAND} -DOUT=${EMBEDDED} -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/embed.cmake
-  DEPENDS data/hwnames.tsv data/ngpc_rt.h cmake/embed.cmake
+  DEPENDS data/hwnames.tsv cmake/embed.cmake
   COMMENT "Embedding data files")
 add_library(unitron_core STATIC ${UNITRON_SOURCES} ${EMBEDDED})
 target_include_directories(unitron_core PUBLIC src)
@@ -78,4 +78,5 @@ if(BUILD_TESTING)
   add_test(NAME z80opspace COMMAND unitron_tests z80opspace ${V}/vectors)
   add_test(NAME z80rom COMMAND unitron_tests z80rom ${V}/vectors $<TARGET_FILE:unitron>)
   add_test(NAME z80shift COMMAND unitron_tests z80shift .)
+  add_test(NAME cart COMMAND unitron_tests cart ${V}/cart $<TARGET_FILE:unitron>)
 endif()

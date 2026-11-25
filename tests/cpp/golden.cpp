@@ -11,6 +11,7 @@
 #include "hash.hpp"
 #include "hwnames.hpp"
 #include "png.hpp"
+#include "testutil.hpp"
 #include "util.hpp"
 
 using namespace unitron;
@@ -175,7 +176,10 @@ std::map<std::string, Bytes> snapshot(const fs::path& d) {
     return out;
 }
 
-std::string quote(const std::string& s) {
+}  // namespace
+
+// run_in and fresh_dir are shared with the cart test (testutil.hpp)
+static std::string quote(const std::string& s) {
 #ifdef _WIN32
     return "\"" + s + "\"";
 #else
@@ -185,12 +189,7 @@ std::string quote(const std::string& s) {
 #endif
 }
 
-struct Run {
-    int code;
-    Bytes out, err;
-};
-
-Run run_in(const fs::path& dir, const std::string& exe, const std::vector<std::string>& args, const fs::path& scratch) {
+Run unitron::run_in(const fs::path& dir, const std::string& exe, const std::vector<std::string>& args, const fs::path& scratch) {
     fs::path so = scratch / "stdout", se = scratch / "stderr";
     std::string cmd;
 #ifdef _WIN32
@@ -215,13 +214,15 @@ Run run_in(const fs::path& dir, const std::string& exe, const std::vector<std::s
     return r;
 }
 
-fs::path fresh_dir(const std::string& tag) {
+fs::path unitron::fresh_dir(const std::string& tag) {
     std::random_device rd;
     fs::path p = fs::temp_directory_path() / ("unitron_test_" + tag + "_" + std::to_string(rd()));
     fs::remove_all(p);
     fs::create_directories(p);
     return p;
 }
+
+namespace {
 
 // expected.txt -> name -> block text
 std::map<std::string, std::string> expected_blocks(const std::string& text) {
@@ -378,13 +379,12 @@ int test_rom(const std::string& vdir, const std::string& exe0) {
                 {"dis_listing", {"dis", "rom.ngp", "--count", "4000"}},
                 {"dis_o", {"dis", "rom.ngp", "-o", "src"}},
                 {"dis_nosweep", {"dis", "rom.ngp", "-o", "src_ns", "--no-sweep"}},
-                {"roundtrip", {"roundtrip", "rom.ngp"}},
-                {"lift", {"lift", "rom.ngp", "-o", "lifted"}}};
+                {"roundtrip", {"roundtrip", "rom.ngp"}}};
             for (auto& c : cmds) {
                 Run r = run_in(d, exe, c.second, scratch);
                 check(c.first, "exit " + dec(r.code) + " stdout " + sha256_hex(r.out) + " stderr " + sha256_hex(r.err));
             }
-            for (auto f : {"src/main.asm", "src/hw.inc", "src_ns/main.asm", "lifted/game.c", "lifted/ngpc_regs.h", "lifted/ngpc_rt.h"}) {
+            for (auto f : {"src/main.asm", "src/hw.inc", "src_ns/main.asm"}) {
                 Bytes b;
                 read_bytes_opt((d / f).u8string(), b);
                 check(std::string("file ") + f, sha256_hex(b));

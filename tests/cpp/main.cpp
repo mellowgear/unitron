@@ -1,4 +1,4 @@
-// unitron C++ tests against the vectors frozen from the Python reference (legacy/python/tools/freeze_vectors.py).
+// unitron C++ tests against the vectors frozen from the Python reference (tools/freeze_vectors.py, removed; in git history).
 //   unitron_tests opspace VECTOR_DIR
 //   unitron_tests lines VECTOR_DIR
 //   unitron_tests golden GOLDEN_DIR UNITRON_EXE
@@ -7,6 +7,7 @@
 //   unitron_tests z80opspace VECTOR_DIR
 //   unitron_tests z80rom VECTOR_DIR UNITRON_EXE   (the reference ROM and/or the second ROM; skipped when absent)
 //   unitron_tests z80shift
+//   unitron_tests cart CART_DIR UNITRON_EXE      (the test cartridge, tests/cart/; needs no ROM)
 // Append --write to rewrite the expected outputs after a deliberate behavior change.
 #include <cstdio>
 #include <cstdlib>
@@ -22,6 +23,7 @@ int test_lcf(const std::string& dir);
 int test_z80opspace(const std::string& dir, bool write);
 int test_z80rom(const std::string& dir, const std::string& exe, bool write);
 int test_z80shift();
+int test_cart(const std::string& dir, const std::string& exe, bool write);
 
 int main(int argc, char** argv) {
     if (argc < 3) {
@@ -41,6 +43,7 @@ int main(int argc, char** argv) {
         if (what == "z80opspace") return test_z80opspace(dir, write);
         if (what == "z80rom") return test_z80rom(dir, exe, write);
         if (what == "z80shift") return test_z80shift();
+        if (what == "cart") return test_cart(dir, exe, write);
     } catch (std::exception& e) {
         std::cerr << "test error: " << e.what() << "\n";
         return 1;

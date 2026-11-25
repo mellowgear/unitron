@@ -156,17 +156,30 @@ bool component(const Rom& rom, int64_t seed, const InsnMap& insns, int64_t lo, i
 
 int64_t sweep(const Rom& rom, InsnMap& insns, Labels& labels, int rounds, const Hints* hints) {
     if (insns.empty()) return 0;
+    // [lo, hi): from the first to the last traced instruction. Inside it the sweep works as it
+    // always has. [wlo, whi): the whole image that can hold code (after the 0x40-byte header, on
+    // the first 2 MB chip, which is what write_source writes as code). Outside [lo, hi) only
+    // stronger evidence starts a component (see `anchored` and the seed loop below).
     int64_t lo = INT64_MAX, hi = INT64_MIN;
     for (auto& ai : insns) {
         lo = std::min(lo, ai.first);
         hi = std::max(hi, ai.first + ai.second.size);
     }
-    size_t n0 = insns.size();
     const Bytes& d = rom.data;
+    int64_t wlo = std::min(lo, CART_BASE + std::min<int64_t>(0x40, int64_t(d.size())));
+    int64_t whi = std::max(hi, CART_BASE + std::min<int64_t>(int64_t(d.size()), 0x200000));
+    size_t n0 = insns.size();
     std::unordered_set<int64_t> ptrs;
+    std::unordered_map<int64_t, std::vector<int64_t>> far_ptrs;   // value outside [lo, hi) -> its ROM offsets
+    auto word_at = [&](int64_t off) -> int64_t {
+        if (off < 0 || off + 3 >= int64_t(d.size())) return -1;
+        size_t o = size_t(off);
+        return int64_t(d[o]) | int64_t(d[o + 1]) << 8 | int64_t(d[o + 2]) << 16 | int64_t(d[o + 3]) << 24;
+    };
     for (size_t off = 0; off + 3 < d.size(); off++) {
-        int64_t v = int64_t(d[off]) | int64_t(d[off + 1]) << 8 | int64_t(d[off + 2]) << 16 | int64_t(d[off + 3]) << 24;
+        int64_t v = word_at(int64_t(off));
         if (lo <= v && v < hi) ptrs.insert(v);
+        else if (wlo <= v && v < whi) far_ptrs[v].push_back(int64_t(off));
     }
     std::unordered_map<int64_t, int64_t> weak;               // addr -> component id (pointer-seeded code)
     std::map<int64_t, std::vector<int64_t>> comps;           // component id -> addrs
@@ -210,6 +223,24 @@ int64_t sweep(const Rom& rom, InsnMap& insns, Labels& labels, int rounds, const 
         }
     };
 
+    // A pointer outside [lo, hi) is a seed only when it sits in a table: a run of 4-byte words, all
+    // in [wlo, whi), at least one of which is the address of a labelled instruction the trace or the
+    // sweep has already found. The word itself must not be inside known code.
+    auto anchored = [&](int64_t v) {
+        auto fp = far_ptrs.find(v);
+        if (fp == far_ptrs.end()) return false;
+        for (int64_t off : fp->second) {
+            if (cov.count(off < 0x200000 ? CART_BASE + off : CART_HI_BASE + off - 0x200000)) continue;
+            for (int dir : {-4, 4})
+                for (int64_t o = off + dir;; o += dir) {
+                    int64_t w = word_at(o);
+                    if (!(wlo <= w && w < whi)) break;
+                    if (insns.has(w) && labels.count(w)) return true;
+                }
+        }
+        return false;
+    };
+
     for (int phase = 0; phase < 2; phase++) {
         for (int round = 0; round < rounds; round++) {
             std::unordered_map<int64_t, int64_t> callers;
@@ -221,8 +252,15 @@ int64_t sweep(const Rom& rom, InsnMap& insns, Labels& labels, int rounds, const 
             std::set<int64_t> pool;
             for (auto& c : callers) pool.insert(c.first);
             for (auto h : heads) pool.insert(h);
-            if (phase)
+            std::unordered_set<int64_t> far;   // anchored pointers outside [lo, hi)
+            if (phase) {
                 for (auto p : ptrs) pool.insert(p);
+                for (auto& fp : far_ptrs)
+                    if (!insns.has(fp.first) && anchored(fp.first)) {
+                        far.insert(fp.first);
+                        pool.insert(fp.first);
+                    }
+            }
             std::vector<int64_t> seeds(pool.begin(), pool.end());
             auto key = [&](int64_t x) {
                 int cls = callers.count(x) ? 0 : heads.count(x) ? 1 : 2;
@@ -232,14 +270,19 @@ int64_t sweep(const Rom& rom, InsnMap& insns, Labels& labels, int rounds, const 
             std::sort(seeds.begin(), seeds.end(), [&](int64_t a, int64_t b) { return key(a) < key(b); });
             int accepted = 0;
             for (int64_t sa : seeds) {
-                if (!(lo <= sa && sa < hi) || insns.has(sa)) continue;
+                bool inside = lo <= sa && sa < hi;
+                // outside [lo, hi): only call targets and anchored pointers, never block heads
+                if (!(inside || (wlo <= sa && sa < whi && rom.contains(sa) && (callers.count(sa) || far.count(sa))))) continue;
+                if (insns.has(sa)) continue;
+                // a component seeded inside [lo, hi) must stay inside it, as before
+                int64_t clo = inside ? lo : wlo, chi = inside ? hi : whi;
                 if (hints && hints->is_data(sa)) continue;
                 if (rom(sa) == 0xFF || (rom(sa) == 0 && rom(sa + 1) == 0)) continue;
-                bool strong = callers.count(sa) || heads.count(sa);
+                bool strong = callers.count(sa) || (inside && heads.count(sa));
                 auto cs = cov.find(sa);
                 if (cs != cov.end() && !(strong && weak.count(cs->second))) continue;
                 Comp comp;
-                bool ok = component(rom, sa, insns, lo, hi, comp, hints);
+                bool ok = component(rom, sa, insns, clo, chi, comp, hints);
                 if (!ok && strong) {
                     std::set<int64_t> hit;
                     for (int64_t b = sa; b < sa + 16; b++) {
@@ -254,7 +297,7 @@ int64_t sweep(const Rom& rom, InsnMap& insns, Labels& labels, int rounds, const 
                             saved.push_back({c, body});
                         }
                         for (int64_t c : hit) evict(c);
-                        ok = component(rom, sa, insns, lo, hi, comp, hints);
+                        ok = component(rom, sa, insns, clo, chi, comp, hints);
                         if (!ok) {
                             for (auto& cb : saved) place(cb.second, cb.first, true);
                             continue;

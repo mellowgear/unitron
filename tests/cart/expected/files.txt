@@ -1,0 +1,9 @@
+z80shift sound.bin: NOP at 0039H (before L0039), 8 operands and 2 data words moved
+cart.ngp size 0x8000 sha256 a595cfffd920dfbdd7374b77eff93d26faded40b9a3529c916564d3a8bd07ab5
+cart.sym size 0xFC1 sha256 4283d8aa6f1cea78cfd9316e86643670e87bec213909e2ad2eb2f5dd4cae6271
+sound.bin size 0xDE sha256 6c317f5af203c0ebd6cd67db117b54d469dd3eb522b6458e233573533c6021f0
+sound.sym size 0x137 sha256 eb444a2a514bfbb0fdcfd6f5883f308106a05a013a8dd986ce3e892f4ad5d5f3
+sound.inc size 0x218 sha256 76d602cf3a917c27b1876e4c34dbe8ea5c4773faed264278b5eca1e61ffa67f8
+sound.db size 0x4DC sha256 72503319d94e06bb2ea9a790a24da96e2aee5ad4bd729eccc0a8096e9230f5dd
+tiles.db size 0xC71 sha256 a8699e29cc0fb87b6509923f30c5edfa774acb91057d011f07f77d765ac85384
+strings.db size 0x1E0 sha256 48bbf45c1b35d8197a8b1e040d71a6852689160e94291cdd37dfb574a40180fd

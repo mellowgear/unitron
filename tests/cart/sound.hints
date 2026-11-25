@@ -1,0 +1,6 @@
+# sound.hints: trace hints for `unitron z80 dis` on sound.bin (docs/z80.md, "Hints").
+# The four command handlers are reached only through SndMain's JP (HL), via the table SndJumps.
+code 00A6 SndStop
+code 00B2 SndTone
+code 00C2 SndNoise
+code 00CC SndVolume

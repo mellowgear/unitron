@@ -1,4 +1,4 @@
-// Binary data -> asm900 `db` lines (generated data for `$include`). Port of legacy/python/unitron/data/bin2db.py.
+// Binary data -> asm900 `db` lines (generated data for `$include`). Port of the original Python unitron/data/bin2db.py. (removed; in git history before this commit)
 #pragma once
 #include <cstdint>
 #include <string>

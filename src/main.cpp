@@ -1,4 +1,4 @@
-// unitron command line: asm, mac, dis, roundtrip, lz, gfx, bin2db, text, lift, z80 (dis, asm, roundtrip).
+// unitron command line: asm, mac, dis, roundtrip, gfx, bin2db, text, z80 (dis, asm, roundtrip).
 // Same commands, options, messages and exit codes as the Python version it replaces.
 #include <cstdio>
 #include <filesystem>
@@ -17,11 +17,6 @@
 #include "bin2db.hpp"
 #include "charmap.hpp"
 #include "hash.hpp"
-#if __has_include("lift.hpp") && !defined(UNITRON_NO_LIFT)
-#include "lift.hpp"
-#define HAVE_LIFT 1
-#endif
-#include "lzss.hpp"
 #include "mpp.hpp"
 #include "tiles.hpp"
 #include "util.hpp"
@@ -437,24 +432,6 @@ int cmd_roundtrip(const Parser&, const Args& a) {
     return ok ? 0 : 1;
 }
 
-int cmd_lz(const Parser& p, const Args& a) {
-    Bytes data = read_bytes(a.get("input"));
-    Bytes out;
-    if (a.get("mode") == "d") {
-        if (!a.has("length")) {
-            std::cerr << "error: lz d needs --length\n";
-            return 1;
-        }
-        int64_t used = 0;
-        out = lzss::decompress(data, num_arg(p, a, "length", "--length", 0), num_arg(p, a, "offset", "--offset", 0), &used);
-        std::cerr << used << " input bytes -> " << out.size() << " bytes\n";
-    } else {
-        out = lzss::compress_okumura(data, !a.has("no_clamp"));
-    }
-    write_bytes(a.get("output"), out);
-    return 0;
-}
-
 int cmd_bin2db(const Parser& p, const Args& a) {
     Bytes data = read_bytes(a.get("input"));
     out_text(a, to_db(data, a.get("label"), int_arg(p, a, "per_line", "--per-line", 16), a.get("input")));
@@ -514,18 +491,6 @@ int cmd_gfx(const Parser& p, const Args& a, const std::string& sub) {
         std::cout << "wrote " << a.get("output") << ": " << count << " tiles\n";
     }
     return 0;
-}
-
-int cmd_lift(const Parser&, const Args& a) {
-#ifndef HAVE_LIFT
-    (void)a;
-    std::cerr << "error: lift not built\n";
-    return 1;
-#else
-    LiftStats st = lift_run(a.get("rom"), a.get("output"), a.get("executed"), a.get("symbols"), a.get("hints"));
-    std::cout << "functions=" << st.functions << " instructions=" << st.instructions << " unimplemented=" << st.unimplemented << "\n";
-    return 0;
-#endif
 }
 
 // ---------------------------------------------------------------- z80 (the sound CPU; docs/z80.md)
@@ -657,26 +622,24 @@ Pos P(std::string dest, char nargs = 1, std::string help = "") {
 }
 
 const char* TOP =
-    "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,lz,bin2db,text,gfx,lift,z80} ...\n\n"
+    "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80} ...\n\n"
     "NGPC (TLCS-900/H) toolchain\n\n"
     "positional arguments:\n"
-    "  {asm,mac,preprocess,dis,roundtrip,lz,bin2db,text,gfx,lift,z80}\n"
+    "  {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80}\n"
     "    asm                 assemble (and link) asm900 sources into a raw image\n"
     "    mac (preprocess)    run the macro preprocessor only\n"
     "    dis                 disassemble: a listing, or (-o DIR) rebuildable asm900 source\n"
     "    roundtrip           dis -> asm a ROM and compare the bytes\n"
-    "    lz                  LZSS (Okumura LZSS.C parameters N=1024 F=18)\n"
     "    bin2db              binary file -> labeled asm900 db lines\n"
     "    text                text file + character map -> asm900 db lines\n"
     "    gfx                 2bpp tiles <-> indexed PNG (plain sheet or map layout); PNG palette -> words\n"
-    "    lift                lift traced code to C (experimental)\n"
     "    z80                 the Z80 sound CPU: dis, asm, roundtrip (docs/z80.md)\n\n"
     "options:\n  -h, --help            show this help message and exit\n";
 
 int run(int argc, char** argv) {
     std::vector<std::string> args(argv + 1, argv + argc);
     if (args.empty()) {
-        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,lz,bin2db,text,gfx,lift,z80} ...\n"
+        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80} ...\n"
                      "unitron: error: the following arguments are required: cmd\n";
         return 2;
     }
@@ -736,14 +699,6 @@ int run(int argc, char** argv) {
         p.pos = {P("rom")};
         p.opts = {O({"--workdir"}, "workdir", "keep the source here (default: a temporary directory)"), O({"--executed"}, "executed"),
                   O({"--hints"}, "hints", "code/data hints for the gap sweep")};
-    } else if (cmd == "lz") {
-        p.help = "LZSS (Okumura LZSS.C parameters N=1024 F=18)";
-        Pos m = P("mode", 1, "c = compress, d = decompress");
-        m.choices = {"c", "d"};
-        p.pos = {m, P("input"), P("output")};
-        p.opts = {O({"--length"}, "length", "output length (decompress)"),
-                  O({"--offset"}, "offset", "stream start in input (decompress)"),
-                  O({"--no-clamp"}, "no_clamp", "compress without cutting the last match", false)};
     } else if (cmd == "bin2db") {
         p.help = "binary file -> labeled asm900 db lines";
         p.pos = {P("input"), P("label", '?')};
@@ -831,16 +786,10 @@ int run(int argc, char** argv) {
             p.opts = {O({"--workdir"}, "workdir", "keep the source here (default: a temporary directory)"),
                       O({"--executed"}, "executed"), O({"--hints"}, "hints")};
         }
-    } else if (cmd == "lift") {
-        p.help = "lift traced code to C (experimental)";
-        p.pos = {P("rom")};
-        p.opts = {O({"-o", "--output"}, "output"), O({"--executed"}, "executed", "file of hex code addresses (extra trace entry points)"),
-                  O({"--symbols"}, "symbols", "ADDRESS NAME lines: function names"),
-                  O({"--hints"}, "hints", "code/data hints for the gap sweep")};
     } else {
-        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,lz,bin2db,text,gfx,lift,z80} ...\n"
+        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80} ...\n"
                      "unitron: error: argument cmd: invalid choice: '"
-                  << cmd << "' (choose from asm, mac, preprocess, dis, roundtrip, lz, bin2db, text, gfx, lift, z80)\n";
+                  << cmd << "' (choose from asm, mac, preprocess, dis, roundtrip, bin2db, text, gfx, z80)\n";
         return 2;
     }
     if (cmd == "asm")
@@ -850,16 +799,13 @@ int run(int argc, char** argv) {
         Args a = p.parse(rest);
         if (cmd == "asm" && a.has("optimize") && a.get("optimize") != "0" && a.get("optimize") != "1")
             p.fail("argument -O: invalid level '" + a.get("optimize") + "' (0 or 1)");
-        if (cmd == "lift" && !a.has("output")) p.fail("the following arguments are required: -o/--output");
         if (cmd == "asm") return cmd_asm(p, a);
         if (cmd == "mac" || cmd == "preprocess") return cmd_mac(p, a);
         if (cmd == "dis") return cmd_dis(p, a);
         if (cmd == "roundtrip") return cmd_roundtrip(p, a);
-        if (cmd == "lz") return cmd_lz(p, a);
         if (cmd == "bin2db") return cmd_bin2db(p, a);
         if (cmd == "text") return cmd_text(p, a);
         if (cmd == "gfx") return cmd_gfx(p, a, sub);
-        if (cmd == "lift") return cmd_lift(p, a);
         if (cmd == "z80" && sub == "dis") return cmd_z80_dis(a);
         if (cmd == "z80" && sub == "asm") return cmd_z80_asm(p, a);
         if (cmd == "z80") return cmd_z80_roundtrip(a);

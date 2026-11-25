@@ -1,0 +1,41 @@
+; charmap.txt: the cartridge's characters as tile numbers (unitron text; README "Graphics and text").
+; Tile 0 is the space, 1-26 the letters, 27-36 the digits (gfx.asm, tiles.db).
+char " " 00
+char "A" 01
+char "B" 02
+char "C" 03
+char "D" 04
+char "E" 05
+char "F" 06
+char "G" 07
+char "H" 08
+char "I" 09
+char "J" 0A
+char "K" 0B
+char "L" 0C
+char "M" 0D
+char "N" 0E
+char "O" 0F
+char "P" 10
+char "Q" 11
+char "R" 12
+char "S" 13
+char "T" 14
+char "U" 15
+char "V" 16
+char "W" 17
+char "X" 18
+char "Y" 19
+char "Z" 1A
+char "0" 1B
+char "1" 1C
+char "2" 1D
+char "3" 1E
+char "4" 1F
+char "5" 20
+char "6" 21
+char "7" 22
+char "8" 23
+char "9" 24
+cmd text - string
+cmd done FF

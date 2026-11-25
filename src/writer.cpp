@@ -128,6 +128,17 @@ WriteStats write_source(const Rom& rom, const InsnMap& insns, const Labels& labe
     std::map<int64_t, std::string> names;
     for (auto& kv : labels)
         if (is_emitted(kv.first)) names[kv.first] = kv.second;
+    // Every jump or call target that is an instruction start in this source gets a placeholder
+    // label if it has none (sub_ for a call target, else loc_, as the trace names them), so no
+    // branch into the code is written as a bare number. Calls first: a target both called and
+    // jumped to is sub_. A target inside data or inside an instruction keeps its number.
+    for (int calls = 1; calls >= 0; calls--)
+        for (int64_t pc = CART_BASE; pc < end; pc++) {
+            if (!is_emitted(pc)) continue;
+            const Insn& i = insns.at(pc);
+            if (i.has_target && i.is_call == bool(calls) && is_emitted(i.target) && !names.count(i.target))
+                names[i.target] = std::string(calls ? "sub" : "loc") + "_" + hexs(i.target, 6);
+        }
 
     auto sym = [&](const Op& o) -> std::string {
         if (!o.ref) return o.text;

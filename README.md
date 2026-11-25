@@ -9,16 +9,15 @@ developers' and assembles with unitron byte for byte.
   preprocessor subset (`#include`, `#define`, `#if`, `?macro ... ?endm`) and a subset of
   Toshiba's link command files (`--lcf`). Output: a raw image.
 - `unitron dis`: TLCS-900/H disassembler. `-o DIR` traces a ROM and writes asm900 source that
-  assembles back to the same bytes; without `-o` it lists.
+  assembles back to the same bytes, with a placeholder label (`sub_XXXXXX`, `loc_XXXXXX`, ...) on
+  every jump or call target in its code; without `-o` it lists.
 - `unitron roundtrip ROM`: dis then asm, and compare.
 - `unitron mac`: the macro preprocessor alone.
-- `unitron lz c|d`: LZSS with Okumura's LZSS.C parameters.
 - `unitron gfx topng|frompng|palette`: 2bpp tiles and palettes to indexed PNG and back, as a
   plain sheet or laid out by a tile map (`--map`); a PNG's pixels as bytes (`--indices`); a PNG's
   palette as 0x0BGR words. See "Graphics and text" below.
 - `unitron bin2db`: binary file to `db` lines for `$include`; `unitron text`: text with a
   character map to `db` lines (asm900 has no charmap), optionally padded to fixed-size slots.
-- `unitron lift`: traced code to C (experimental).
 - `unitron z80 dis|asm|roundtrip`: the same for the Z80 sound CPU's program, in Zilog's own
   assembly language (docs/z80.md). `dis` traces from the Z80's reset and interrupt addresses and
   writes source that assembles back to the same bytes; `asm` builds a raw image at Z80 0000H,
@@ -34,7 +33,7 @@ configure again. `-DUNITRON_SYSTEM_DEPS=ON` uses installed copies instead.
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j8
-(cd build && ctest)                   # the rom test skips itself without the the reference ROM ROM
+(cd build && ctest)                   # rom and z80rom skip themselves without the ROMs
 cmake --install build --prefix ~/.local    # puts unitron in ~/.local/bin
 ```
 
@@ -78,7 +77,7 @@ game.ngp: src/main.asm
 -include build/game.d
 ```
 
-`dis`, `roundtrip` and `lift` take `--executed FILE` (extra code entry points, hex addresses)
+`dis` and `roundtrip` take `--executed FILE` (extra code entry points, hex addresses)
 and `--hints FILE`, which makes the gap sweep reproducible (docs/language.md, "Trace hints"):
 
 ```
@@ -86,6 +85,10 @@ and `--hints FILE`, which makes the gap sweep reproducible (docs/language.md, "T
 code 200185 hidden_fn     ; trace from here (name optional, default code_200185)
 data 20018C 200191        ; no swept instruction touches [start, end)
 ```
+
+The gap sweep covers the whole image after the header; outside the span of traced code
+it starts only from call targets and from pointer tables that also point at known
+code (docs/language.md, "Trace hints").
 
 ## The language
 
@@ -170,7 +173,10 @@ the whole opcode space decoded and re-assembled, 346,448 instruction lines, the 
 the reference ROM round trip by hash. The Z80 side has its own: the Z80 opcode space (`z80opspace`), golden
 cases, `z80shift` (one inserted `NOP` moves every labeled reference by one), and the Z80 sound
 drivers of the reference ROM and the second ROM round-tripped by hash and shifted (`z80rom`; skipped
-without the ROMs). `unitron_tests <test> ... --write` rewrites the expected outputs after
+without the ROMs). The `cart` test needs no ROM, so CI runs it: it builds our own test cartridge
+(`tests/cart/`, an asm900 program with a Z80 program, also an example), runs `dis`, `roundtrip`,
+`z80 dis` and `z80 roundtrip` on it, and compares with `tests/cart/expected/`.
+`unitron_tests <test> ... --write` rewrites the expected outputs after
 a deliberate change; review `git diff tests/` afterwards.
 
 ## What is ours and what is cited
@@ -191,10 +197,9 @@ which keep their own licenses. It cites, and never contains, these sources:
 - Zilog's *Z80 CPU User Manual* UM0080 (the Z80 instructions and their codes) and Zilog's *Z80
   Assembly Language Programming Manual* (1978; the Z80 assembler language and its error numbers),
   for the `z80` commands (docs/z80.md).
-- Haruhiko Okumura's LZSS.C (1989, public domain): the compressor's algorithm and parameters.
 
 No emulator code, no emulator-derived names, no Toshiba or SNK files, and no ROM data are in this
 repository.
 
-The original Python implementation is kept in `legacy/python/` as the frozen reference
-(legacy/python/README.md); it will be deleted once nothing needs it.
+The original Python implementation was removed on 2026-11-25; its behavior lives on in the frozen
+test vectors, and its code is in git history (before the commit that removed `legacy/python/`).

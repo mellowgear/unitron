@@ -1,4 +1,4 @@
-// Text with a character map -> asm900 `db` lines. Port of legacy/python/unitron/data/charmap.py.
+// Text with a character map -> asm900 `db` lines. Port of the original Python unitron/data/charmap.py. (removed; in git history before this commit)
 // All strings are UTF-8; matching and lengths work on code points as in Python.
 #pragma once
 #include <cstdint>

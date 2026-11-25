@@ -1,0 +1,13 @@
+; hw.inc: the NGPC hardware names this source uses (from unitron/data/ngpc_hw.inc).
+WDCR	equ	0x6F	; IO900H.H l.146 (WDCR)
+SYS_LEVER	equ	0x6F82	; SNK SysPro l.200; SysWork l.28 (Sys_Lever)
+VEC_SWI3	equ	0x6FB8	; SNK SysPro l.213 (Software Interrupt (SWI 3))
+VEC_VBLANK	equ	0x6FCC	; SNK SysPro l.218 (Vertical Blanking Interrupt)
+WBA_H	equ	0x8002	; SNK K2GETechRef §4-5 l.408; K2GEres l.7 (WBA.H)
+WBA_V	equ	0x8003	; SNK K2GETechRef §4-5 l.409; K2GEres l.8 (WBA.V)
+WSI_H	equ	0x8004	; SNK K2GETechRef §4-5 l.410; K2GEres l.9 (WSI.H)
+WSI_V	equ	0x8005	; SNK K2GETechRef §4-5 l.411; K2GEres l.10 (WSI.V)
+S1SO_H	equ	0x8032	; SNK K2GETechRef §4-4-8 l.376; K2GEres l.22 (S1SO.H)
+S2SO_H	equ	0x8034	; SNK K2GETechRef §4-4-8 l.378; K2GEres l.26 (S2SO.H)
+S2SO_V	equ	0x8035	; SNK K2GETechRef §4-4-8 l.379; K2GEres l.28 (S2SO.V)
+BG_PAL	equ	0x83E0	; SNK K2GETechRef §4-15 l.699; K2GEpal l.309 (Background color palette)
