@@ -218,7 +218,7 @@ std::string hex2(unsigned v) {
 
 std::string read_file(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
-    if (!f) throw std::runtime_error("[Errno 2] No such file or directory: '" + path + "'");
+    if (!f) throw std::runtime_error("can't open '" + path + "'");
     return std::string((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 }
 
@@ -360,7 +360,8 @@ Bytes Charmap::encode(const std::string& str) const {
 }
 
 std::optional<Bytes> Charmap::command(const std::string& line_utf8) const {
-    // ^\s*([a-z_]+)(?:\s+"([^"]*)")?\s*(?:;.*)?$
+    // ^\s*([a-z_]+)(?:\s+"((?:[^"]|"")*)")?\s*(?:;.*)?$ -- "" inside the string is one ", as in
+    // the charmap's char lines
     U32 s = decode_utf8(line_utf8);
     size_t p = skip_ws(s, 0), w0 = p;
     while (p < s.size() && ((s[p] >= 'a' && s[p] <= 'z') || s[p] == '_')) p++;
@@ -372,10 +373,19 @@ std::optional<Bytes> Charmap::command(const std::string& line_utf8) const {
     if (p < s.size() && is_space(s[p])) {
         size_t r = skip_ws(s, p);
         if (r < s.size() && s[r] == '"') {
-            size_t e = s.find(U'"', r + 1);
-            if (e != U32::npos && tail_ok(s, e + 1)) {
+            U32 a;
+            size_t e = r + 1;
+            while (e < s.size()) {
+                if (s[e] != '"') a += s[e++];
+                else if (e + 1 < s.size() && s[e + 1] == '"') {
+                    a += U'"';
+                    e += 2;
+                } else
+                    break;
+            }
+            if (e < s.size() && tail_ok(s, e + 1)) {
                 matched = has_str = true;
-                arg = s.substr(r + 1, e - r - 1);
+                arg = a;
             }
         }
     }

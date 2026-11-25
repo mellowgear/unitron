@@ -1,0 +1,10 @@
+wrote out.ngp: 0x80 bytes at 0x200000
+20005C  07                       reti
+20005D  65 00 20 00              db 0x65,0x00,0x20,0x00
+200061  ff ff ff ff              db 0xFF,0xFF,0xFF,0xFF
+hidden:
+200065  c1 82 6f 21              ld A,(0x6F82)
+200069  0e                       ret
+20006A  55 66 77                 db 0x55,0x66,0x77
+20006D  22 01                    ld B,1
+20006F  0e                       ret

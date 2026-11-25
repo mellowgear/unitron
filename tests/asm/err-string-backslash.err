@@ -1,0 +1,2 @@
+err-string-backslash.asm:4: error E209: string ends in a backslash
+1 error(s); no output written

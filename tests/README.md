@@ -33,21 +33,18 @@ ctest test, run by `unitron_tests cases` (tests/cpp/cases.cpp).
 
 | Folder | Cases | What | Default command |
 |---|---|---|---|
-| `asm/` | 141 | the asm900 assembler: directives, number forms, operators, `:n`, every error and warning, include limits, `-O0/-O1`, `--place/--origin/--size/--fill`, `-M/-MG/-MP/-MT` | `asm NAME.asm -o out.bin` |
-| `mpp/` | 74 | the macro preprocessor: `#define` (`#`, `##`), `#if` family, `#include`, `?macro`, every mpp error | `mac NAME.asm` |
+| `asm/` | 143 | the asm900 assembler: directives, number forms, operators, `:n`, every error and warning, include limits, `-O0/-O1`, `--place/--origin/--size/--fill`, `-M/-MG/-MP/-MT` | `asm NAME.asm -o out.bin` |
+| `mpp/` | 76 | the macro preprocessor: `#define` (`#`, `##`), `#if` family, `#include`, `?macro`, every mpp error | `mac NAME.asm` |
 | `link/` | 18 | several modules: `public`/`extern`, widths, placement, overlaps (E217) | `asm *.asm -o out.bin` |
-| `lcf/` | 44 | link command files (`--lcf`): every feature and check of docs/lcf.md | `asm *.asm --lcf *.lcf -o out.bin` |
-| `dis/` | 32 | `dis` and `roundtrip`: listing, `-o` with labels, `--hints`, `--executed`, `--no-sweep`, the sweep's limits | `asm NAME.asm -o out.ngp --no-mpp`, then `dis out.ngp` |
-| `gfx/` | 59 | `gfx topng`, `frompng`, `palette`: every option and error (tiny PNGs of our own) | none: every case has a `.cmd` |
+| `lcf/` | 45 | link command files (`--lcf`): every feature and check of docs/lcf.md | `asm *.asm --lcf *.lcf -o out.bin` |
+| `dis/` | 34 | `dis` and `roundtrip`: listing, `-o` with labels, `--hints`, `--executed`, `--no-sweep`, the sweep's limits | `asm NAME.asm -o out.ngp --no-mpp`, then `dis out.ngp` |
+| `gfx/` | 61 | `gfx topng`, `frompng`, `palette`: every option and error (tiny PNGs of our own) | none: every case has a `.cmd` |
 | `text/` | 27 | `text`: character maps, commands, `slot`, every error | `text NAME.charmap NAME.txt` |
 | `bin2db/` | 9 | `bin2db` | `bin2db NAME.bin` |
-| `z80/` | 75 | the Z80 commands (docs/z80.md): every pseudo-op and error number, dis, asm, roundtrip, `--equ`/`--db` | `z80 asm NAME.z80 -o out.bin` |
+| `z80/` | 76 | the Z80 commands (docs/z80.md): every pseudo-op and error number, dis, asm, roundtrip, `--equ`/`--db` | `z80 asm NAME.z80 -o out.bin` |
 | `cli/` | 24 | help texts, unknown commands and options, missing arguments | none |
 
 `*.asm` stands for every `.asm` file at the top of the case's directory, sorted by name.
-
-The 208 commands of the old golden test (tests/golden/cases.txt, deleted 2026-11-25) are 206 of
-these cases; the commit that deleted it lists which case holds each command.
 
 ## The files of a case
 
@@ -117,33 +114,13 @@ fails only if unitron's bytes change. The four now:
 
 ## Known issues
 
-Cases that freeze behavior that looks wrong, as it is now (the case says `BUG` or `BUG?`); none is
-fixed here:
+None at the moment. The cases that froze suspect behavior (marked `BUG` or `BUG?`) were fixed on
+2026-11-25; their commits say what changed and on what evidence. To record a new one, freeze the
+behavior in a case whose comment says `BUG` (or `BUG?` when it is a question), and list it here.
 
-- `mpp/define-paste` (also `mpp/basics`): `a ## b` writes `a #"b"` instead of pasting the tokens.
-- `asm/err-dfb-string` (also `asm/errors-misc`): `dfb 1,"ab"` reports an internal error "size
-  changed from 1 to 0 bytes between passes" instead of E231 "dfb takes one value".
-- `asm/ds-count-forward-equ`: a `dfb` count that is an `equ` defined later is accepted;
-  docs/language.md says the count takes no forward reference.
-- `asm/err-missing-file` (also `cli/asm-option-prefix`): a missing source file also gets the
-  warning "nosuch.asm:0: warning W506: no `end` directive".
-- `dis/err-executed-bad`: a bad address in the `--executed` file reports "error: stoll" with no
-  file or line.
-- `text/err-charmap-missing`, `text/err-text-missing`: a missing file is reported in Python's
-  words ("[Errno 2] No such file or directory: ..."); `bin2db/err-per-line-zero`: "range() arg 3
-  must not be zero"; `cli/place-bad-address`: "invalid _place value" names an internal option name.
-- `text/err-quote-in-string` (BUG?; also `text/basic` and `text/output-file`, whose text has
-  such a line, so they only check that error): the charmap reads `""""` as a quote character,
-  but a doubled quote in a text line is "not a text command".
-- `lcf/attr-overlay` (BUG?): docs/lcf.md says OVERLAY sections may overlap; the .lcf check allows
-  it, but the assembler writes both sections' bytes and reports E217.
-- `gfx/topng-pal-past-file` (BUG?): `--pal N` beyond the palette file is not an error; the sheet
-  silently uses palette 0.
-- `dis/listing-ignores-hints`: a listing (no `-o`) does not read `--hints` (not even a missing
-  file); the hints only shape `-o` output.
-
-Messages no case triggers, because the CLI can't reach them: E231 "dfb takes one value" (see
-above), "operand size unknown; add a B/W/L suffix" (a size-less operand is byte), "CALR has no
-condition" (the operand check stops first), "string ends in a backslash" (a line-end backslash
-joins lines, and an unterminated string is found first), and the messages of `assemble_line`
-used only by the tests. The .lcf parser's syntax errors are checked in tests/cpp/lcf.cpp.
+Messages no case triggers: the messages of `assemble_line` used only by the tests, and the .lcf
+parser's syntax errors, which are checked in tests/cpp/lcf.cpp. (Three messages once listed here
+are gone or reachable now: "operand size unknown" could never happen, since an operand with no
+sized register and no suffix is byte, and was removed; "CALR has no condition" became "CALR takes
+one address (no condition)", `asm/err-calr-condition`; "string ends in a backslash" is
+`asm/err-string-backslash`.)

@@ -1,3 +1,2 @@
-err-error-directive-asm.asm:0: warning W506: no `end` directive
 err-error-directive-asm.asm:1: error: #error stop here
 1 error(s); no output written

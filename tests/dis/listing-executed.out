@@ -1,0 +1,4 @@
+wrote out.ngp: 0x80 bytes at 0x200000
+dyn_200065:
+200065  c1 82 6f 21              ld A,(0x6F82)
+200069  0e                       ret

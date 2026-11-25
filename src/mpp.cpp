@@ -121,13 +121,44 @@ std::vector<std::string> call_args(const std::string& line, size_t k, const Wher
     throw MppError("unterminated macro call", where);
 }
 
+// a ## b: the spaces around each ## and the ## itself are removed, joining the two tokens (C's
+// token pasting; TR chapter 14 lists ## among the directives, TR errors 282/283 its placement).
+std::string paste(const std::string& b) {
+    std::string out;
+    for (size_t i = 0; i < b.size();) {
+        if (b.compare(i, 2, "##") == 0) {
+            while (!out.empty() && py_space(out.back())) out.pop_back();
+            i += 2;
+            while (i < b.size() && py_space(b[i])) i++;
+            continue;
+        }
+        out += b[i++];
+    }
+    return out;
+}
+
+// True if a ## is next to [a, e) in b (skipping spaces): before a or after e.
+bool next_to_paste(const std::string& b, size_t a, size_t e) {
+    size_t k = a;
+    while (k > 0 && py_space(b[k - 1])) k--;
+    if (k >= 2 && b.compare(k - 2, 2, "##") == 0) return true;
+    k = e;
+    while (k < b.size() && py_space(b[k])) k++;
+    return b.compare(k, 2, "##") == 0;
+}
+
 std::string expand_fn(const Def& d, const std::vector<std::string>& args, const std::vector<std::string>& raw) {
     std::map<std::string, size_t> idx;
     for (size_t i = 0; i < d.params.size(); i++) idx[d.params[i]] = i;
     const std::string& b0 = d.body;
-    // #param -> "raw argument"
+    // #param -> "raw argument" (## is the paste operator, not two #)
     std::string b1;
     for (size_t i = 0; i < b0.size();) {
+        if (b0.compare(i, 2, "##") == 0) {
+            b1 += "##";
+            i += 2;
+            continue;
+        }
         if (b0[i] == '#') {
             size_t j = i + 1;
             while (j < b0.size() && py_space(b0[j])) j++;
@@ -143,7 +174,7 @@ std::string expand_fn(const Def& d, const std::vector<std::string>& args, const 
         }
         b1 += b0[i++];
     }
-    // \bparam\b -> argument
+    // \bparam\b -> argument; next to ## the argument as written, not macro-expanded (as in C)
     std::string b2;
     for (size_t i = 0; i < b1.size();) {
         if (id0(b1[i]) && (i == 0 || !word(b1[i - 1]))) {
@@ -151,31 +182,14 @@ std::string expand_fn(const Def& d, const std::vector<std::string>& args, const 
             while (e < b1.size() && word(b1[e])) e++;
             std::string name = b1.substr(i, e - i);
             auto it = idx.find(name);
-            b2 += it != idx.end() ? args[it->second] : name;
+            if (it == idx.end()) b2 += name;
+            else b2 += next_to_paste(b1, i, e) ? raw[it->second] : args[it->second];
             i = e;
             continue;
         }
         b2 += b1[i++];
     }
-    // \s*##\s* -> ""
-    std::string b3;
-    for (size_t i = 0; i < b2.size();) {
-        size_t k = i;
-        while (k < b2.size() && py_space(b2[k])) k++;
-        if (b2.compare(k, 2, "##") == 0) {
-            k += 2;
-            while (k < b2.size() && py_space(b2[k])) k++;
-            i = k;
-            continue;
-        }
-        if (k > i) {
-            b3 += b2.substr(i, k - i);
-            i = k;
-            continue;
-        }
-        b3 += b2[i++];
-    }
-    return b3;
+    return paste(b2);
 }
 
 int64_t floordiv_mod(int64_t v, int64_t w) {
@@ -461,6 +475,9 @@ struct Pre {
         }
         while (i < rest.size() && py_space(rest[i])) i++;
         d.body = strip(rest.substr(i));
+        if (d.body.compare(0, 2, "##") == 0) throw MppError("'##' at the start of a #define body", where);  // TR error 282
+        if (d.body.size() >= 2 && d.body.compare(d.body.size() - 2, 2, "##") == 0)
+            throw MppError("'##' at the end of a #define body", where);  // TR error 283
         defs[name] = d;
     }
 
@@ -574,7 +591,7 @@ struct Pre {
                 std::set<std::string> act2 = active;
                 act2.insert(name);
                 if (!d.fn) {
-                    out += subst(d.body, where, depth + 1, act2);
+                    out += subst(paste(d.body), where, depth + 1, act2);
                     i = j;
                     continue;
                 }

@@ -131,7 +131,9 @@ unitron text charmap.txt strings.txt -o strings.asm
 
 - **Tiles** are 8x8 pixels, 2 bits per pixel, 16 bytes each. In the PNG a pixel is a palette
   index; the tile keeps `index & 3` (the shade). Index 4p + s is shade s in palette p (what
-  `topng --palette` writes), so colouring a PNG never changes its tiles.
+  `topng --palette` writes), so colouring a PNG never changes its tiles. `--pal N` (a plain
+  sheet's palette) needs `--palette`; N or a map entry's palette past the end of the palette file
+  is an error.
 - **`frompng`** reads the cells of the sheet left to right, top to bottom: every cell, or the
   first `--count N`. A PNG written by `topng --map` carries its layout, and then every tile in it
   is read. With `--map`, `--count` is needed.
@@ -146,8 +148,9 @@ unitron text charmap.txt strings.txt -o strings.asm
 
 `unitron text` turns lines of a text file into `db` lines, with a character map: `char "a" 01`
 lines give each character's byte, `cmd NAME XX [string]` lines name commands (`cmd text - string`,
-`cmd done FF`). In the text file, `{XX}` is a byte with no character, `Name:` lines are labels and
-`;` lines are comments. A **`slot WIDTH PAD`** line (`slot 7 FF`: decimal width, hex byte) makes
+`cmd done FF`). In both files a doubled quote inside a string is one quote character
+(`char """" 22`, `text "say ""hi"""`). In the text file, `{XX}` is a byte with no character,
+`Name:` lines are labels and `;` lines are comments. A **`slot WIDTH PAD`** line (`slot 7 FF`: decimal width, hex byte) makes
 every string after it exactly WIDTH bytes, for a table of fixed-size names:
 
 ```

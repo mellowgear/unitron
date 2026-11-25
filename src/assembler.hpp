@@ -51,6 +51,7 @@ struct Item {
     DVal fillv;
     int64_t off = 0, size = 0;
     Bytes data;
+    int64_t seq = 0;       // statement number in the module (forward references)
 };
 
 struct Section {
@@ -66,6 +67,7 @@ struct Section {
     Where init_where;
     int64_t load_delta = 0;   // image address - run address (an .lcf org= that differs from addr=)
     bool noload = false;      // an .lcf NOLOAD/DSECT output section: no bytes in the image
+    bool overlay = false;     // an .lcf OVERLAY/COPY output section: may overlap others (TR 8.3.5)
     int width() const;
 };
 
@@ -77,6 +79,7 @@ struct Sym {
     ExprP expr;
     int width = 0;
     bool busy = false;
+    int64_t seq = 0;       // statement number of the definition (forward references)
 };
 
 // insertion-ordered map (Python dict)
@@ -165,6 +168,7 @@ private:
     void place_lcf();
     Section* cur_sec_ = nullptr;
     bool first_ = true;
+    int64_t seq_ = 0;     // statements so far (Item::seq, Sym::seq)
 
     std::vector<SrcLine> lines_of(const std::string& path);
     std::string find_include(const std::string& name, const std::string& cur);

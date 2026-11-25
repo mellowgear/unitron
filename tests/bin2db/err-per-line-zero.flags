@@ -1,2 +1,1 @@
-# BUG: --per-line 0 is reported in Python's words ("range() arg 3 must not be zero")
 --per-line 0

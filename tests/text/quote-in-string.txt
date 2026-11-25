@@ -1,0 +1,4 @@
+; "" inside a text string is one ", as in the charmap's char lines
+	text "a""a"
+	text """"
+	done

@@ -1,0 +1,4 @@
+# the listing uses the hints: a code name labels its address, a data range is db lines
+data 20005D 200065   ; the table and its 0xFF padding
+code 200065 hidden
+data 20006A 20006D

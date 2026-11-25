@@ -336,6 +336,35 @@ int64_t sweep(const Rom& rom, InsnMap& insns, Labels& labels, int rounds, const 
     return int64_t(insns.size()) - int64_t(n0);
 }
 
+namespace {
+// hex, with or without 0x; throws std::invalid_argument
+int64_t parse_hex_addr(const std::string& t) {
+    std::string x = lower(t);
+    if (starts_with(x, "0x")) x = x.substr(2);
+    size_t used = 0;
+    int64_t v = int64_t(std::stoll(x, &used, 16));
+    if (used != x.size()) throw std::invalid_argument(t);
+    return v;
+}
+}  // namespace
+
+std::vector<int64_t> read_executed(const std::string& path) {
+    Bytes raw = read_bytes(path);
+    std::vector<int64_t> out;
+    int ln = 0;
+    for (auto& line : splitlines(std::string(raw.begin(), raw.end()))) {
+        ln++;
+        for (auto& w : split_ws(line)) {
+            try {
+                out.push_back(parse_hex_addr(w));
+            } catch (std::exception&) {
+                throw std::runtime_error(path + ":" + std::to_string(ln) + ": bad hex address " + py_repr(w));
+            }
+        }
+    }
+    return out;
+}
+
 Hints read_hints(const std::string& path) {
     Bytes raw = read_bytes(path);
     Hints h;
@@ -347,12 +376,7 @@ Hints read_hints(const std::string& path) {
         if (w.empty()) continue;
         auto num = [&](const std::string& t) {
             try {
-                std::string x = lower(t);
-                if (starts_with(x, "0x")) x = x.substr(2);
-                size_t used = 0;
-                int64_t v = int64_t(std::stoll(x, &used, 16));
-                if (used != x.size()) throw std::invalid_argument(t);
-                return v;
+                return parse_hex_addr(t);
             } catch (std::exception&) {
                 throw std::runtime_error(path + ":" + std::to_string(ln) + ": bad hex address " + py_repr(t));
             }
@@ -377,13 +401,7 @@ void discover(const Rom& rom, const std::string& executed_path, bool do_sweep, I
     trace(rom, {{h.entry, "start"}}, insns, labels);
     st.static_ = int64_t(insns.size());
     if (!executed_path.empty()) {
-        Bytes raw = read_bytes(executed_path);
-        std::vector<int64_t> ex;
-        for (auto& w : split_ws(std::string(raw.begin(), raw.end()))) {
-            std::string t = lower(w);
-            if (starts_with(t, "0x")) t = t.substr(2);
-            ex.push_back(int64_t(std::stoll(t, nullptr, 16)));
-        }
+        std::vector<int64_t> ex = read_executed(executed_path);
         std::sort(ex.begin(), ex.end());
         std::vector<std::pair<int64_t, std::string>> entries;
         for (int64_t x : ex)

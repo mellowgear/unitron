@@ -66,6 +66,10 @@ sections {
   - Attributes (TR 8.3.5):
     - `DSECT` and `COPY` sections skip the memory and overlap checks.
     - `OVERLAY` sections may overlap other sections, but need an address.
+    - Table 8-4: `DSECT` and `NOLOAD` sections write no bytes into the image; `COPY` and
+      `OVERLAY` sections write theirs and may overlap other sections without error E217. Where
+      they overlap, the image holds the `COPY`/`OVERLAY` section's bytes (TR doesn't say which
+      bytes win; unitron writes these sections last).
     - For each output section, `LcfResult::outputs` reports its attribute. The assembler uses
       it to decide whether to write the section's bytes.
   - The padding value is parsed and reported, but unitron does not apply it.

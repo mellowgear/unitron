@@ -187,6 +187,6 @@ OUTD	ED AB	UM p.313 l.16828
 OTDR	ED BB	UM p.315 l.16896
 @0480 JR $+5	18 03	UM p.266 l.14991
 @0480 JR C,$-4	38 FA	UM p.268 l.15075
-@0480 JR NC,$	30 00	UM p.270 l.15145 the table prints 00; the page's own e-2 rule gives FE	differs: 30 FE
+@0480 JR NC,$	30 FE	UM p.270 (PDF p.284) and the 1978 manual (PDF p.236) both print 00, a misprint: the page's own rule (byte = e-2) and AS give FE
 @0300 JR Z,$+5	28 03	UM p.272 l.15215
 @0480 JR NZ,$-4	20 FA	UM p.274 l.15300

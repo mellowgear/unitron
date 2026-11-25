@@ -1,0 +1,2 @@
+err-calr-condition.asm:4: error E230: CALR takes one address (no condition)
+1 error(s); no output written

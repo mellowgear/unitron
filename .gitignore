@@ -1,12 +1,14 @@
 __pycache__/
 *.pyc
 .venv/
-build/
+/build/
 *.ngp
 *.ngc
+# ... except the tests' own tiny images, built from their .asm (expected outputs and inputs)
+!tests/**/*.ngp
 # third-party reference material is cited, never committed
 docs/third_party/
 *.egg-info/
-build_*/
+/build_*/
 # Claude Code agent worktrees
 .claude/

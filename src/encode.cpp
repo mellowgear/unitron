@@ -124,12 +124,12 @@ struct E {
             throw EncodeError("value " + dec(r.first) + " out of range " + dec(lo) + ".." + dec(hi));
         return r;
     }
-    int size(int opsize, std::initializer_list<int> allowed, int def = 0) const {
+    // with no sized register and no suffix the size is byte (STATIC 3.3)
+    int size(int opsize, std::initializer_list<int> allowed, int def = 1) const {
         int s = sfx;
         if (opsize && s && s != opsize)
             throw EncodeError("size suffix does not match the " + dec(opsize * 8) + "-bit operand");
         int z = opsize ? opsize : s ? s : def;
-        if (!z) throw EncodeError("operand size unknown; add a B/W/L suffix");
         if (std::find(allowed.begin(), allowed.end(), z) == allowed.end()) {
             std::string names;
             for (int a : allowed) names += (names.empty() ? "" : "/") + std::string(size_name(a));
@@ -141,8 +141,7 @@ struct E {
         int s = sfx;
         if (opsize && s && s != opsize)
             throw EncodeError("size suffix does not match the " + dec(opsize * 8) + "-bit operand");
-        int z = opsize ? opsize : s;
-        if (!z) throw EncodeError("operand size unknown; add a B/W/L suffix");
+        int z = opsize ? opsize : s ? s : 1;
         if (std::find(allowed.begin(), allowed.end(), z) == allowed.end()) {
             std::string names;
             for (int a : allowed) names += (names.empty() ? "" : "/") + std::string(size_name(a));
@@ -263,6 +262,8 @@ Bytes jump(const E& e, const std::string& m, std::vector<Operand> ops, const Jum
         int64_t end = pc + int64_t(pre.size()) + 2;
         return cat(cat(pre, {0x1C}), e.rel(tv, end, 8));
     }
+    // CALR has no condition (not in cond_first: a condition is an extra operand here)
+    if (m == "CALR" && ops.size() != 1) throw e.err("CALR takes one address (no condition)");
     if (ops.size() != 1) throw e.err(m + " takes [cc,]address");
     const Operand& t = ops[0];
     if (m == "JR" || m == "JRL") {
@@ -271,7 +272,6 @@ Bytes jump(const E& e, const std::string& m, std::vector<Operand> ops, const Jum
         return cat(Bytes{uint8_t(0x70 | cc)}, e.rel(tv, pc + 3, 16));
     }
     if (m == "CALR") {
-        if (cc != 8) throw e.err("CALR has no condition");
         int64_t tv = target_of(e, t).first;
         return cat(Bytes{0x1E}, e.rel(tv, pc + 3, 16));
     }

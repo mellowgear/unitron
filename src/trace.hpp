@@ -65,6 +65,9 @@ struct Hints {
     }
 };
 Hints read_hints(const std::string& path);   // throws std::runtime_error("FILE:LINE: ...")
+// An --executed file: hex addresses (0x optional) separated by white space. A bad one is an
+// error "FILE:LINE: bad hex address 'X'", as in a hints file.
+std::vector<int64_t> read_executed(const std::string& path);
 
 struct DiscoverStats {
     int64_t static_ = 0, dynamic = -1, sweep = -1;   // -1: not run

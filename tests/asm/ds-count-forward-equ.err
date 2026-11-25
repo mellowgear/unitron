@@ -1,0 +1,3 @@
+ds-count-forward-equ.asm:5: error E223: count uses 'N', not defined before this line
+ds-count-forward-equ.asm:6: error E223: count uses 'N', not defined before this line
+2 error(s); no output written

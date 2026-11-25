@@ -70,7 +70,6 @@ errors-misc.asm:4: error E221: undefined symbol 'nowhere'
 errors-misc.asm:7: error E230: one side of a memory-to-memory LD must be a 16-bit address
 errors-misc.asm:8: error E230: operand type mismatch; legal forms: ADD R,r | ADD r,# | ADD R,(mem) | ADD (mem),R | ADD<W> (mem),#
 errors-misc.asm:10: error E230: relative target out of range (+200 bytes, E227)
-errors-misc.asm:22: error: size changed from 1 to 0 bytes between passes (internal)
 errors-misc.asm:49: error E230: operand type mismatch; legal forms: LD R,r | LD r,# | LD R,(mem) | LD (mem),R | LD<W> (mem),# | LD<W> (#16),(mem) | LD<W> (mem),(#16)
 errors-misc.asm:51: error E230: NOP takes no operands
 errors-misc.asm:52: error E230: NORMAL is undefined on the 900/H
@@ -142,7 +141,7 @@ errors-misc.asm:157: error E230: DAA is byte only
 errors-misc.asm:158: error E230: NEG is byte/word only
 errors-misc.asm:159: error E230: EXTZ is word/long only
 errors-misc.asm:161: error E230: RET takes [cc]
-errors-misc.asm:162: error E230: CALR takes [cc,]address
+errors-misc.asm:162: error E230: CALR takes one address (no condition)
 errors-misc.asm:163: error E230: DJNZ is byte/word only
 errors-misc.asm:164: error E230: DJNZ takes [r,]label
 errors-misc.asm:165: error E230: branch target must be an address
@@ -158,4 +157,4 @@ errors-misc.asm:175: error E221: undefined symbol 'nosym3'
 errors-misc.asm:176: error E230: address 0x20000 is not 16-bit
 errors-misc.asm:177: error E230: one side of a memory-to-memory LD must be a 16-bit address
 errors-misc.asm:178: error E221: undefined symbol 'nosym4'
-155 error(s); no output written
+154 error(s); no output written

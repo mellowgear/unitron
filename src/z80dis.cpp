@@ -50,19 +50,7 @@ Model build(const Bytes& img, const DisOptions& opt) {
         if (c.second != "code_" + hexs(c.first, 6)) names[c.first] = c.second;
     }
     if (!opt.executed.empty()) {
-        Bytes raw = read_bytes(opt.executed);
-        for (auto& w : split_ws(std::string(raw.begin(), raw.end()))) {
-            std::string t = lower(w);
-            if (starts_with(t, "0x")) t = t.substr(2);
-            try {
-                size_t used = 0;
-                int64_t a = std::stoll(t, &used, 16);
-                if (used != t.size()) throw std::invalid_argument(w);
-                entries.push_back(a);
-            } catch (std::exception&) {
-                throw std::runtime_error(opt.executed + ": bad hex address " + py_repr(w));
-            }
-        }
+        for (int64_t a : read_executed(opt.executed)) entries.push_back(a);
     }
     // ---- trace
     std::map<int64_t, Insn> code;

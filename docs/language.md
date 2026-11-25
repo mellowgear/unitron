@@ -41,8 +41,8 @@ masked to n bits and encoded at least n bits wide [STATIC 3.7]. Values are 32-bi
 | `name equ expr` | absolute; no redefinition |
 | `public a,b` / `extern [small\|medium\|large] a,b` | inter-module names; the extern width fixes the address width |
 | `db dw dp dd dl` | 8/16/24/32/32-bit values; `db` also takes strings (no `\0` added). In a `data` section (RAM) they give a warning: the bytes are not in the image; use `ds*` to reserve RAM, a `romdata` section for constants, or an `.lcf` `org=` in ROM (docs/lcf.md) |
-| `dfb dfw dfp dfd dfl n,v` | n copies of v; n absolute, no forward reference; the same `data`-section warning as `db` |
-| `dsb dsw dsp dsd dsl n` | n units reserved (0xFF, or `--fill`, in the image) |
+| `dfb dfw dfp dfd dfl n,v` | n copies of v; `dfb n,"str"` writes the string n times (TR p.21; asm900's dfb handler sizes it as length × n, asm900 2.2k at 0x41bbf0, static reading). n absolute, no forward reference: a symbol defined on a later line is error E223 (TR p.22; asm900 checks this for the df* and ds* directives, asm900 2.2k at 0x406bad and 0x409420); the same `data`-section warning as `db` |
+| `dsb dsw dsp dsd dsl n` | n units reserved (0xFF, or `--fill`, in the image); n as for `dfb` |
 | `$include "file"` | assembler-level include: source dir, `-I`, `$THOME900/include`. asm900's limits, 8 levels deep and 99 per translation unit [TR p.24, 32], give a warning; with `--strict` they are error E234. Nesting deeper than 64 (a recursive include) is always E234 |
 | `$list $nolist $title $eject $save $restore` (+ short forms) | listing only; ignored |
 | `end` | ends the module; later text is ignored with a warning |
@@ -75,6 +75,9 @@ accepted. Operand spellings:
 
 - `#include "f"` / `<f>`, `#define` (object and function-like, `#` and `##`), `#undef`,
   `#if #ifdef #ifndef #elif #else #endif` (C operators, `defined`), `#error`, `#line` (ignored).
+  `a ## b` joins two tokens as in C (`CAT(1,2)` is `12`); an argument next to `##` is used as
+  written, not macro-expanded. `##` at the start or end of a body is an error (TR p.107, errors
+  282 and 283).
   Identifiers for `#define` are `[A-Za-z_][A-Za-z0-9_]*`. A dotted name (`Routine.loop`, `.loop`)
   is one asm900 identifier [STATIC 3.4] and is copied whole: a `#define` of `loop` does not change
   it.
@@ -128,7 +131,10 @@ data 20018C 200191        ; no swept instruction touches [start, end)
 ```
 
 Addresses are hex, with or without `0x`. A bad line is an error with its line number. Without
-`--hints` the output is unchanged.
+`--hints` the output is unchanged. A `dis` listing (no `-o`) is linear from the entry point or
+`--start`, but it reads the hints too: a `code` line's name labels its address, and a `data` range
+is listed as `db` lines of up to 4 bytes instead of being decoded (`--executed` addresses get
+their `dyn_` labels).
 
 The sweep covers the whole image that can hold code: from the end of the 0x40-byte header to the
 end of the image (on a 4 MB cartridge, to the end of the first 2 MB chip, the part `dis -o` writes

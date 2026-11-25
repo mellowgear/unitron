@@ -1,4 +1,5 @@
 equ-chains.asm:17: error E223: 'X1' must be defined before this point
 error: instruction sizes did not settle
+equ-chains.asm:10: error E223: count uses 'K', not defined before this line
 equ-chains.asm:9: error E206: 'S1' is defined in terms of itself
-3 error(s); no output written
+4 error(s); no output written

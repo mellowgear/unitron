@@ -20,6 +20,7 @@
 #include "mpp.hpp"
 #include "tiles.hpp"
 #include "util.hpp"
+#include "trace.hpp"   // read_hints, read_executed
 #include "writer.hpp"
 #include "z80.hpp"
 #include "z80asm.hpp"
@@ -202,7 +203,7 @@ int64_t num_arg(const Parser& p, const Args& a, const std::string& k, const std:
     try {
         return py_int0(a.get(k));
     } catch (std::exception&) {
-        p.fail("argument " + flag + ": invalid num value: '" + a.get(k) + "'");
+        p.fail("argument " + flag + ": not a number: '" + a.get(k) + "'");
     }
 }
 int64_t int_arg(const Parser& p, const Args& a, const std::string& k, const std::string& flag, int64_t def) {
@@ -210,7 +211,7 @@ int64_t int_arg(const Parser& p, const Args& a, const std::string& k, const std:
     try {
         return py_int10(a.get(k));
     } catch (std::exception&) {
-        p.fail("argument " + flag + ": invalid int value: '" + a.get(k) + "'");
+        p.fail("argument " + flag + ": not a decimal number: '" + a.get(k) + "'");
     }
 }
 
@@ -279,7 +280,7 @@ int cmd_asm(const Parser& p, const Args& a) {
         try {
             places[s.substr(0, eq)] = py_int0(s.substr(eq + 1));
         } catch (std::exception&) {
-            p.fail("argument --place: invalid _place value: '" + s + "'");
+            p.fail("argument --place: bad address '" + s.substr(eq + 1) + "' in '" + s + "'");
         }
     }
     std::optional<int64_t> origin, size;
@@ -377,8 +378,33 @@ int cmd_dis(const Parser& p, const Args& a) {
     int64_t pc = a.has("start") ? num_arg(p, a, "start", "--start", 0) : (rom.data.size() > 0x20 ? rom.header().entry : CART_BASE);
     int64_t count = num_arg(p, a, "count", "--count", 64);
     MemFn mem = [&rom](int64_t x) { return rom(x); };
+    // the listing is linear, but it uses the hints: a `code` line's name labels its address, and a
+    // `data` range is listed as db lines (4 bytes each) instead of being decoded; --executed
+    // addresses get their dyn_ labels, as in -o output
+    Hints hints;
+    std::map<int64_t, std::string> names;
+    if (a.has("hints")) {
+        hints = read_hints(a.get("hints"));
+        for (auto& c : hints.code) names.emplace(c.first, c.second);
+    }
+    if (a.has("executed"))
+        for (int64_t x : read_executed(a.get("executed"))) names.emplace(x, "dyn_" + hexs(x, 6));
     for (int64_t i = 0; i < count; i++) {
         if (!rom.contains(pc)) break;
+        auto nm = names.find(pc);
+        if (nm != names.end()) std::cout << nm->second << ":\n";
+        if (hints.is_data(pc)) {
+            std::string raw, t = "db ";
+            int64_t k = 0;
+            for (; k < 4 && rom.contains(pc + k) && hints.is_data(pc + k) && (k == 0 || !names.count(pc + k)); k++) {
+                raw += (k ? " " : "") + hexl(rom(pc + k), 2);
+                t += (k ? ",0x" : "0x") + hexs(rom(pc + k), 2);
+            }
+            while (raw.size() < 24) raw += ' ';
+            std::cout << hexs(pc, 6) << "  " << raw << " " << t << "\n";
+            pc += k;
+            continue;
+        }
         Insn ins = decode(mem, pc);
         std::string t = ins.text();
         size_t tab = t.find('\t');
@@ -434,7 +460,9 @@ int cmd_roundtrip(const Parser&, const Args& a) {
 
 int cmd_bin2db(const Parser& p, const Args& a) {
     Bytes data = read_bytes(a.get("input"));
-    out_text(a, to_db(data, a.get("label"), int_arg(p, a, "per_line", "--per-line", 16), a.get("input")));
+    int64_t per_line = int_arg(p, a, "per_line", "--per-line", 16);
+    if (per_line < 1) p.fail("argument --per-line: must be 1 or more, not " + dec(per_line));
+    out_text(a, to_db(data, a.get("label"), per_line, a.get("input")));
     return 0;
 }
 

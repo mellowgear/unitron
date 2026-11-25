@@ -172,7 +172,11 @@ std::vector<DVal> data_values(const std::string& field, int w) {
             if (w != 1) throw AsmError(209, "strings are allowed in db/dfb only");
             if (p.size() < 2 || p.back() != '"') throw AsmError(209, "unterminated string");
             v.k = DVal::Str;
-            v.s = unescape(p.substr(1, p.size() - 2));
+            try {
+                v.s = unescape(p.substr(1, p.size() - 2));
+            } catch (ExprError& e) {
+                throw AsmError(209, e.what());   // TR error 209, as for an unterminated string
+            }
             if (v.s.size() > 511) throw AsmError(209, "string longer than 511 bytes");
         } else {
             ExprP e = parse_expr(p);
@@ -280,7 +284,9 @@ std::string Assembler::find_include(const std::string& name, const std::string& 
 void Assembler::add_module(const std::string& path0) {
     std::string path = path_norm(path0);
     add_dep(path);
+    size_t errors = d.errors.size();
     auto lines = lines_of(path);
+    if (d.errors.size() != errors) return;   // unreadable, or a preprocessor error: nothing to check
     modules_.push_back(std::make_unique<Module>());
     Module& mod = *modules_.back();
     mod.name = path_stem(path);
@@ -332,6 +338,7 @@ void Assembler::statement(Module& mod, const std::string& text, const Where& whe
     (void)path;
     std::string code = split_comment(text);
     if (strip(code).empty()) return;
+    seq_++;
     Stmt st = parse_statement(code);
     if (st.has_op && st.op[0] == '$') {
         if (st.has_label && !st.label.empty()) throw AsmError(200, "a control instruction cannot have a label");
@@ -515,7 +522,9 @@ void Assembler::define(Module& mod, const std::string& name, const Sym& sym) {
     if (is_reserved(name)) throw AsmError(208, py_repr(name) + " is a reserved word");
     Sym* old = mod.syms.get(name);
     if (old) throw AsmError(203, "multi-defined symbol " + py_repr(name) + " (first defined at " + old->where.str() + ")");
-    mod.syms.set(name, sym);
+    Sym s = sym;
+    s.seq = seq_;
+    mod.syms.set(name, s);
 }
 
 int64_t Assembler::abs_now(Module& mod, const ExprP& e) {
@@ -623,6 +632,7 @@ void Assembler::data(const std::string& u, const std::string& field, const Where
     }
     auto it = std::make_unique<Item>();
     it->where = where;
+    it->seq = seq_;
     if (data_w(u)) {
         int w = data_w(u);
         auto vals = data_values(field, w);
@@ -641,8 +651,7 @@ void Assembler::data(const std::string& u, const std::string& field, const Where
         auto parts = split_operands(field);
         if (parts.size() != 2) throw AsmError(231, lower(u) + " takes count,value");
         ExprP n = parse_expr(parts[0]);
-        auto v = data_values(parts[1], w);
-        if (v.size() != 1) throw AsmError(231, lower(u) + " takes one value");
+        auto v = data_values(parts[1], w);   // parts[1] is one operand: one value
         it->kind = Item::Fill;
         it->w = w;
         it->ex = n;
@@ -735,6 +744,8 @@ bool Assembler::layout() {
                 if (it.kind == Item::Ins) n = ins_size(mod, sec, it);
                 else if (it.kind == Item::Bin) n = int64_t(it.data.size());
                 else if (it.kind == Item::Data) n = int64_t(it.w) * int64_t(it.vals.size());
+                else if (it.kind == Item::Fill && it.fillv.k == DVal::Str)
+                    n = int64_t(it.fillv.s.size()) * count(mod, sec, it);   // dfb n,"str": n copies
                 else if (it.kind == Item::Fill || it.kind == Item::Space) n = it.w * count(mod, sec, it);
                 if (n != it.size) {
                     it.size = n;
@@ -755,7 +766,17 @@ int64_t Assembler::count(Module& mod, Section& sec, Item& it) {
     (void)sec;
     VW r;
     try {
-        r = evaluate(it.ex, [&](const std::string& n) { return lookup(mod, n, true); }, []() { return VW{0, 0}; });
+        // a symbol defined on a later line is a forward reference, error 223: TR p.21-22 (df* count,
+        // ds*), and asm900 checks it for the ds* codes 0x149-0x14c (A 0x406bad-0x406bfb) and the
+        // df* codes 0x143/0x145-0x147 (A 0x409420-0x40946e)
+        r = evaluate(
+            it.ex,
+            [&](const std::string& n) {
+                Sym* s = mod.syms.get(n);
+                if (s && s->kind != Sym::Extern && s->seq > it.seq) throw Unknown(n);
+                return lookup(mod, n, true);
+            },
+            []() { return VW{0, 0}; });
     } catch (Unknown& u) {
         if (final_) d.error(it.where, 223, "count uses " + py_repr(u.name) + ", not defined before this line");
         return 0;
@@ -960,6 +981,10 @@ void Assembler::place_lcf() {
     for (auto& o : r.outputs)
         if (o.attr == "NOLOAD" || o.attr == "DSECT")
             for (size_t id : o.inputs) rel[id]->noload = true;
+    // TR 8.3.5, Table 8-4: OVERLAY and COPY sections output their bytes and may overlap others
+    for (auto& o : r.outputs)
+        if (o.attr == "OVERLAY" || o.attr == "COPY")
+            for (size_t id : o.inputs) rel[id]->overlay = true;
     for (auto& s : r.symbols) lcf_syms_[s.first] = s.second;
 }
 
@@ -1015,7 +1040,7 @@ std::vector<Chunk> Assembler::emit() {
                 if (!it.size) continue;
                 int64_t addr = sp->base + it.off + sp->load_delta;   // image address
                 if (sp->noload) addr = sp->base + it.off;
-                if ((link_ || sp->has_abs) && !sp->noload) spans.push_back({addr, addr + it.size, it.where, sp.get(), spans.size()});
+                if ((link_ || sp->has_abs) && !sp->noload && !sp->overlay) spans.push_back({addr, addr + it.size, it.where, sp.get(), spans.size()});
                 Bytes b;
                 if (!item_bytes(*mp, *sp, it, b)) continue;
                 if (sp->noload) continue;
@@ -1081,6 +1106,8 @@ bool Assembler::item_bytes(Module& mod, Section& sec, Item& it, Bytes& out) {
                 x.v = value(mod, sec, it, v.e).first;
                 v = x;
             }
+            // dfb n,"str" writes the string n times: asm900's dfb handler (A 0x41bbf0) sizes it as
+            // length * n and repeats the string's bytes (TR p.21 allows a string in dfb)
             Bytes one = pack(it.w, {v}, it.where);
             out.clear();
             if (!one.empty()) {
@@ -1131,6 +1158,8 @@ Image build_image(const std::vector<Chunk>& chunks, const int64_t* origin, const
     std::vector<const Chunk*> rom;
     for (auto& c : chunks)
         if (c.sec->kind != "data" || c.sec->load_delta) rom.push_back(&c);
+    // an OVERLAY/COPY section's bytes are written last: where it overlaps, its bytes are in the image
+    std::stable_partition(rom.begin(), rom.end(), [](const Chunk* c) { return !c->sec->overlay; });
     Image im;
     if (origin) {
         im.origin = *origin;

@@ -63,8 +63,8 @@ pop C	CB 05	DS p.159 l.68
 popw (XHL)	B3 06	DS p.159 l.69
 lda XHL,XIX+4	BC 04 33	DS p.159 l.70
 lda HL,XHL+DE	F3 07 EC E8 23	DS p.159 l.70 (r+r16) mem form (CPU900-50)
-ldar XHL,0x200010	F3 13 0C 00 43	DS p.159 l.71 the template read literally; unitron (and its decoder) use 20+R word, 30+R long	differs: F3 13 0C 00 33
-ldar HL,0x200010	F3 13 0C 00 33	DS p.159 l.71	differs: F3 13 0C 00 23
+ldar XHL,0x200010	F3 13 0C 00 33	DS p.159 l.71 prints 20+zz+R (literally 30+R word, 40+R long), but Toshiba's asm900.exe (emitter 0x42bb40, read statically) writes 0x20 | (long ? 0x10 : 0) | R
+ldar HL,0x200010	F3 13 0C 00 23	DS p.159 l.71; asm900.exe emitter 0x42bb40 (see the line above)
 ex F,F'	16	DS p.159 l.76
 ex A,B	CA B9	DS p.159 l.77
 ex (XHL),WA	93 30	DS p.159 l.78
@@ -110,7 +110,7 @@ extz WA	D8 12	DS p.161 l.179
 exts XHL	EB 13	DS p.161 l.180
 daa A	C9 10	DS p.161 l.181
 paa XIX	EC 14	DS p.161 l.184
-mul WA,B	CA 40	DS p.162 l.196 RR is the double-size register (note), WA = 0; unitron writes the odd code 41 (both mean WA)	differs: CA 41
+mul WA,B	CA 41	DS p.162 l.196 MUL RR,r: 40+R, R = the odd (A) code for WA, as asm900 writes it (ASM900_STATIC 2.2; the reference ROM 85/85)
 mul XWA,BC	D9 40	DS p.162 l.196
 mul WA,5	C9 08 05	DS p.162 l.197 byte rr,#: the odd (low-byte) prefix code (rule 5)
 mul XBC,0x100	D9 08 00 01	DS p.162 l.197

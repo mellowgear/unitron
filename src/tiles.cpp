@@ -45,7 +45,7 @@ std::string itos(int64_t v) { return std::to_string(v); }
 
 Bytes read_file(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
-    if (!f) throw std::runtime_error("[Errno 2] No such file or directory: '" + path + "'");
+    if (!f) throw std::runtime_error("can't open '" + path + "'");
     return Bytes((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 }
 
@@ -353,10 +353,20 @@ Bytes to_png_bytes(const Bytes& data, int64_t width_tiles, const std::vector<Pal
     std::vector<std::pair<int64_t, int64_t>> pos;
     std::vector<int64_t> pal;
     int64_t wpx, hpx;
+    auto count_s = [&]() {
+        return itos(int64_t(palettes.size())) + (palettes.size() == 1 ? " palette" : " palettes");
+    };
+    if (pal_index && palettes.empty()) throw std::runtime_error("--pal needs --palette");
+    if (pal_index < 0 || (!tile_map && pal_index >= int64_t(pals.size())))
+        throw std::runtime_error("--pal " + itos(pal_index) + ": the palette file has " + count_s() +
+                                 (pals.size() == 1 ? " (only --pal 0)" : " (--pal 0 to " + itos(int64_t(pals.size()) - 1) + ")"));
     if (tile_map) {
         Layout L = layout(n, tile_map->w, tile_map->h, tile_map->entries, base);
         pos = L.pos;
         pal = palettes.empty() ? std::vector<int64_t>(static_cast<size_t>(n), 0) : L.pal;
+        for (int64_t p : pal)
+            if (p >= int64_t(pals.size()))
+                throw std::runtime_error("the map uses palette " + itos(p) + ", but the palette file has " + count_s());
         text.emplace_back(LAYOUT_KEY, layout_json(tile_map->w, L.rows, pos));
         wpx = tile_map->w * 8;
         hpx = L.rows * 8;

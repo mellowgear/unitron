@@ -1,1 +1,2 @@
-error: range() arg 3 must not be zero
+usage: unitron bin2db [-h] [-o OUTPUT] [--per-line PER_LINE] input [label]
+unitron bin2db: error: argument --per-line: must be 1 or more, not 0
