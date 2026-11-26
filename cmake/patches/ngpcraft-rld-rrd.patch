@@ -1,0 +1,43 @@
+diff --git a/cpp/src/mem_family.cpp b/cpp/src/mem_family.cpp
+index 53fa158..9beae1c 100644
+--- a/cpp/src/mem_family.cpp
++++ b/cpp/src/mem_family.cpp
+@@ -625,6 +625,38 @@ static bool exec_source(Machine& m, ngpc_record_t* rec, uint32_t pc,
+         return true;
+     }
+ 
++    /* RLD / RRD A,(mem)  (sub 0x06 / 0x07).  Byte only; state 12.
++     * Nibble rotate between A's low nibble and the memory byte; A's high nibble is kept.
++     *   RLD: mem = (mem << 4) | A.lo,  A.lo = mem.hi
++     *   RRD: mem = (A.lo << 4) | mem.hi,  A.lo = mem.lo
++     * Flags: S Z from the new A, H = 0, V = parity of A, N = 0, C unchanged
++     * (same as core/execute.py).  Biomotor Unitron's Arena (`82 06` at 0x213E9E) stops without it. */
++    if (sub == 0x06 || sub == 0x07) {
++        if (sz != 0) return false;
++        const uint32_t mv = load_sized(m, e.addr, 0) & 0xFFu;
++        record_read(rec, e.addr, mv, 0);
++        commit_wb();
++        const uint32_t a = c.regs[NGPC_XWA] & 0xFFu;
++        uint32_t new_mem, new_a;
++        if (sub == 0x06) {
++            new_mem = ((mv << 4) | (a & 0x0Fu)) & 0xFFu;
++            new_a = (a & 0xF0u) | (mv >> 4);
++        } else {
++            new_mem = ((a & 0x0Fu) << 4) | (mv >> 4);
++            new_a = (a & 0xF0u) | (mv & 0x0Fu);
++        }
++        store(m, rec, e.addr, new_mem, 1);
++        c.regs[NGPC_XWA] = (c.regs[NGPC_XWA] & ~0xFFu) | new_a;
++        uint8_t f = 0;
++        if (new_a & 0x80u) f |= F_S;
++        if (new_a == 0) f |= F_Z;
++        if (alu_even_parity(new_a, 8)) f |= F_V;
++        c.flags = uint8_t((c.flags & ~(F_S | F_Z | F_H | F_V | F_N)) | f);
++        out_len = uint8_t(e.len + 1);
++        out_cycles = uint16_t(12 + e.extra);
++        return true;
++    }
++
+     /* LD (nn),(mem)   (sub 0x19) -- memory-to-memory, the destination given as a
+      * 16-bit absolute. `80 + zz + mem : 19 : #16`, state 8, byte and word only. */
+     if (sub == 0x19) {

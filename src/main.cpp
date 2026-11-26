@@ -4,8 +4,10 @@
 #include <filesystem>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <optional>
 #include <random>
+#include <sstream>
 #include <string>
 #include <vector>
 #ifdef _WIN32
@@ -13,12 +15,15 @@
 #include <io.h>
 #endif
 
+#include <nlohmann/json.hpp>
+
 #include "assembler.hpp"
 #include "bin2db.hpp"
 #include "charmap.hpp"
 #include "lsp.hpp"
 #include "hash.hpp"
 #include "mpp.hpp"
+#include "play.hpp"
 #include "tiles.hpp"
 #include "util.hpp"
 #include "trace.hpp"   // read_hints, read_executed
@@ -41,7 +46,7 @@ struct Opt {
 };
 struct Pos {
     std::string dest, help;
-    char nargs = 1;   // 1, '+', '?'
+    char nargs = 1;   // 1, '+', '?', '*'
     std::vector<std::string> choices;
 };
 
@@ -70,7 +75,7 @@ struct Parser {
             std::string f = o.flags.front();
             u += " [" + f + (o.takes ? " " + (o.metavar.empty() ? upper(o.dest) : o.metavar) : "") + "]";
         }
-        for (auto& p : pos) u += p.nargs == '+' ? " " + p.dest + " [" + p.dest + " ...]" : p.nargs == '?' ? " [" + p.dest + "]" : " " + p.dest;
+        for (auto& p : pos) u += p.nargs == '+' ? " " + p.dest + " [" + p.dest + " ...]" : p.nargs == '*' ? " [" + p.dest + " ...]" : p.nargs == '?' ? " [" + p.dest + "]" : " " + p.dest;
         return u + "\n";
     }
     std::string full_help() const {
@@ -170,12 +175,14 @@ struct Parser {
         for (size_t pi = 0; pi < pos.size(); pi++) {
             auto& p = pos[pi];
             size_t left_needed = 0;
-            for (size_t q = pi + 1; q < pos.size(); q++) left_needed += pos[q].nargs == '?' ? 0 : 1;
+            for (size_t q = pi + 1; q < pos.size(); q++) left_needed += pos[q].nargs == '?' || pos[q].nargs == '*' ? 0 : 1;
             if (p.nargs == '+') {
                 if (k + left_needed >= positional.size()) {
                     missing.push_back(p.dest);
                     continue;
                 }
+                while (k + left_needed < positional.size()) r.v[p.dest].push_back(positional[k++]);
+            } else if (p.nargs == '*') {
                 while (k + left_needed < positional.size()) r.v[p.dest].push_back(positional[k++]);
             } else if (p.nargs == '?') {
                 if (k + left_needed < positional.size()) r.v[p.dest].push_back(positional[k++]);
@@ -667,11 +674,337 @@ Pos P(std::string dest, char nargs = 1, std::string help = "") {
     return p;
 }
 
+// ---- unitron play (docs/play.md): a headless NGPC on the NgpCraft core
+const char* PLAY_USAGE = "usage: unitron play [-h] {run,script,shot,tiles,montage,trace,hints} ...\n";
+
+int cmd_play(std::vector<std::string> rest) {
+    namespace pl = unitron::play;
+    if (rest.empty() || rest[0] == "-h" || rest[0] == "--help") {
+        (rest.empty() ? std::cerr : std::cout)
+            << PLAY_USAGE << "\nplay a ROM headlessly to map it: states, input sequences, screenshots\n\n"
+            << "    run                 load a state (or boot), play input sequences, screenshot after each, save a new state\n"
+            << "    script              play a route file: inputs, waits on RAM conditions, checks, saves (deterministic)\n"
+            << "    shot                screenshot of a saved state\n"
+            << "    tiles               the screen as text: tile numbers on both scroll planes\n"
+            << "    montage             contact sheet of screenshots\n"
+            << "    trace               report on what the traced runs saw (DIR/trace.bin)\n"
+            << "    hints               write a dis --hints file (and --executed list) from the trace\n";
+        return rest.empty() ? 2 : 0;
+    }
+    std::string sub = rest[0];
+    rest.erase(rest.begin());
+    Parser p;
+    p.prog = "unitron play " + sub;
+    if (sub == "run") {
+        p.help = "load state FROM ('boot' = power on), play each SEQ, screenshot after each, save state NEW.\n"
+                 "SEQ tokens: A B O U D L R press (UA = together), wN wait N frames, aN..rN hold N frames";
+        p.pos = {P("rom"), P("from"), P("new"), P("seq", '*', "input sequence (quote it)")};
+        p.opts = {O({"--dir"}, "dir", "run directory: states/, shots/, coverage.bin (default: play)"),
+                  O({"--lang"}, "lang", "console language when booting: en (default) or ja"),
+                  O({"--scale"}, "scale", "screenshot scale (default 2)"),
+                  O({"--no-shots"}, "no_shots", "no screenshots", false),
+                  O({"--no-trace"}, "no_trace", "don't record the trace (faster)", false),
+                  O({"--inputs"}, "inputs", "play this input log first: JSON [[mask, frames], ...], as in a state's header", true, false, "FILE"),
+                  O({"--until"}, "until", "after the sequences, play --each until this RAM condition holds (repeatable: any one stops): ADDR[.w|.l]OP VALUE, e.g. 4186==0", true, true, "COND"),
+                  O({"--each"}, "each", "what to play between checks of --until (default: w1)", true, false, "SEQ"),
+                  O({"--max"}, "max", "give up --until after this many frames (default 18000)")};
+    } else if (sub == "script") {
+        p.help = "play a route file (docs/play.md, \"Routes\"): from, seq, each, max, until, expect, save, shot";
+        p.pos = {P("rom"), P("route")};
+        p.opts = {O({"--dir"}, "dir", "run directory (default: play)"), O({"--scale"}, "scale", "screenshot scale (default 2)"),
+                  O({"--no-trace"}, "no_trace", "don't record the trace", false)};
+    } else if (sub == "shot") {
+        p.help = "screenshot of a saved state (the frame after it, nothing pressed; the state is not changed)";
+        p.pos = {P("rom"), P("state")};
+        p.opts = {O({"--dir"}, "dir", "run directory (default: play)"), O({"-o", "--output"}, "output", "PNG (default: shots/STATE.png)"),
+                  O({"--scale"}, "scale", "scale (default 2)")};
+    } else if (sub == "tiles") {
+        p.help = "the screen as text: tile numbers on both scroll planes (the frame after the state, like shot)";
+        p.pos = {P("rom"), P("state")};
+        p.opts = {O({"--dir"}, "dir", "run directory (default: play)")};
+    } else if (sub == "montage") {
+        p.help = "contact sheet of screenshots";
+        p.pos = {P("png", '+')};
+        p.opts = {O({"-o", "--output"}, "output", "PNG (default: montage.png)"), O({"--cols"}, "cols", "images per row (default 4)")};
+    } else if (sub == "trace") {
+        p.help = "report on the merged trace of the runs in DIR; --addr: who read and wrote that work RAM";
+        p.pos = {P("rom")};
+        p.opts = {O({"--dir"}, "dir", "run directory (default: play)"),
+                  O({"--addr"}, "addr", "work RAM address or range (4186, 5740-5770): readers and writers per address", true, false, "A[-B]"),
+                  O({"--sym"}, "sym", "symbol file (ADDR NAME lines, as unitron asm --sym writes): show PCs as name+offset"),
+                  O({"--unnamed"}, "unnamed", "what is left to name: work RAM the game used that FILE (NAME equ ADDR lines, e.g. ram/wram.inc, or ADDR NAME lines) has no name for", true, false, "FILE")};
+    } else if (sub == "hints") {
+        p.help = "hints for unitron dis --hints from the trace: code (indirect targets), pointers, data";
+        p.pos = {P("rom")};
+        p.opts = {O({"--dir"}, "dir", "run directory (default: play)"), O({"-o", "--output"}, "output", "hints file (default: stdout)"),
+                  O({"--executed"}, "executed", "also write every executed instruction address here (for dis --executed)")};
+    } else {
+        std::cerr << PLAY_USAGE << "unitron play: error: argument pcmd: invalid choice: '" << sub << "' (choose from run, script, shot, tiles, montage, trace, hints)\n";
+        return 2;
+    }
+    try {
+        Args a = p.parse(rest);
+        if (sub == "montage") {
+            std::vector<Bytes> ims;
+            for (auto& f : a.all("png")) ims.push_back(read_bytes(f));
+            write_bytes(a.get("output", "montage.png"), pl::montage_png(ims, std::stoi(a.get("cols", "4"))));
+            return 0;
+        }
+        fs::path dir = fs::u8path(a.get("dir", "play"));
+        fs::create_directories(dir / "states");
+        fs::create_directories(dir / "shots");
+        Bytes rom = read_bytes(a.get("rom"));
+        int scale = std::stoi(a.get("scale", "2"));
+        auto state_path = [&](const std::string& n) { return (dir / "states" / (n + ".state")).u8string(); };
+        std::string trace_path = (dir / "trace.bin").u8string();
+        if (sub == "trace" || sub == "hints") {
+            pl::Trace t;
+            if (!t.load(trace_path, rom)) throw std::runtime_error("no trace in " + dir.u8string() + " (play run records one)");
+            Bytes cov;
+            read_bytes_opt((dir / "coverage.bin").u8string(), cov);
+            std::map<uint32_t, std::string> syms;
+            if (a.has("sym")) {
+                Bytes sb = read_bytes(a.get("sym"));
+                syms = pl::read_names(std::string(sb.begin(), sb.end()));
+            }
+            if (sub == "trace" && a.has("unnamed")) {
+                Bytes nb = read_bytes(a.get("unnamed"));
+                std::cout << pl::unnamed_report(t, pl::read_names(std::string(nb.begin(), nb.end())), syms);
+                return 0;
+            }
+            if (sub == "trace" && a.has("addr")) {
+                std::string r = a.get("addr");
+                size_t dash = r.find('-');
+                uint32_t lo = static_cast<uint32_t>(std::stoul(r.substr(0, dash), nullptr, 16));
+                uint32_t hi = dash == std::string::npos ? lo : static_cast<uint32_t>(std::stoul(r.substr(dash + 1), nullptr, 16));
+                std::cout << pl::ram_report(t, lo, hi, syms);
+                return 0;
+            }
+            if (sub == "trace") {
+                std::cout << pl::trace_report(rom, t, cov);
+                return 0;
+            }
+            std::string ex;
+            std::string h = pl::make_hints(rom, t, cov, a.has("executed") ? &ex : nullptr);
+            if (a.has("executed")) write_bytes(a.get("executed"), Bytes(ex.begin(), ex.end()));
+            if (a.has("output")) write_bytes(a.get("output"), Bytes(h.begin(), h.end()));
+            else std::cout << h;
+            return 0;
+        }
+        if (sub == "tiles") {
+            std::unique_ptr<pl::Machine> m(pl::load_state(rom, state_path(a.get("state"))));
+            m->step(0, 1);
+            std::cout << pl::tiles_text(*m);
+            return 0;
+        }
+        if (sub == "shot") {
+            std::unique_ptr<pl::Machine> m(pl::load_state(rom, state_path(a.get("state"))));
+            m->step(0, 1);   // the core draws the picture while a frame runs: show the next one
+            std::string out = a.get("output", (dir / "shots" / (a.get("state") + ".png")).u8string());
+            write_bytes(out, pl::screenshot_png(*m, scale));
+            std::cout << out << "\n";
+            return 0;
+        }
+        auto merge_run = [&](pl::Machine& mm, pl::Trace* tr) {
+            if (tr) {
+                pl::Trace all;
+                if (!all.load(trace_path, rom)) all.init(rom);
+                all.merge(*tr);
+                all.save(trace_path);
+                tr->init(rom);
+            }
+            Bytes cov = mm.coverage();
+            fs::path cf = dir / "coverage.bin";
+            Bytes old;
+            if (read_bytes_opt(cf.u8string(), old) && old.size() == cov.size())
+                for (size_t k = 0; k < cov.size(); k++) cov[k] |= old[k];
+            write_bytes(cf.u8string(), cov);
+        };
+        if (sub == "script") {
+            std::string route = a.get("route");
+            Bytes src = read_bytes(route);
+            std::istringstream in(std::string(src.begin(), src.end()));
+            std::unique_ptr<pl::Machine> m;
+            pl::Trace tr;
+            pl::InputLog each = pl::parse_seq("w1");
+            uint64_t maxf = 18000;
+            std::string parent = "boot", line;
+            int ln = 0;
+            auto need = [&](const std::string& what) {
+                if (!m) throw std::runtime_error(route + ":" + std::to_string(ln) + ": '" + what + "' before 'from'");
+            };
+            auto words = [](const std::string& s) {
+                std::vector<std::string> w;
+                std::istringstream ws(s);
+                for (std::string x; ws >> x;) w.push_back(x);
+                return w;
+            };
+            std::string fail_name = fs::u8path(route).stem().u8string() + "_fail";
+            try {
+            while (std::getline(in, line)) {
+                ln++;
+                size_t hash = line.find('#');
+                if (hash != std::string::npos) line = line.substr(0, hash);
+                std::istringstream ls(line);
+                std::string cmd;
+                if (!(ls >> cmd)) continue;
+                std::string rest;
+                std::getline(ls, rest);
+                auto at = [&](const std::string& msg) { return route + ":" + std::to_string(ln) + ": " + msg; };
+                if (cmd == "from") {
+                    auto w = words(rest);
+                    if (w.empty()) throw std::runtime_error(at("from: state name or boot"));
+                    if (w[0] == "boot") {
+                        bool ja = w.size() > 2 && w[1] == "lang" && w[2] == "ja";
+                        m.reset(new pl::Machine(rom, ja ? pl::Lang::Japanese : pl::Lang::English));
+                    } else {
+                        m.reset(pl::load_state(rom, state_path(w[0])));
+                    }
+                    parent = w[0];
+                    if (!a.has("no_trace")) {
+                        tr.init(rom);
+                        m->set_trace(&tr);
+                    }
+                } else if (cmd == "seq") {
+                    need(cmd);
+                    m->seq(rest);
+                } else if (cmd == "each") {
+                    each = pl::parse_seq(rest);
+                    if (each.empty()) throw std::runtime_error(at("each: empty sequence"));
+                } else if (cmd == "max") {
+                    maxf = std::stoull(rest);
+                } else if (cmd == "until" || cmd == "expect") {
+                    need(cmd);
+                    std::vector<pl::Cond> conds;
+                    for (auto& w : words(rest)) conds.push_back(pl::parse_cond(w));
+                    if (conds.empty()) throw std::runtime_error(at(cmd + ": no condition"));
+                    if (cmd == "until") {
+                        if (!pl::play_until(*m, conds, each, maxf))
+                            throw std::runtime_error(at("until" + rest + ": not met after " + std::to_string(maxf) + " frames (frame " + std::to_string(m->frame()) + ")"));
+                    } else {
+                        for (auto& c : conds)
+                            if (!c.test(*m)) {
+                                Bytes v = m->read(c.addr, static_cast<uint32_t>(c.width));
+                                int64_t x = 0;
+                                for (int q = c.width - 1; q >= 0; q--) x = x << 8 | v[q];
+                                throw std::runtime_error(at("expect " + c.text + " failed: value is " + std::to_string(x) + " (frame " + std::to_string(m->frame()) + ")"));
+                            }
+                    }
+                } else if (cmd == "save") {
+                    need(cmd);
+                    auto w = words(rest);
+                    if (w.size() != 1) throw std::runtime_error(at("save NAME"));
+                    m->save(state_path(w[0]), w[0], parent);
+                    merge_run(*m, a.has("no_trace") ? nullptr : &tr);
+                    std::cout << w[0] << ": frame " << m->frame() << ", faults " << m->faults().size() << "\n";
+                    parent = w[0];
+                } else if (cmd == "shot") {
+                    need(cmd);
+                    auto w = words(rest);
+                    std::string nm = w.empty() ? "shot" : w[0];
+                    fs::path shot = dir / "shots" / (nm + "_f" + std::to_string(m->frame()) + ".png");
+                    write_bytes(shot.u8string(), pl::screenshot_png(*m, scale));
+                    std::cout << shot.u8string() << "\n";
+                } else {
+                    throw std::runtime_error(at("unknown step '" + cmd + "' (from, seq, each, max, until, expect, save, shot)"));
+                }
+            }
+            } catch (std::exception& e) {
+                // keep the machine as it was when the route failed, to look at
+                if (m) {
+                    m->save(state_path(fail_name), fail_name, parent);
+                    std::cerr << "unitron play: state at the failure saved as " << fail_name << "\n";
+                }
+                throw;
+            }
+            if (m) merge_run(*m, a.has("no_trace") ? nullptr : &tr);
+            return 0;
+        }
+        std::string from = a.get("from"), name = a.get("new");
+        std::unique_ptr<pl::Machine> m;
+        if (from == "boot") {
+            std::string lang = a.get("lang", "en");
+            if (lang != "en" && lang != "ja") p.fail("argument --lang: en or ja");
+            m.reset(new pl::Machine(rom, lang == "ja" ? pl::Lang::Japanese : pl::Lang::English));
+        } else {
+            m.reset(pl::load_state(rom, state_path(from)));
+        }
+        pl::Trace run_trace;
+        if (!a.has("no_trace")) {
+            run_trace.init(rom);
+            m->set_trace(&run_trace);
+        }
+        if (a.has("inputs")) {
+            Bytes j = read_bytes(a.get("inputs"));
+            for (auto& r : nlohmann::json::parse(std::string(j.begin(), j.end())))
+                m->step(r.at(0).get<uint8_t>(), r.at(1).get<uint32_t>());
+        } else if (a.all("seq").empty() && !a.has("until")) {
+            p.fail("give an input sequence, --inputs or --until");
+        }
+        size_t i = 0;
+        for (auto& s : a.all("seq")) {
+            m->seq(s);
+            if (!a.has("no_shots")) {
+                fs::path shot = dir / "shots" / (name + "_" + std::to_string(i) + "_f" + std::to_string(m->frame()) + ".png");
+                write_bytes(shot.u8string(), pl::screenshot_png(*m, scale));
+                std::cout << shot.u8string() << "\n";
+            }
+            i++;
+        }
+        std::string until_result;
+        if (a.has("until")) {
+            std::vector<pl::Cond> conds;
+            for (auto& c : a.all("until")) conds.push_back(pl::parse_cond(c));
+            pl::InputLog each = pl::parse_seq(a.get("each", "w1"));
+            if (each.empty()) p.fail("argument --each: empty sequence");
+            const pl::Cond* hit = pl::play_until(*m, conds, each, std::stoull(a.get("max", "18000")));
+            until_result = hit ? "until " + hit->text + " met" : "until NOT met (gave up after --max frames)";
+            if (!a.has("no_shots")) {
+                fs::path shot = dir / "shots" / (name + "_until_f" + std::to_string(m->frame()) + ".png");
+                write_bytes(shot.u8string(), pl::screenshot_png(*m, scale));
+                std::cout << shot.u8string() << "\n";
+            }
+        }
+        m->save(state_path(name), name, from);
+        if (!a.has("no_trace")) {
+            pl::Trace all;
+            if (!all.load(trace_path, rom)) all.init(rom);
+            all.merge(run_trace);
+            all.save(trace_path);
+        }
+        // coverage: OR into the run directory's bitmap (1 bit per ROM byte executed)
+        Bytes cov = m->coverage();
+        fs::path cf = dir / "coverage.bin";
+        Bytes old;
+        if (read_bytes_opt(cf.u8string(), old) && old.size() == cov.size())
+            for (size_t k = 0; k < cov.size(); k++) cov[k] |= old[k];
+        write_bytes(cf.u8string(), cov);
+        size_t pcs = 0;
+        for (uint8_t b : cov) pcs += static_cast<size_t>(__builtin_popcount(b));
+        std::cout << name << ": frame " << m->frame() << ", faults " << m->faults().size();
+        if (!m->faults().empty()) {
+            auto& f = m->faults().back();
+            std::cout << " (last: frame " << f.frame << " status " << f.status << " pc " << hexs(f.pc, 6) << ")";
+        }
+        std::cout << ", coverage " << pcs << " instruction addresses";
+        if (!until_result.empty()) std::cout << ", " << until_result;
+        std::cout << "\n";
+        if (until_result.find("NOT") != std::string::npos) return 3;
+    } catch (UsageError& e) {
+        std::cerr << e.msg;
+        return 2;
+    } catch (std::exception& e) {
+        std::cerr << "unitron play: error: " << e.what() << "\n";
+        return 1;
+    }
+    return 0;
+}
+
 const char* TOP =
-    "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp} ...\n\n"
+    "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,play,lsp} ...\n\n"
     "NGPC (TLCS-900/H) toolchain\n\n"
     "positional arguments:\n"
-    "  {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp}\n"
+    "  {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,play,lsp}\n"
     "    asm                 assemble (and link) asm900 sources into a raw image\n"
     "    mac (preprocess)    run the macro preprocessor only\n"
     "    dis                 disassemble: a listing, or (-o DIR) rebuildable asm900 source\n"
@@ -680,13 +1013,14 @@ const char* TOP =
     "    text                text file + character map -> asm900 db lines\n"
     "    gfx                 2bpp tiles <-> indexed PNG (plain sheet or map layout); PNG palette -> words\n"
     "    z80                 the Z80 sound CPU: dis, asm, roundtrip (docs/z80.md)\n"
+    "    play                play a ROM headlessly to map it: states, inputs, screenshots (docs/play.md)\n"
     "    lsp                 language server for editors (docs/editor.md)\n\n"
     "options:\n  -h, --help            show this help message and exit\n";
 
 int run(int argc, char** argv) {
     std::vector<std::string> args(argv + 1, argv + argc);
     if (args.empty()) {
-        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp} ...\n"
+        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,play,lsp} ...\n"
                      "unitron: error: the following arguments are required: cmd\n";
         return 2;
     }
@@ -697,6 +1031,7 @@ int run(int argc, char** argv) {
     }
     std::vector<std::string> rest(args.begin() + 1, args.end());
     if (cmd == "lsp") return cmd_lsp(rest);
+    if (cmd == "play") return cmd_play(rest);
     Parser p;
     p.prog = "unitron " + cmd;
     std::string sub;
@@ -837,9 +1172,9 @@ int run(int argc, char** argv) {
                       O({"--executed"}, "executed"), O({"--hints"}, "hints")};
         }
     } else {
-        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,lsp} ...\n"
+        std::cerr << "usage: unitron [-h] {asm,mac,preprocess,dis,roundtrip,bin2db,text,gfx,z80,play,lsp} ...\n"
                      "unitron: error: argument cmd: invalid choice: '"
-                  << cmd << "' (choose from asm, mac, preprocess, dis, roundtrip, bin2db, text, gfx, z80)\n";
+                  << cmd << "' (choose from asm, mac, preprocess, dis, roundtrip, bin2db, text, gfx, z80, play)\n";
         return 2;
     }
     if (cmd == "asm")

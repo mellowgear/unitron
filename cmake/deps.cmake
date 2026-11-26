@@ -40,3 +40,16 @@ FetchContent_Declare(json
                      URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
                      URL_HASH SHA256=d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d
                      EXCLUDE_FROM_ALL)
+
+# NgpCraft (MIT, by tixul): the NGPC emulator core behind `unitron play` (docs/play.md).
+# Only its C++ core (cpp/) is built, statically, plus its high-level BIOS image
+# (hle_bios/bios_hle.bin), which unitron embeds. Pinned commit, with one local fix applied
+# (cmake/patches/ngpcraft-rld-rrd.patch: the RLD/RRD instructions) until it is upstream.
+FetchContent_Declare(ngpcraft
+                     GIT_REPOSITORY https://github.com/Tixul/Ngpcraft_emulator.git
+                     GIT_TAG 93b1fd6
+                     GIT_SHALLOW FALSE
+                     PATCH_COMMAND git apply --whitespace=nowarn ${CMAKE_CURRENT_LIST_DIR}/patches/ngpcraft-rld-rrd.patch
+                     UPDATE_DISCONNECTED TRUE
+                     SOURCE_SUBDIR do-not-add   # we build its sources ourselves (CMakeLists.txt)
+                     EXCLUDE_FROM_ALL)

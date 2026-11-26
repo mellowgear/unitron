@@ -7,7 +7,8 @@ the same bytes, so it can be the start of a decompilation.
 
 ## Build
 
-You need CMake 3.24 or later and a C++17 compiler. The first build downloads zlib and libpng
+You need CMake 3.24 or later, git and a C++17 compiler. The first build downloads zlib, libpng and
+the NgpCraft emulator core
 (pinned versions, built in; see `cmake/deps.cmake`), so it needs internet. If the libpng download
 fails its TLS check (the SourceForge mirror sometimes does), run the first command again.
 
@@ -230,6 +231,17 @@ A string starts at a `text` line and ends before the next `text` line, label, `s
 end of the file. It is padded with PAD up to WIDTH; a longer one is an error with its line, byte
 count and width. `slot 0` ends slot mode.
 
+## Playing a ROM headlessly
+
+`unitron play` runs a ROM with no window: load a saved state, press buttons, take screenshots,
+save a new state, and collect which code ran. It is for mapping a game while disassembling it
+(docs/play.md; for agents doing the playing: docs/play-agents.md).
+
+```
+unitron play run game.ngp boot title 'w300' 'A w60'
+unitron play montage play/shots/title_*.png -o m.png
+```
+
 ## Command reference
 
 **`unitron asm`** options:
@@ -308,4 +320,8 @@ nothing outside the repository. They remain their owners' (Toshiba's, SNK's):
   [docs/snk/SysPro/SysPro.md](docs/snk/SysPro/SysPro.md)), cited by section; the `hwnames` test
   checks that every section `data/hwnames.tsv` cites is a heading there.
 
+`unitron play` runs the emulator core of [NgpCraft](https://github.com/Tixul/Ngpcraft_emulator)
+by tixul (MIT licence). It is not in this repository: the build downloads a pinned commit, like
+zlib and libpng (`cmake/deps.cmake`), applies one fix (`cmake/patches/ngpcraft-rld-rrd.patch`) and
+builds its C++ core and high-level BIOS into unitron. Thanks to its author.
 No emulator code, no emulator-derived names and no ROM data are in this repository.

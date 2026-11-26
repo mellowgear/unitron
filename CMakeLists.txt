@@ -39,18 +39,25 @@ if(NOT TARGET PNG::PNG)
   endif()
 endif()
 
+## The NgpCraft emulator core (MIT, fetched in cmake/deps.cmake): unitron play.
+FetchContent_MakeAvailable(ngpcraft)
+file(GLOB NGPCRAFT_SOURCES ${ngpcraft_SOURCE_DIR}/cpp/src/*.cpp)
+add_library(ngpcraft STATIC ${NGPCRAFT_SOURCES})
+target_include_directories(ngpcraft PUBLIC ${ngpcraft_SOURCE_DIR}/cpp/include PRIVATE ${ngpcraft_SOURCE_DIR}/cpp/src)
+set(NGPCRAFT_BIOS ${ngpcraft_SOURCE_DIR}/hle_bios/bios_hle.bin)
+
 ## unitron.
 
 file(GLOB UNITRON_SOURCES CONFIGURE_DEPENDS src/*.cpp)
 list(REMOVE_ITEM UNITRON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 set(EMBEDDED ${CMAKE_CURRENT_BINARY_DIR}/embedded.cpp)
 add_custom_command(OUTPUT ${EMBEDDED}
-  COMMAND ${CMAKE_COMMAND} -DOUT=${EMBEDDED} -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/embed.cmake
-  DEPENDS data/hwnames.tsv cmake/embed.cmake
+  COMMAND ${CMAKE_COMMAND} -DOUT=${EMBEDDED} -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBIOS=${NGPCRAFT_BIOS} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/embed.cmake
+  DEPENDS data/hwnames.tsv ${NGPCRAFT_BIOS} cmake/embed.cmake
   COMMENT "Embedding data files")
 add_library(unitron_core STATIC ${UNITRON_SOURCES} ${EMBEDDED})
 target_include_directories(unitron_core PUBLIC src)
-target_link_libraries(unitron_core PUBLIC PNG::PNG ZLIB::ZLIB nlohmann_json::nlohmann_json)
+target_link_libraries(unitron_core PUBLIC PNG::PNG ZLIB::ZLIB nlohmann_json::nlohmann_json ngpcraft)
 if(MSVC)
   target_compile_options(unitron_core PRIVATE /W4 /utf-8)
 else()
