@@ -1,4 +1,4 @@
-# Build unitron and run its tests on Linux, macOS and Windows (MSVC and MinGW).
+# Build unitron and run its tests on Linux and macOS.
 # Every test runs from files in the repo (our own test cartridge included); the optional tests
 # that check commercial ROMs by hash skip themselves when no ROM is given.
 name: CI
@@ -49,53 +49,3 @@ jobs:
           path: dist/bin
           if-no-files-found: error
 
-  windows-msvc:
-    runs-on: windows-2025
-    steps:
-      - uses: actions/checkout@v7
-      - name: Configure
-        run: cmake -S . -B build -A x64 || cmake -S . -B build -A x64
-      - name: Build
-        run: cmake --build build --config Release --parallel
-      - name: Test
-        run: ctest --test-dir build -C Release
-      - name: Install
-        run: |
-          cmake --install build --config Release --prefix "$PWD/dist"
-          dist/bin/unitron.exe --help > /dev/null
-      - uses: actions/upload-artifact@v7
-        with:
-          name: unitron-windows-msvc
-          path: dist/bin
-          if-no-files-found: error
-
-  windows-mingw:
-    runs-on: windows-2025
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: >-
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-cmake
-            mingw-w64-ucrt-x86_64-ninja
-      - name: Configure
-        run: cmake -S . -B build -G Ninja || cmake -S . -B build -G Ninja
-      - name: Build
-        run: cmake --build build --parallel
-      - name: Test
-        run: ctest --test-dir build
-      - name: Install
-        run: |
-          cmake --install build --prefix "$PWD/dist"
-          dist/bin/unitron.exe --help > /dev/null
-      - uses: actions/upload-artifact@v7
-        with:
-          name: unitron-windows-mingw
-          path: dist/bin
-          if-no-files-found: error

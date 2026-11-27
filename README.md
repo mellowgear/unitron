@@ -19,8 +19,8 @@ cmake --build build -j8
 cmake --install build --prefix ~/.local      # optional: puts unitron in ~/.local/bin
 ```
 
-The result is one program, `build/unitron`, with no other files needed. It has been built and
-tested on Linux; the code is written to be portable to macOS and Windows.
+The result is one program, `build/unitron`, with no other files needed. CI builds and tests it on
+Linux and macOS; Windows is not tested.
 
 ## Quick start
 
